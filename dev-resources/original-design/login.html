@@ -1,0 +1,86 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+
+    <!-- Vendors Stylesheet -->
+    <link rel="stylesheet" href="./assets/style/bootstrap.min.css">
+    <link rel="stylesheet" href="./assets/style/widthme.css">
+
+    <!-- Font Stylesheet -->
+    <link rel="stylesheet" href="./assets/font/ramagothice_bold/stylesheet.css">
+    <link rel="stylesheet" href="./assets/font/ramagothice_heavy/stylesheet.css">
+    <link rel="stylesheet" href="./assets/font/ramagothice_light/stylesheet.css">
+    <link rel="stylesheet" href="./assets/font/ramagothice_regular/stylesheet.css">
+    <link rel="stylesheet" href="./assets/font/ramagothice_semibold/stylesheet.css">
+    <link rel="stylesheet" href="./assets/font/ramagothice_thin/stylesheet.css">
+    <link rel="stylesheet" href="./assets/font/roboto_condensed/stylesheet.css">
+    <link rel="stylesheet" href="./assets/font/roboto/stylesheet.css">
+    <!-- Font Stylesheet -->
+    <!-- Font Awesome Icons -->
+    <!-- <script src="https://kit.fontawesome.com/a076d05399.js"></script> -->
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="./assets/style/header.css">
+    <link rel="stylesheet" href="./assets/style/global.css">
+    <link rel="stylesheet" href="./assets/style/login.css">
+    <!-- Main Stylesheet -->
+</head>
+
+<body>
+
+    <!-- Main Section -->
+    <main class="d-flex align-items-center justify-content-center page-login">
+        <div class="opacity-wrapper"></div>
+
+        <div class="main-wrapper">
+            <div class="logo-image">
+                <i><img src="./assets/images/logo.svg" alt=""></i>
+            </div>
+            <h1 class="font-rama-regular fg-white font-50">Login</h1>
+            <div class="form-wrapper">
+                <form class="text-white font-condensed" id="login-form">
+                    <div class="form-group">
+                        <label class="mb-0 mt-3" for="username">Username</label>
+                        <input type="text" class="form-control" name="username" id="username">
+                    </div>
+
+                    <div class="form-group mb-0">
+                        <label class="mb-0 mt-3" for="password">Password</label>
+                        <input type="password" class="form-control" name="password" id="password">
+                    </div>
+
+                    <div class="form-group text-right" id="forgot-pwd">
+                        <a class="fg-primary font-rem-80" href="#">Forgot your password? <span class="fg-white">Reset password</span></a>
+                    </div>
+
+                    <div class="form-group btn-wrapper text-center mt-3">
+                        <div class="mb-5">
+                            <button class="btn-custom btn-blue font-condensed-bold">LOGIN</button>
+                        </div>
+                        <div>
+                            <a class="fg-primary btn-alternate-login font-condensed-bold" href="#">No account? <span class="fg-white">Create an account</span></a>
+                        </div>
+                        <p class="fg-white m-2">OR</p>
+                        <div>
+                            <button class="btn-alternate-login font-condensed-bold fg-white">Login with AWS</button>
+                        </div>
+                    </div>
+                </form>
+            </div> <!-- .form-wrapper -->
+        </div> <!-- .main-wrapper -->
+    </main>
+    <!-- Main Section -->
+    <!-- Footer -->
+    <footer>
+        <div class="bg-primary text-white text-center footer">
+            @Copyright 2020
+        </div>
+    </footer>
+    <!-- Footer -->
+    <!-- Vendor Script -->
+    <script src="./assets/js/jquery-3.5.1.min.js"></script>
+    <script src="./assets/js/bootstrap.min.js"></script>
+</body>
+</html>

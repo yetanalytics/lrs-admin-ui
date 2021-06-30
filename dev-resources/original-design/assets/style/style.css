@@ -1,0 +1,8 @@
+.bread-crumbs {
+  padding: 24px;
+}
+  
+.bread-crumbs a {
+  font-size: 1.25rem;
+  padding: 0 24px;
+}

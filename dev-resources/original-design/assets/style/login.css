@@ -1,0 +1,146 @@
+/*********************************************
+# Page Background
+*********************************************/
+.page-login {
+    background: url(../images/Image-1.jpg);
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position-x: center;
+    background-position-y: center;
+    height: calc(100vh - 100px);
+    overflow-y: auto;
+}
+
+    /*********************************************
+# Background Opacity
+*********************************************/
+    .page-login .opacity-wrapper {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: calc(100vh - 100px);
+        background-color: black;
+        opacity: .5;
+        z-index: 1;
+    }
+
+@media only screen and (max-width: 576px) {
+    .page-login .font-rem-80 {
+        font-size: .62rem;
+    }
+
+    .page-login label {
+        font-size: .85rem;
+        display: inline-block;
+        margin-bottom: .3rem !important;
+        margin-top: 0 !important;
+    }
+
+    .page-login .btn-alternate-login {
+        font-size: .85rem;
+    }
+}
+
+/*********************************************
+# Logo
+*********************************************/
+.page-login .logo-image img {
+    width: 100%;
+}
+
+/*********************************************
+# Logo
+*********************************************/
+.page-login h1 {
+    text-transform: uppercase;
+    margin: 36px 0 0 0;
+    padding: 0;
+    line-height: 1;
+}
+
+/*********************************************
+# Main Section
+*********************************************/
+.page-login .main-wrapper {
+    z-index: 2;
+    width: 25%;
+}
+
+.page-login .form-control {
+    border-radius: 1px;
+    padding: 20.5px;
+}
+
+
+@media only screen and (max-width: 1200px) {
+    .page-login .main-wrapper {
+        width: 30%;
+    }
+}
+
+@media only screen and (max-width: 1200px) {
+    .page-login .main-wrapper {
+        width: 40%;
+    }
+}
+
+@media only screen and (max-width: 768px) {
+    .page-login .main-wrapper {
+        width: 50%;
+    }
+}
+
+@media only screen and (max-width: 480px) {
+    .page-login .main-wrapper {
+        width: 70%;
+    }
+}
+/*********************************************
+# Form Background
+*********************************************/
+.page-login .form-wrapper {
+    margin-top: 12px;
+}
+
+/*********************************************
+# Login Button
+*********************************************/
+
+a:hover {
+    text-decoration: underline;
+    color: white;
+}
+
+/*********************************************
+# Footer
+*********************************************/
+.footer {
+    height: 100px;
+}
+
+@media only screen and (max-width: 768px) {
+
+    .page-login {
+        height: calc(100vh - 57px);
+    }
+
+        .page-login .opacity-wrapper {
+            height: calc(100vh - 57px);
+        }
+
+    .footer {
+        height: 57px;
+    }
+}
+
+@media only screen and (max-width: 576px) {
+
+    .page-login {
+        height: calc(100vh - 57px);
+    }
+
+        .page-login .opacity-wrapper {
+            height: calc(100vh - 57px);
+        }
+}

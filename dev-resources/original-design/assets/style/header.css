@@ -1,0 +1,124 @@
+header {
+    background-color: black;
+    height: 120px;
+    padding-left: 20px;
+    padding-right: 20px;
+    width: 100%;
+}
+
+    header > div {
+        height: 100%;
+    }
+
+    header .logo-img {
+        height: 80px;
+    }
+
+    header .search-box {
+        max-width: 500px;
+    }
+
+        header .search-box button {
+            background-color: transparent;
+            border: none;
+        }
+
+            header .search-box button:focus {
+                outline: none;
+            }
+
+@media only screen and (max-width: 1200px) {
+    header .search-box {
+        max-width: 450px;
+    }
+}
+
+@media only screen and (max-width: 1024px) {
+    header .search-box {
+        max-width: 400px;
+    }
+}
+
+@media only screen and (max-width: 992px) {
+    header .logo-img {
+        height: 70px;
+    }
+
+    header .search-box {
+        max-width: 280px;
+    }
+}
+
+@media only screen and (max-width: 768px) {
+    header .logo-img {
+        height: 60px;
+    }
+}
+
+@media only screen and (max-width: 576px) {
+    header .logo-img {
+        height: 45px;
+    }
+}
+
+header .search-box-input {
+    border-bottom: 1px solid #79C6FF;
+    width: 600px;
+}
+
+    header .search-box-input::placeholder {
+        color: #79C6FF;
+    }
+
+header i {
+    font-size: 1.375rem;
+}
+
+header a:hover {
+    color: white;
+    text-decoration: underline;
+}
+
+footer div {
+    font-family: RobotoCondensed;
+    font-size: 1.125rem;
+    padding: 38px;
+}
+
+@media only screen and (max-width: 768px) {
+
+    footer div {
+        font-family: RobotoCondensed;
+        font-size: .6rem;
+        padding: 21px;
+    }
+
+    .banner-link-box.mobile-menu {
+        display: block !important;
+        position: fixed;
+        bottom: 53px;
+        left: 0;
+        right: 0;
+        z-index: 1;
+    }
+
+        .banner-link-box.mobile-menu > ul {
+            display: block !important;
+            padding: 12px 0;
+        }
+
+            .banner-link-box.mobile-menu > ul li {
+                padding: 8px 0;
+                text-align: center;
+            }
+}
+
+@media only screen and (max-width: 576px) {
+    header .user-name {
+        font-size: .75em;
+    }
+
+    header {
+        height: 65px;
+    }
+}
