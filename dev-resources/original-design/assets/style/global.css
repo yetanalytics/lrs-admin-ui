@@ -961,10 +961,10 @@ p.sub-title {
         margin-left: 18px;
     }
 
-        .accordion > li:before {
-            font-size: 16px;
-            left: -16px;
-        }
+    .accordion > li:before {
+      font-size: 16px;
+      left: -16px;
+    }
 
     .accordion .accordion-content .action-icon img, .select-option_box i img {
         max-width: 18px;
