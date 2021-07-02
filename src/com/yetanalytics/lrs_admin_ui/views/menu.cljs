@@ -1,7 +1,4 @@
-(ns ^:figwheel-hooks com.yetanalytics.lrs-admin-ui.views.menu
-  (:require
-   [goog.dom :as gdom]
-   [reagent.dom :as rdom]))
+(ns com.yetanalytics.lrs-admin-ui.views.menu)
 
 (defn menu []
   [:div {:class "banner-link-box container-fluid bg-black d-none d-md-flex"}

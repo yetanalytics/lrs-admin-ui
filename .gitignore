@@ -13,3 +13,4 @@ pom.xml
 .rebel_readline_history
 node_modules/
 .DS_Store
+resources/public/css/style.css

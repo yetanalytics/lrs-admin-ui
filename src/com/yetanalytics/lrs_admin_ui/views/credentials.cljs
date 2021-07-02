@@ -1,12 +1,11 @@
-(ns ^:figwheel-hooks com.yetanalytics.lrs-admin-ui.views.credentials
+(ns com.yetanalytics.lrs-admin-ui.views.credentials
   (:require
-   [goog.dom :as gdom]
-   [reagent.dom :as rdom]
    [com.yetanalytics.lrs-admin-ui.views.credentials.tenant :refer [tenant]]))
 
 (defn credentials []
-  [:div {:class "container-fluid pb-80"}
-   [:h2 {:class "font-rama-semi-bold"} "Credentials Management"]
+  [:div {:class "left-content-wrapper"}
+   [:h2 {:class "content-title"}
+    "Credentials Management"]
    ;;this will be looped for all tenants if tenant mode is enabled (third)
    [tenant]
 

@@ -160,6 +160,14 @@ a {
   padding-top: 4rem !important;
 }
 
+/*************************************************
+# Mouse
+**************************************************/
+
+.pointer {
+  cursor: pointer;
+}
+
 /**************************************************
 # Badge
 **************************************************/
@@ -310,6 +318,10 @@ a {
 
 .btn-alternate-login:hover {
   text-decoration: underline;
+}
+
+.btn-blue-bold {
+  @extend .btn-custom, .btn-blue, .font-condensed-bold;
 }
 /**************************************************
 # Label Custom
@@ -645,33 +657,36 @@ table i {
 }
 
 /**************************************************
-# Main Box Banner: Trainer Creator
+# Main Content
 **************************************************/
 
-.page-creator .content-right-wrapper {
+.lrs-main .content-right-wrapper {
+  @extend .col-xl-4, .col-lg-4, .col-md-12, .col-sm-12, .col-12;
   background-color: #137BCE;
 }
 
-.page-creator .content-right-wrapper img {
+.lrs-main .content-right-wrapper img {
   width: 100%;
 }
 
 
-.page-creator .content-wrapper {
+.lrs-main .content-wrapper {
   font-size: 20px;
 }
 
 @media only screen and (max-width: 768px) {
-  .page-creator .content-wrapper {
+  .lrs-main .content-wrapper {
     font-size: 14px;
   }
 }
 
-.page-creator .main-sections {
+.lrs-main .main-sections {
+  @extend .col-xl-8, .col-lg-8, .col-md-12, .col-sm-12, .col-12;
   margin-top: 40px;
 }
 
-.page-creator .banner-img_box {
+.lrs-main .banner-img_box {
+  @extend .d-none, .d-md-flex;
   background-image: url(../images/Mask-Group-1.jpg);
 }
 
@@ -682,14 +697,15 @@ table i {
   background-size: cover;
 }
 
-.page-creator .credential-details {
-  font-size: 28px;
-  font-family: RamaGothicERegular;
+.left-content-wrapper {
+  @extend .container-fluid, .pb-80;
 }
 
-.page-creator .credential-details span:first-child {
-  text-transform: uppercase;
+.content-title {
+  @extend .font-rama-semi-bold;
 }
+
+
 
 .pb-80 {
   padding-bottom: 80px !important;
@@ -714,25 +730,26 @@ table i {
   font-size: 20px;
 }
 
+
 /**************************************************
-# Page Creator Dropdown
+# Dropdown
 **************************************************/
 
-.page-creator .category-container {
+.lrs-main .category-container {
   padding: 9.5px 15px;
   border-radius: 1px;
 }
 
-.page-creator .selected-category {
+.lrs-main .selected-category {
   border-bottom: 2px solid white;
 }
 
-.page-creator .selectable-option {
+.lrs-main .selectable-option {
   display: none;
 }
 
 /**************************************************
-# Accordions: Trainer Creator
+# Accordions: Credentails Management
 **************************************************/
 .accordion {
   list-style-type: none;
@@ -741,7 +758,7 @@ table i {
   font-family: RobotoCondensed;
 }
 
-.accordion .accordion-contianer {
+.accordion .accordion-container {
   border-radius: 1px;
 }
 
@@ -761,37 +778,13 @@ table i {
   top: 6px;
 }
 
-.accordion .accordion-contianer .accordion-header {
+.accordion .accordion-container .accordion-header {
   background-color: #E8E8E8;
   padding: 8px 18px 6px 18px;
   border-radius: 1px 1px 0 0;
 }
 
-.accordion .accordion-contianer .accordion-header .toggle-accordion:before {
-  content: '';
-  display: inline-block;
-  vertical-align: top;
-  width: 20px;
-  height: 20px;
-  background: url('../images/icons/minus.svg') no-repeat center center;
-  background-size: contain;
-  text-align: left;
-  margin: 2px 8px 0 0;
-}
-
-.accordion .accordion-contianer .accordion-header .toggle-accordion.collapsed:before {
-  background-image: url('../images/icons/add.svg');
-}
-
-.accordion .accordion-contianer .accordion-header .toggle-accordion {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: block;
-  color: #11375C;
-}
-
-.accordion .accordion-contianer .accordion-content {
+.accordion .accordion-container .accordion-content {
   padding: 24px 48px 0 48px;
   border: 8px solid #e8e8e8;
   border-top: 0;
@@ -799,7 +792,7 @@ table i {
 }
 
 @media only screen and (max-width: 1124px) {
-  .accordion .accordion-contianer .accordion-header > div:nth-child(2) {
+  .accordion .accordion-container .accordion-header > div:nth-child(2) {
     padding-left: 20px;
   }
 }
@@ -882,6 +875,84 @@ table i {
 .action-icon-list li a.icon-close:hover {
   background: url('../images/icons/icon-close-black.svg') no-repeat left center;
 }
+
+/**************************************************
+# Credentials
+***************************************************/
+
+.lrs-main .credential-details {
+  @extend .row, .no-gutters, .mb-1;
+  font-size: 28px;
+  font-family: RamaGothicERegular;
+}
+
+.lrs-main .credential-details span:first-child {
+  text-transform: uppercase;
+}
+
+.tenant-wrapper {
+  @extend .general-section-wrapper, .mt-4;
+}
+
+.tenant-title-wrapper {
+  @extend .col-4;
+}
+
+.tenant-count-wrapper {
+  @extend .col-8, .text-right, .text-lg-left;
+}
+
+.api-keys-table-header {
+  @extend .general-section-header, .bg-primary, .fg-white, .py-2, .px-3, .px-lg-5, .mb-2, .font-condensed-bold;
+}
+
+.api-keys-table-actions {
+  @extend .form-group, .mt-3, .text-right;
+}
+
+.api-keys-list {
+  @extend .mb-2;
+}
+
+
+
+.secret-key-label {
+  @extend .action-label, .w-100-px;
+}
+
+.api-key-expand {
+  @extend .row, .no-gutters, .accordion-content;
+}
+
+.api-key-col {
+  @extend .col-sm-12, .col-lg-6;
+}
+
+.api-key-col-header {
+  @extend .font-condensed-bold, .mb-2;
+}
+
+.api-key-row {
+  @extend .row, .no-gutters, .accordion-header, .bg-gray, .fg-dark-blue, .pointer;
+}
+
+.collapse-sign:before {
+  background: url('../images/icons/add.svg') no-repeat center center;
+  content: '';
+  display: inline-block;
+  vertical-align: top;
+  width: 20px;
+  height: 20px;
+  background-size: contain;
+  text-align: left;
+  margin: 2px 8px 0 0;
+}
+
+.collapse-sign.expanded:before {
+  background-image: url('../images/icons/minus.svg');
+}
+
+
 /**************************************************
 # Footer
 **************************************************/
@@ -909,6 +980,10 @@ table i {
   bottom: 0;
 }
 
+.footer-wrapper {
+  @extend .bg-primary, .text-white, .text-center, .d-none, .d-md-block;
+}
+
 .select-option-container img {
   transition: all .4s ease-in-out;
 }
@@ -920,7 +995,6 @@ table i {
 .mb-2, .my-2 {
   line-height: 1.5em;
 }
-
 
 p.sub-title {
   color: #137BCE;
@@ -938,7 +1012,7 @@ p.sub-title {
     margin-top: 3px;
   }
 
-  .page-creator .main-sections {
+  .lrs-main .main-sections {
     margin-top: 20px !important;
   }
 
@@ -947,7 +1021,7 @@ p.sub-title {
     padding-bottom: 5px;
   }
 
-  .page-creator .credential-details {
+  .lrs-main .credential-details {
     font-size: 1.6rem;
   }
 
@@ -955,7 +1029,7 @@ p.sub-title {
     font-size: 1.2rem;
   }
 
-  .accordion .accordion-contianer .accordion-header, .accordion .accordion-contianer .accordion-content, .form-check-label, .font-rem-12 {
+  .accordion .accordion-container .accordion-header, .accordion .accordion-container .accordion-content, .form-check-label, .font-rem-12 {
     line-height: 1.5;
   }
 
@@ -972,34 +1046,13 @@ p.sub-title {
     max-width: 18px;
   }
 
-  .accordion .accordion-contianer .accordion-content {
+  .accordion .accordion-container .accordion-content {
     padding: 18px 18px 0 18px;
   }
 
-  .accordion .accordion-contianer .accordion-header .toggle-accordion:before {
+  .accordion .accordion-container .accordion-header .toggle-accordion:before {
     width: 12px;
     height: 12px;
     margin-top: 6px;
   }
-}
-
-
-/* Composite Classes */
-
-
-.secret-key-label {
-  @extend .action-label;
-  @extend .w-100-px
-}
-
-.permissions-label {
-  @extends .action-label;
-}
-
-.api-key-expand {
-  @extend .row, .no-gutters, .accordion-content
-}
-
-.api-key-col {
-  @extend .col-sm-12, .col-lg-6
 }

@@ -115,6 +115,14 @@ footer div {
             }
 }
 
+.header-actions-wrapper {
+  @extend .d-md-block, .d-none, .fg-primary;
+}
+
+header .user-name {
+  @extend .text-white;
+}
+
 @media only screen and (max-width: 576px) {
     header .user-name {
         font-size: .75em;
@@ -123,4 +131,8 @@ footer div {
     header {
         height: 65px;
     }
+}
+
+.header-wrapper {
+  @extend .d-flex, .align-items-center, .justify-content-between;
 }

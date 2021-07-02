@@ -1,15 +1,15 @@
-(ns ^:figwheel-hooks com.yetanalytics.lrs-admin-ui.views.main
+(ns com.yetanalytics.lrs-admin-ui.views.main
   (:require
-   [goog.dom :as gdom]
-   [reagent.dom :as rdom]
    [com.yetanalytics.lrs-admin-ui.views.credentials :refer [credentials]]
    [com.yetanalytics.lrs-admin-ui.views.menu :refer [menu]]))
 
 (defn main []
-  [:main {:class "page-creator"}
-   [:div {:class "banner-img_box d-none d-md-flex"} ]
+  [:main {:class "lrs-main"}
+   [:div {:class "banner-img_box"} ]
    [menu]
    [:div {:class "row no-gutters"}
-    [:div {:class "col-xl-8 col-lg-8 col-md-12 col-sm-12 col-12 main-sections"}
+    [:div {:class "main-sections"}
+     ;;this will swap credentials, statement browser, etc. Might put a light
+     ;;router in
      [credentials]]
-    [:div {:class "col-xl-4 col-lg-4 col-md-12 col-sm-12 col-12 content-right-wrapper mt-custom"} ]]])
+    [:div {:class "content-right-wrapper"} ]]])
