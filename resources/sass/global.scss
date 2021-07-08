@@ -422,15 +422,26 @@ p {
 # Banner Menu Section
 **************************************************/
 .banner-link-box {
+  @extend .container-fluid, .bg-black, .d-none, .d-md-flex;
   padding-top: 12.5px;
   padding-bottom: 12.5px;
 }
 
 .banner-link-box ul {
+  @extend .d-none, .d-md-flex;
   padding: 0;
   margin: 0;
   list-style-type: none;
 }
+
+.banner-link-box li.banner-link-item {
+  @extend .font-condensed-bold;
+}
+
+.banner-link-box li.banner-link-item:not(:first-child) {
+  @extend .ml-md-3, .ml-lg-5, .pl-md-3, .pl-lg-5;
+}
+
 
 .banner-link-box .banner-link-item a, .banner-link-item-dropdown, .banner-link-item-dropdown a {
   color: white;

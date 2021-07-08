@@ -1,6 +1,8 @@
 (ns com.yetanalytics.lrs-admin-ui.views.main
   (:require
+   [re-frame.core :refer [subscribe]]
    [com.yetanalytics.lrs-admin-ui.views.credentials :refer [credentials]]
+   [com.yetanalytics.lrs-admin-ui.views.browser :refer [browser]]
    [com.yetanalytics.lrs-admin-ui.views.menu :refer [menu]]))
 
 (defn main []
@@ -9,7 +11,7 @@
    [menu]
    [:div {:class "row no-gutters"}
     [:div {:class "main-sections"}
-     ;;this will swap credentials, statement browser, etc. Might put a light
-     ;;router in
-     [credentials]]
+     (case @(subscribe [:session/get-page])
+       :credentials [credentials]
+       :browser [browser])]
     [:div {:class "content-right-wrapper"} ]]])

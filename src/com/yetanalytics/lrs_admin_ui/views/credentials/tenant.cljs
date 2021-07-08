@@ -1,6 +1,8 @@
 (ns com.yetanalytics.lrs-admin-ui.views.credentials.tenant
   (:require
-   [com.yetanalytics.lrs-admin-ui.views.credentials.api-key :refer [api-key]]))
+   [com.yetanalytics.lrs-admin-ui.views.credentials.api-key :refer [api-key]]
+   [re-frame.core :refer [subscribe]]
+   [clojure.pprint :refer [pprint]]))
 
 (defn tenant []
   [:div {:class "tenant-wrapper"}
