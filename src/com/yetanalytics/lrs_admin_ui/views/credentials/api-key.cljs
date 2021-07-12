@@ -2,8 +2,10 @@
   (:require
    [reagent.core :as r]))
 
-(defn api-key []
-  (let [expanded (r/atom false)]
+(defn api-key
+  [{:keys [credential]}]
+  (let [expanded (r/atom false)
+        show-secret (r/atom false)]
     (fn []
       [:li {:class "mb-2"}
        [:div {:class "accordion-container"}
@@ -13,9 +15,11 @@
          [:div {:class "api-key-col"}
           [:span {:class (str "collapse-sign"
                               (when @expanded " expanded"))}
-           "3c71cea45c6915ba33fad3b8965226f3"]]
+           (:api-key credential)]]
          [:div {:class "api-key-col"} "Permissions: "
-          [:span "All"]]]
+          (map (fn [scope]
+                 [:span scope])
+               (:scopes credential))]]
         (when @expanded
           [:div {:class "api-key-expand"}
            [:div {:class "api-key-col"}
@@ -23,10 +27,18 @@
              "API Key Secret"]
             [:div {:class "action-row"}
              [:div {:class "action-label"}
-              "Redacted"]
+              (cond
+                @show-secret [:span (:secret-key credential)]
+                :else "Redacted")]
              [:ul {:class "action-icon-list"}
               [:li
-               [:a {:href "#!", :class "icon-secret"} "Show Secret"]]]]]
+               [:a {:href "#!",
+                    :class "icon-secret"
+                    :on-click #(swap! show-secret not)}
+                (str (cond
+                       @show-secret "Hide"
+                       :else "Show")
+                     " Secret")]]]]]
            [:div {:class "api-key-col"}
             [:p {:class "api-key-col-header"}
              "Permissions"]

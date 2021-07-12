@@ -7,7 +7,7 @@
 
 (defn main []
   [:main {:class "lrs-main"}
-   [:div {:class "banner-img_box"} ]
+   [:div {:class "banner-img_box"}]
    [menu]
    [:div {:class "row no-gutters"}
     [:div {:class "main-sections"}

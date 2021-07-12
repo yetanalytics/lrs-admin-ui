@@ -17,4 +17,16 @@
  (fn [_ _]
    (subscribe [:db/get-session]))
  (fn [session _]
-   (get session :page)))
+   (:page session)))
+
+(reg-sub
+ :session/get-token
+ (fn [_ _]
+   (subscribe [:db/get-session]))
+ (fn [session _]
+   (:token session)))
+
+(reg-sub
+ :db/get-credentials
+ (fn [db _]
+   (::db/credentials db)))

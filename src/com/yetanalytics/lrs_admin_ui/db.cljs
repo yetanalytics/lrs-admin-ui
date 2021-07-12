@@ -7,12 +7,28 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (s/def :session/page keyword?)
+(s/def :session/token
+  (s/nilable string?))
 (s/def ::session
-  (s/keys :req-un [:session/page]))
+  (s/keys :req-un [:session/page
+                   :session/token]))
 
+(s/def :credential/api-key string?)
+(s/def :credential/secret-key string?)
 
-(s/def ::db (s/keys :req [::session]))
+(s/def :credential/scope string?)
+(s/def :credential/scopes (s/every :credential/scope))
 
+(s/def ::credential
+  (s/keys :req-un [:credential/api-key
+                   :credential/secret-key
+                   :credential/scopes]))
+
+(s/def ::credentials
+  (s/every ::credential))
+
+(s/def ::db (s/keys :req [::session
+                          ::credentials]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Continuous DB Validation

@@ -9,7 +9,15 @@
  :db/init
  global-interceptors
  (fn [db _]
-   (assoc db ::db/session {:page :credentials})))
+   (-> db
+       (assoc ::db/session {:page :credentials
+                            :token nil})
+       (assoc ::db/credentials [{:api-key "thing"
+                                 :secret-key "thang"
+                                 :scopes ["all", "read"]}
+                                {:api-key "thing2"
+                                 :secret-key "thang2"
+                                 :scopes ["none"]}]))))
 
 (re-frame/reg-event-db
  :session/set-page

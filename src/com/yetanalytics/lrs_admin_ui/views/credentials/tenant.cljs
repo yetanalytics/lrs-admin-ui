@@ -16,6 +16,10 @@
    [:div {:class "api-keys-table-header"} "API Key"]
    [:ol {:class "api-keys-list accordion"}
     ;;will repeat for each key
-    [api-key]]
+    (map
+     (fn [credential]
+       [api-key {:credential credential}])
+     @(subscribe [:db/get-credentials]))
+    ]
    [:div {:class "api-keys-table-actions"}
     [:input {:type "button", :class "btn-blue-bold", :value "ADD NEW CREDENTIALS"}]]])
