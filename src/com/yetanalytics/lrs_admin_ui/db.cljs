@@ -13,6 +13,15 @@
   (s/keys :req-un [:session/page
                    :session/token]))
 
+(s/def :login/username (s/nilable string?))
+(s/def :login/password (s/nilable string?))
+(s/def :login/error (s/nilable string?))
+(s/def ::login
+  (s/keys :req-un [:session/username
+                   :session/password]
+          :opt-un [:session/error]))
+
+
 (s/def :credential/api-key string?)
 (s/def :credential/secret-key string?)
 
@@ -28,7 +37,8 @@
   (s/every ::credential))
 
 (s/def ::db (s/keys :req [::session
-                          ::credentials]))
+                          ::credentials
+                          ::login]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Continuous DB Validation

@@ -132,6 +132,10 @@ form#login-form div.form-group:not(:first-child) {
   @extend .btn-custom, .btn-blue, .font-condensed-bold, .mb-5;
 }
 
+.login-error {
+  @extend .form-group, .text-right, .font-rem-80;
+  color: red;
+}
 
 
 /*********************************************
