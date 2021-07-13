@@ -4,7 +4,7 @@
                                    :exclusions [cljsjs/react cljsjs/react-dom
                                                 cljsjs/react-dom-server]}
         re-frame                  {:mvn/version "1.2.0"}
-        cljs-http/cljs-http       {:mvn/version "0.1.46"}}
+        day8.re-frame/http-fx     {:mvn/version "0.2.3"}}
  :paths ["src" "resources"]
  :aliases {:fig {:extra-deps
                   {com.bhauman/rebel-readline-cljs {:mvn/version "0.1.4"}

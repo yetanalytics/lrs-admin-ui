@@ -1,6 +1,6 @@
 (ns com.yetanalytics.lrs-admin-ui.views.login
   (:require
-   [re-frame.core :refer [subscribe dispatch-sync]]
+   [re-frame.core :refer [subscribe dispatch]]
    [clojure.pprint :refer [pprint]]
    [com.yetanalytics.lrs-admin-ui.functions :as fns]))
 
@@ -22,8 +22,8 @@
                 :class "form-control",
                 :name "username",
                 :value @(subscribe [:login/get-username])
-                :on-change #(dispatch-sync [:login/set-username
-                                            (fns/ps-event-val %)])
+                :on-change #(dispatch [:login/set-username
+                                       (fns/ps-event-val %)])
                 :id "username"}]]
       [:div {:class "form-group"}
        [:label {:class "field-label",
@@ -33,8 +33,8 @@
                 :class "form-control",
                 :name "password",
                 :value @(subscribe [:login/get-password])
-                :on-change #(dispatch-sync [:login/set-password
-                                            (fns/ps-event-val %)])
+                :on-change #(dispatch [:login/set-password
+                                       (fns/ps-event-val %)])
                 :id "password"}]]
 
       [:div {:class "login-error"}
@@ -48,7 +48,7 @@
         [:button {:class "login-button"
                   :on-click (fn [e]
                               (fns/ps-event e)
-                              (fns/authenticate))} "LOGIN"]]
+                              (dispatch [:session/authenticate]))} "LOGIN"]]
        [:div
         [:a {:class "btn-alternate-login", :href "#"} "No account? Create an account"]]
        [:p {:class "login-separator"} "OR"]

@@ -25,6 +25,7 @@
  (fn [_ _]
    (subscribe [:db/get-session]))
  (fn [session _]
+   (println session)
    (:token session)))
 
 (reg-sub

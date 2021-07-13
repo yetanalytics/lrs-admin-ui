@@ -817,12 +817,16 @@ table i {
   width: 100%;
 }
 
-.action-row .action-label {
+.action-label {
   display: table-cell;
   width: 50px;
 }
 
-.action-row .action-label:after {
+.action-label-wide {
+  @extend .action-label, .w-100-px;
+}
+
+.separator-after {
   content: '|';
   display: inline-block;
   vertical-align: top;
@@ -830,6 +834,9 @@ table i {
   margin-left: 24px;
 }
 
+.action-label:after, .action-label-wide:after {
+  @extend .separator-after;
+}
 
 .action-icon-list {
   display: table-cell;
@@ -886,6 +893,15 @@ table i {
 .action-icon-list li a.icon-close:hover {
   background: url('../images/icons/icon-close-black.svg') no-repeat left center;
 }
+
+.action-icon-list li a.icon-save {
+  background: url('../images/icons/icon-save-blue.svg') no-repeat left center;
+}
+
+.action-icon-list li a.icon-save:hover {
+  background: url('../images/icons/icon-save-black.svg') no-repeat left center;
+}
+
 
 /**************************************************
 # Credentials
@@ -961,6 +977,28 @@ table i {
 
 .collapse-sign.expanded:before {
   background-image: url('../images/icons/minus.svg');
+}
+
+
+/**************************************************
+# Roles
+**************************************************/
+
+ul.role-select {
+  margin: 0px;
+  padding: 0px;
+}
+
+ul.role-select li.role-checkbox {
+  vertical-align: top;
+  margin: 0px;
+  padding: 0px;
+  list-style-type: none;
+}
+
+.role-checkbox label {
+  padding-left: 4px;
+  font-size: .8em;
 }
 
 
