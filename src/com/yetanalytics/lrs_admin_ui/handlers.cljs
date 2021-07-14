@@ -65,8 +65,6 @@
  :login/success
  global-interceptors
  (fn [{:keys [db]} [_ res]]
-   (println res)
-   (println db)
    {:db (assoc-in db [::db/session :token] (:json-web-token res))
     ;;do loady stuff
     :dispatch [:credentials/load-credentials]}))
@@ -95,8 +93,50 @@
                  :on-failure      [:server-error]
                  :interceptors    [httpfn/add-jwt-interceptor]}}))
 
+(re-frame/reg-event-db
+ :credentials/update-credential
+ global-interceptors
+ (fn [db [_ idx credential]]
+   (assoc-in db [::db/credentials idx] credential)))
 
+(re-frame/reg-event-fx
+ :credentials/save-credential
+ global-interceptors
+ (fn [{:keys [db]} [_ credential]]
+   {:http-xhrio {:method          :put
+                 :uri             (httpfn/serv-uri "/admin/creds")
+                 :params          credential
+                 :format          (ajax/json-request-format)
+                 :response-format (ajax/json-response-format {:keywords? true})
+                 :on-success      [:credentials/load-credentials]
+                 :on-failure      [:server-error]
+                 :interceptors    [httpfn/add-jwt-interceptor]}}))
 
+(re-frame/reg-event-fx
+ :credentials/create-credential
+ global-interceptors
+ (fn [{:keys [db]} [_ credential]]
+   {:http-xhrio {:method          :post
+                 :uri             (httpfn/serv-uri "/admin/creds")
+                 :params          credential
+                 :format          (ajax/json-request-format)
+                 :response-format (ajax/json-response-format {:keywords? true})
+                 :on-success      [:credentials/load-credentials]
+                 :on-failure      [:server-error]
+                 :interceptors    [httpfn/add-jwt-interceptor]}}))
+
+(re-frame/reg-event-fx
+ :credentials/delete-credential
+ global-interceptors
+ (fn [{:keys [db]} [_ credential]]
+   {:http-xhrio {:method          :delete
+                 :uri             (httpfn/serv-uri "/admin/creds")
+                 :params          credential
+                 :format          (ajax/json-request-format)
+                 :response-format (ajax/json-response-format {:keywords? true})
+                 :on-success      [:credentials/load-credentials]
+                 :on-failure      [:server-error]
+                 :interceptors    [httpfn/add-jwt-interceptor]}}))
 
 (re-frame/reg-event-fx
  :server-error

@@ -672,7 +672,7 @@ table i {
 **************************************************/
 
 .lrs-main .content-right-wrapper {
-  @extend .col-xl-4, .col-lg-4, .col-md-12, .col-sm-12, .col-12;
+  @extend .col-xl-2, .col-lg-2, .col-md-12, .col-sm-12, .col-12;
   background-color: #137BCE;
 }
 
@@ -692,7 +692,7 @@ table i {
 }
 
 .lrs-main .main-sections {
-  @extend .col-xl-8, .col-lg-8, .col-md-12, .col-sm-12, .col-12;
+  @extend .col-xl-10, .col-lg-10, .col-md-12, .col-sm-12, .col-12;
   margin-top: 40px;
 }
 
@@ -823,7 +823,8 @@ table i {
 }
 
 .action-label-wide {
-  @extend .action-label, .w-100-px;
+  @extend .action-label;
+  width: 200px;
 }
 
 .separator-after {
@@ -902,6 +903,21 @@ table i {
   background: url('../images/icons/icon-save-black.svg') no-repeat left center;
 }
 
+a.icon-copy {
+  background: url('../images/icons/icon-copy-blue.svg') no-repeat left center;
+  display: inline-block;
+  padding: 4px 0 4px 24px;
+  color: #137bce;
+  width:24px;
+  height:24px;
+}
+
+a.icon-copy:hover {
+  background: url('../images/icons/icon-copy-black.svg') no-repeat left center;
+  color: black;
+}
+
+
 
 /**************************************************
 # Credentials
@@ -979,6 +995,10 @@ table i {
   background-image: url('../images/icons/minus.svg');
 }
 
+input.key-display {
+  font-size: .8em;
+  background-color: #E8E8E8;
+}
 
 /**************************************************
 # Roles

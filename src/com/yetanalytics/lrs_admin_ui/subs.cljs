@@ -25,7 +25,6 @@
  (fn [_ _]
    (subscribe [:db/get-session]))
  (fn [session _]
-   (println session)
    (:token session)))
 
 (reg-sub
@@ -44,7 +43,7 @@
  :login/get-password
  (fn [_ _]
    (subscribe [:db/get-login]))
- (fn [login _ ]
+ (fn [login _]
    (:password login)))
 
 (reg-sub
@@ -58,3 +57,10 @@
  :db/get-credentials
  (fn [db _]
    (::db/credentials db)))
+
+(reg-sub
+ :credentials/get-credential
+ (fn [_ _]
+   (subscribe [:db/get-credentials]))
+ (fn [credentials [_ idx]]
+   (get-in credentials [idx])))
