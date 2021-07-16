@@ -36,9 +36,16 @@
 (s/def ::credentials
   (s/every ::credential))
 
+(s/def :browser/content (s/nilable string?))
+(s/def :browser/address (s/nilable string?))
+(s/def ::browser
+  (s/keys :req-un [:browser/content
+                   :browser/address]))
+
 (s/def ::db (s/keys :req [::session
                           ::credentials
-                          ::login]))
+                          ::login
+                          ::browser]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Continuous DB Validation

@@ -1,0 +1,185 @@
+nav.query {
+  display: grid;
+}
+
+nav.query > .json-map {
+  margin-left: 1em;
+  margin-bottom: 1em;
+  border: 1px solid rgba(0,0,0,.05);
+}
+
+label.query-toggle {
+  display: inline-block;
+  margin: .5em;
+}
+
+a.query-remove-link {
+  margin: .5em;
+}
+
+body > main {
+  height: 100%;
+}
+
+/* JSON-specific */
+
+.json-map {
+  display:grid;
+}
+
+.json-map > .json-map-entry:not(:last-child) {
+  border-bottom: 1px solid rgba(0,0,0,.05);
+}
+
+.json-array {
+  display:grid;
+  padding-left: .2em;
+}
+
+.json-array:not(.columnar) > * {
+  border-bottom: 1px solid rgba(0,0,0,.05);
+  border-top: 1px solid rgba(0,0,0,.05);
+  border-left: 1px solid rgba(0,0,0,.05);
+}
+
+.json-array:not(.columnar) > *:not(:first-child) {
+  margin-top: .1em;
+}
+
+.json-array:not(.columnar) > *:not(:last-child) {
+  margin-bottom: .1em;
+}
+
+.json-array:not(.columnar) > :last-child {
+  margin-bottom: .2em;
+}
+
+.json-array.columnar {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.json-array.columnar > :not(:last-child) {
+  border-right: 1px solid rgba(0,0,0,.05);
+}
+
+
+.json-array.columnar > .json-array-element {
+  padding: .5em;
+}
+
+
+
+.json-array-element {
+  display:grid;
+}
+
+.json-array-action {
+  display: grid;
+}
+
+
+.json-map-entry {
+  display:grid;
+  grid-template-columns: 1fr 12fr;
+}
+
+/* json-map-action shares layout styling with json-map-entry but contains actions */
+.json-map-action {
+  display:grid;
+  grid-template-columns: 1fr;
+  padding: .5em;
+}
+
+.json-map-entry-key {
+  padding: .5em;
+  background-color: rgba(0,0,0,.025);
+}
+
+.json-map-entry-key:after {
+  content: ":";
+}
+
+
+.json-map-entry-val {
+  border-left: 1px solid rgba(0,0,0,.05);
+  background-color: #eee;
+}
+
+/* leaf outer */
+
+.json-map-entry-val > .json-map {
+  margin-left: .2em;
+  margin-bottom: .2em;
+  border-left: 1px solid rgba(0,0,0,.05);
+  border-bottom: 1px solid rgba(0,0,0,.05);
+}
+
+.json-map-entry-val.scalar {
+  padding: .5em;
+}
+
+/* leaf inner */
+.json-scalar {
+  text-overflow: ellipsis;
+  display: inline;
+}
+
+/* truncation.. inline collapse with json in mind */
+/* expects a truncator input, preceded by label. Will hide the rest of the things except .no-truncate */
+label.truncator-label {
+  display:grid;
+  grid-template-columns: 1fr;
+  padding: .5em;
+  background-image: url(/images/icons/icon-expand-more.svg);
+  padding-left: 20px;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+
+input.truncator ~ :not(.no-truncate,label.truncator-label) {
+  display: none;
+}
+
+input.truncator:checked ~ :not(.no-truncate).json {
+  display: grid;
+}
+
+input.truncator:checked ~ label.truncator-label {
+  background-image: url(/images/icons/icon-expand-less.svg);
+  padding-left: 20px;
+  background-repeat: no-repeat;
+  color: #eee;
+}
+
+/* togglable */
+input.truncator-toggle ~ :not(.no-truncate,label.truncator-toggle-label) {
+  display: none;
+}
+
+input.truncator-toggle:checked ~ :not(.no-truncate,label.truncator-toggle-label) {
+  display: grid;
+}
+
+label.truncator-toggle-label:after {
+  padding-left: .2em;
+  content: "+";
+  display: inline-block;
+}
+
+.browser {
+  font-size: .8em;
+}
+
+.json-map-entry-key {
+  background-color: #11375C;
+  color: white;
+}
+
+/* extremely narrow selector to visually separate statement ids */
+.browser > .json-map > .json-map-entry > .json-map-entry-val > .json-array > .json-array-element > .json-map > .json-map-entry:first-child > .json-map-entry-key:first-child {
+  background-color: #137BCE;
+}
+
+.browser a:hover {
+  color: black;
+}

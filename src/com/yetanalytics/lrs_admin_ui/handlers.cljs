@@ -3,7 +3,8 @@
             [com.yetanalytics.lrs-admin-ui.db :as db]
             [day8.re-frame.http-fx]
             [com.yetanalytics.lrs-admin-ui.functions.http :as httpfn]
-            [ajax.core :as ajax]))
+            [ajax.core :as ajax]
+            [clojure.string :as s]))
 
 (def global-interceptors
   [db/check-spec-interceptor])
@@ -17,7 +18,9 @@
                             :token nil})
        (assoc ::db/login {:username "username"
                           :password "password"})
-       (assoc ::db/credentials []))))
+       (assoc ::db/credentials [])
+       (assoc ::db/browser {:content nil
+                            :address nil}))))
 
 (re-frame/reg-event-db
  :login/set-username
@@ -31,11 +34,37 @@
  (fn [db [_ password]]
    (assoc-in db [::db/login :password] password)))
 
-(re-frame/reg-event-db
+(re-frame/reg-event-fx
  :session/set-page
  global-interceptors
- (fn [db [_ page]]
-   (assoc-in db [::db/session :page] page)))
+ (fn [{:keys [db]} [_ page]]
+   (merge {:db (assoc-in db [::db/session :page] page)}
+          (when (= page :browser)
+            {:dispatch [:browser/load-xapi]}))))
+
+(re-frame/reg-event-fx
+ :browser/load-xapi
+ global-interceptors
+ (fn [_ [_ {:keys [path params]}]]
+   (let [xapi-url (httpfn/build-xapi-url path params)]
+     {:dispatch   [:browser/set-address xapi-url]
+      :http-xhrio {:method          :get
+                   :uri             xapi-url
+                   :response-format (ajax/text-response-format)
+                   :on-success      [:browser/load-stmts-success]
+                   :on-failure      [:server-error]
+                   :interceptors    [httpfn/format-html-interceptor]}})))
+
+(re-frame/reg-event-db
+ :browser/set-address
+ (fn [db [_ address]]
+   (assoc-in db [::db/browser :address] address)))
+
+(re-frame/reg-event-db
+ :browser/load-stmts-success
+ global-interceptors
+ (fn [db [_ response]]
+   (assoc-in db [::db/browser :content] response)))
 
 (re-frame/reg-event-db
  :session/set-token

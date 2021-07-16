@@ -64,3 +64,22 @@
    (subscribe [:db/get-credentials]))
  (fn [credentials [_ idx]]
    (get-in credentials [idx])))
+
+(reg-sub
+ :db/get-browser
+ (fn [db _]
+   (::db/browser db)))
+
+(reg-sub
+ :browser/get-content
+ (fn [_ _]
+   (subscribe [:db/get-browser]))
+ (fn [browser _]
+   (:content browser)))
+
+(reg-sub
+ :browser/get-address
+ (fn [_ _]
+   (subscribe [:db/get-browser]))
+ (fn [browser _]
+   (:address browser)))
