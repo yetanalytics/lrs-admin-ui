@@ -83,3 +83,10 @@
    (subscribe [:db/get-browser]))
  (fn [browser _]
    (:address browser)))
+
+(reg-sub
+ :browser/get-credential
+ (fn [_ _]
+   (subscribe [:db/get-browser]))
+ (fn [browser _]
+   (:credential browser)))

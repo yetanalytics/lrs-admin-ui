@@ -6,7 +6,7 @@
 
 
 ;;URL Manipulation
-(def server-host "https://localhost:8443")
+(def server-host "http://localhost:8080")
 
 (def default-xapi-path "/xapi/statements")
 
@@ -39,13 +39,19 @@
   (to-interceptor {:name "JWT Authentication Interceptor"
                    :request add-jwt}))
 
-;;Basic Auth for xAPI
+(defn make-basic-auth
+  [credential]
+  (let [unencoded (str (:api-key credential) ":" (:secret-key credential))]
+    (print unencoded)
+    (js/btoa unencoded)))
+
+;;Basic Auth and html format for xAPI
 (defn format-html [{:keys [headers] :as request}]
-  (do
-    (assoc request :headers
-           {"Accept" "text/html"
-            "Authorization" "Basic dXNlcm5hbWU6cGFzc3dvcmQ="
-            "X-Experience-API-Version" "1.0.3"})))
+  (assoc request :headers
+         {"Accept" "text/html"
+          "Authorization" (str "Basic " (make-basic-auth
+                                         @(subscribe [:browser/get-credential])))
+          "X-Experience-API-Version" "1.0.3"}))
 
 (def format-html-interceptor
   (to-interceptor {:name "HTML Interceptor"

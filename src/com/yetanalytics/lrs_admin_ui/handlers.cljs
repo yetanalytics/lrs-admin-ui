@@ -3,6 +3,7 @@
             [com.yetanalytics.lrs-admin-ui.db :as db]
             [day8.re-frame.http-fx]
             [com.yetanalytics.lrs-admin-ui.functions.http :as httpfn]
+            [com.yetanalytics.lrs-admin-ui.functions.storage :as stor]
             [ajax.core :as ajax]
             [clojure.string :as s]))
 
@@ -15,12 +16,13 @@
  (fn [db _]
    (-> db
        (assoc ::db/session {:page :credentials
-                            :token nil})
+                            :token (stor/get-item "lrs-jwt")})
        (assoc ::db/login {:username "username"
                           :password "password"})
        (assoc ::db/credentials [])
        (assoc ::db/browser {:content nil
-                            :address nil}))))
+                            :address nil
+                            :credential nil}))))
 
 (re-frame/reg-event-db
  :login/set-username
@@ -38,9 +40,7 @@
  :session/set-page
  global-interceptors
  (fn [{:keys [db]} [_ page]]
-   (merge {:db (assoc-in db [::db/session :page] page)}
-          (when (= page :browser)
-            {:dispatch [:browser/load-xapi]}))))
+   {:db (assoc-in db [::db/session :page] page)}))
 
 (re-frame/reg-event-fx
  :browser/load-xapi
@@ -66,11 +66,19 @@
  (fn [db [_ response]]
    (assoc-in db [::db/browser :content] response)))
 
-(re-frame/reg-event-db
+(re-frame/reg-fx
+ :store-token
+ (fn [token]
+   (if token
+     (stor/set-item! "lrs-jwt" token)
+     (stor/remove-item! "lrs-jwt"))))
+
+(re-frame/reg-event-fx
  :session/set-token
  global-interceptors
- (fn [db [_ token]]
-   (assoc-in db [::db/session :token] token)))
+ (fn [{:keys [db]} [_ token]]
+   {:db (assoc-in db [::db/session :token] token)
+    :store-token token}))
 
 (re-frame/reg-event-db
  :login/error
@@ -87,16 +95,14 @@
                  :format          (ajax/json-request-format)
                  :response-format (ajax/json-response-format {:keywords? true})
                  :params          @(re-frame/subscribe [:db/get-login])
-                 :on-success      [:login/success]
-                 :on-failure      [:login/failure]}}))
+                 :on-success      [:login/success-handler]
+                 :on-failure      [:login/login-failure]}}))
 
 (re-frame/reg-event-fx
- :login/success
+ :login/success-handler
  global-interceptors
- (fn [{:keys [db]} [_ res]]
-   {:db (assoc-in db [::db/session :token] (:json-web-token res))
-    ;;do loady stuff
-    :dispatch [:credentials/load-credentials]}))
+ (fn [{:keys [db]} [_ {:keys [json-web-token]}]]
+   {:dispatch [:session/set-token json-web-token]}))
 
 (re-frame/reg-event-db
  :session/login-failure
@@ -168,7 +174,17 @@
                  :interceptors    [httpfn/add-jwt-interceptor]}}))
 
 (re-frame/reg-event-fx
- :server-error
- (fn [{:keys [db]} [_ {:keys [body status]}]]
-   (println status)
-   (println body)))
+ :browser/update-credential
+ global-interceptors
+ (fn [{:keys [db]} [_ key]]
+   (let [credential (first (filter  #(= key (:api-key %))
+                                    @(re-frame/subscribe [:db/get-credentials])))]
+     (when credential
+       {:db (assoc-in db [::db/browser :credential] credential)
+        :dispatch [:browser/load-xapi]}))))
+
+ (re-frame/reg-event-fx
+  :server-error
+  (fn [{:keys [db]} [_ {:keys [body status]}]]
+    (println status)
+    (println body)))

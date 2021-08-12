@@ -16,3 +16,11 @@
   [e]
   (ps-event e)
   (.. e -target -value))
+
+(defn elide
+  "Given a string and a length will either return the string if less
+  than the length or will substr and add ellipses with the combined length"
+  [text len]
+  (if (> len (count text))
+    text
+    (str (subs text 0 (- len 3)) "...")))

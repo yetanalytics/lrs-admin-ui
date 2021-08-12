@@ -19,11 +19,24 @@
                                      :params (.-search elem)}]))))
 
 (defn browser []
-  (let [content @(subscribe [:browser/get-content])]
+  (let [content @(subscribe [:browser/get-content])
+        credentials @(subscribe [:db/get-credentials])]
     [:div {:class "left-content-wrapper"}
      [:h2 {:class "content-title"}
       "Data Browser"]
-     [:p (str "Current Query: " @(subscribe [:browser/get-address]))]
+     [:p
+      [:span
+       [:em "Credentials to Use: "]
+       [:select {:name (str "update_credential")
+                 :on-change #(dispatch [:browser/update-credential
+                                        (fns/ps-event-val %)])}
+        [:option "Choose a Credential to Browse"]
+        (map-indexed
+         (fn [idx credential]
+           [:option {:value (:api-key credential)} (fns/elide (:api-key credential) 20)])
+         credentials)]
+       ]]
+     [:p [:em (str "Current Query: " @(subscribe [:browser/get-address]))]]
      [:div {:class "browser"
             :on-click process-click
             "dangerouslySetInnerHTML" #js{:__html content}}]]))

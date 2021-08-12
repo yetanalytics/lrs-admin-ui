@@ -38,9 +38,14 @@
 
 (s/def :browser/content (s/nilable string?))
 (s/def :browser/address (s/nilable string?))
+(s/def :browser/credential (s/nilable
+                            (s/keys :req-un [:credential/api-key
+                                             :credential/secret-key
+                                             :credential/scopes])))
 (s/def ::browser
   (s/keys :req-un [:browser/content
-                   :browser/address]))
+                   :browser/address
+                   :browser/credential]))
 
 (s/def ::db (s/keys :req [::session
                           ::credentials
