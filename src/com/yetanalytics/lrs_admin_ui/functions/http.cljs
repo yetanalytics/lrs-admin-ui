@@ -41,9 +41,7 @@
 
 (defn make-basic-auth
   [credential]
-  (let [unencoded (str (:api-key credential) ":" (:secret-key credential))]
-    (print unencoded)
-    (js/btoa unencoded)))
+  (js/btoa (str (:api-key credential) ":" (:secret-key credential))))
 
 ;;Basic Auth and html format for xAPI
 (defn format-html [{:keys [headers] :as request}]
