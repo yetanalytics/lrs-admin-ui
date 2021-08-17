@@ -1,7 +1,6 @@
 (ns com.yetanalytics.lrs-admin-ui.subs
   (:require [re-frame.core :refer [reg-sub subscribe]]
-            [com.yetanalytics.lrs-admin-ui.db :as db]
-            [clojure.pprint :refer [pprint]]))
+            [com.yetanalytics.lrs-admin-ui.db :as db]))
 
 (reg-sub
  :db/get-db
