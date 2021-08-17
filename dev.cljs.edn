@@ -2,4 +2,9 @@
   :css-dirs ["resources/public/css"]
   :auto-testing true
   :auto-bundle :webpack }
-{:main com.yetanalytics.lrs-admin-ui.core}
+{:main com.yetanalytics.lrs-admin-ui.core
+ :install-deps true
+ :npm-deps {:bootstrap "^4.5.3",
+            :react "^16.13.1",
+            :react-copy-to-clipboard "^5.0.3",
+            :react-dom "^16.13.1"}}
