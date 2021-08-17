@@ -1,10 +1,10 @@
 .phony: clean
 
 clean:
-	rm -rf target
+	rm -rf target dist/*
 
 node_modules:
 	npm install
 
 dist/main.js: node_modules
-	clojure -M -m cljs.main -d dist -o "dist/main.js" -O advanced -c com.yetanalytics.lrs-admin-ui.core
+	clojure -M -m cljs.main -co prod.cljs.edn -c
