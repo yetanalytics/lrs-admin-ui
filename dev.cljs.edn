@@ -1,10 +1,18 @@
 ^{:watch-dirs ["src"]
   :css-dirs ["resources/public/css"]
   :auto-testing true
-  :auto-bundle :webpack }
+  :auto-bundle :webpack}
 {:main com.yetanalytics.lrs-admin-ui.core
  :install-deps true
- :npm-deps {:bootstrap "^4.5.3",
+ :npm-deps {;; These deps must match what is in src/deps.cljs
+            ;; The duplication with deps.cljs is not ideal
+            ;; but there isn't much to be done about it
+            :bootstrap "^4.5.3",
             :react "^16.13.1",
             :react-copy-to-clipboard "^5.0.3",
-            :react-dom "^16.13.1"}}
+            :react-dom "^16.13.1",
+
+            ;; These are dev-only deps
+            ;; They are not duplicated in other contexts
+            :webpack "^4.43.0",
+            :webpack-cli "^3.3.11"}}
