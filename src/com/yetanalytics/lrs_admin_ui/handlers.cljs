@@ -14,15 +14,15 @@
  :db/init
  global-interceptors
  (fn [db _]
-   (-> db
-       (assoc ::db/session {:page :credentials
-                            :token (stor/get-item "lrs-jwt")})
-       (assoc ::db/login {:username "username"
-                          :password "password"})
-       (assoc ::db/credentials [])
-       (assoc ::db/browser {:content nil
-                            :address nil
-                            :credential nil}))))
+   (merge db
+          {::db/session {:page :credentials
+                         :token (stor/get-item "lrs-jwt")}
+           ::db/login {:username "username"
+                       :password "password"}
+           ::db/credentials []
+           ::db/browser {:content nil
+                         :address nil
+                         :credential nil}})))
 
 (re-frame/reg-event-db
  :login/set-username
@@ -183,8 +183,8 @@
        {:db (assoc-in db [::db/browser :credential] credential)
         :dispatch [:browser/load-xapi]}))))
 
- (re-frame/reg-event-fx
-  :server-error
-  (fn [{:keys [db]} [_ {:keys [body status]}]]
-    (println status)
-    (println body)))
+(re-frame/reg-event-fx
+ :server-error
+ (fn [{:keys [db]} [_ {:keys [body status]}]]
+   (println status)
+   (println body)))
