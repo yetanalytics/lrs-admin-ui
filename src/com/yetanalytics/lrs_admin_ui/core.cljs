@@ -14,10 +14,12 @@
 
 (defn mount-app-element []
   (when-let [el (gdom/getElement "app")]
-    (dispatch-sync [:db/init])
     (mount el)))
 
-(mount-app-element)
+(defonce init
+  (do
+    (dispatch-sync [:db/init])
+    (mount-app-element)))
 
 (defn ^:after-load on-reload []
   (mount-app-element))
