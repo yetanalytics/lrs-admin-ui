@@ -10,13 +10,12 @@ Figwheel reagent+re-frame app that launches a UI with administrative LRS functio
 
 To get an interactive development environment run:
 
-    clojure -A:fig:build
+    make dev
+
+To build the stylesheets run:
+
+    make build-sass
 
 To clean all compiled files:
 
-    rm -rf target/public
-
-To create a production build run:
-
-	rm -rf target/public
-	clojure -A:fig:min
+    make clean

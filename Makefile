@@ -1,4 +1,4 @@
-.PHONY: clean dev
+.PHONY: clean dev build-sass
 
 clean:
 	rm -rf target *.log node_modules resources/public/css/style.css resources/public/css/style.css.map
