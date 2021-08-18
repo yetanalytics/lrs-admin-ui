@@ -9,7 +9,7 @@ node_modules:
 dev: 	node_modules
 	clojure -A:fig:build
 
-resources/public/css/style.css:
+resources/public/css/style.css: node_modules
 	clojure -A:build-sass
 
 build-sass: resources/public/css/style.css
