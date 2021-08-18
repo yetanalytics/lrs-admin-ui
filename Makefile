@@ -3,9 +3,13 @@
 clean:
 	rm -rf target *.log node_modules resources/public/css/style.css resources/public/css/style.css.map
 
-dev:
+node_modules:
 	npm install
-	clj -A:fig:build
 
-build-sass:
-	clj -A:build-sass
+dev: 	node_modules
+	clojure -A:fig:build
+
+resources/public/css/style.css:
+	clojure -A:build-sass
+
+build-sass: resources/public/css/style.css
