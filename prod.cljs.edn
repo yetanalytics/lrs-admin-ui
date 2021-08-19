@@ -1,3 +1,5 @@
 {:main com.yetanalytics.lrs-admin-ui.core
  :externs ["externs/react.ext.js"
-           "externs/react-dom.ext.js"]}
+           "externs/react-dom.ext.js"]
+ :language-out :es6
+ :infer-externs true}
