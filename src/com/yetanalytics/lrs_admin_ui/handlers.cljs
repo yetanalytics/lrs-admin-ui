@@ -13,16 +13,15 @@
 (re-frame/reg-event-db
  :db/init
  global-interceptors
- (fn [db _]
-   (merge db
-          {::db/session {:page :credentials
-                         :token (stor/get-item "lrs-jwt")}
-           ::db/login {:username "username"
-                       :password "password"}
-           ::db/credentials []
-           ::db/browser {:content nil
-                         :address nil
-                         :credential nil}})))
+ (fn [_ _]
+   {::db/session {:page :credentials
+                  :token (stor/get-item "lrs-jwt")}
+    ::db/login {:username "username"
+                :password "password"}
+    ::db/credentials []
+    ::db/browser {:content nil
+                  :address nil
+                  :credential nil}}))
 
 (re-frame/reg-event-db
  :login/set-username
