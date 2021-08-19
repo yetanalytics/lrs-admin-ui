@@ -1,0 +1,148 @@
+/*********************************************
+# Page Background
+*********************************************/
+.page-login {
+  @extend .d-flex, .align-items-center, .justify-content-center;
+  background: url(../images/Image-1.jpg);
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position-x: center;
+  background-position-y: center;
+  height: calc(100vh - 100px);
+  overflow-y: auto;
+}
+
+/*********************************************
+# Background Opacity
+*********************************************/
+.page-login .opacity-wrapper {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: calc(100vh - 100px);
+  background-color: black;
+  opacity: .5;
+  z-index: 1;
+}
+
+@media only screen and (max-width: 576px) {
+  .page-login .font-rem-80 {
+    font-size: .62rem;
+  }
+
+  .page-login label {
+    font-size: .85rem;
+    display: inline-block;
+    margin-bottom: .3rem !important;
+    margin-top: 0 !important;
+  }
+
+  .page-login .btn-alternate-login {
+    font-size: .85rem;
+  }
+}
+
+/*********************************************
+# Logo
+*********************************************/
+.page-login .logo-image img {
+  width: 100%;
+}
+
+/*********************************************
+# Logo
+*********************************************/
+.page-login h1 {
+  @extend .font-rama-regular, .fg-white, .font-50;
+  text-transform: uppercase;
+  margin: 36px 0 0 0;
+  padding: 0;
+  line-height: 1;
+}
+
+/*********************************************
+# Main Section
+*********************************************/
+.page-login .main-wrapper {
+  z-index: 2;
+  width: 25%;
+}
+
+.page-login .form-control {
+  border-radius: 1px;
+  padding: 20.5px;
+}
+
+
+@media only screen and (max-width: 1200px) {
+  .page-login .main-wrapper {
+    width: 30%;
+  }
+}
+
+@media only screen and (max-width: 1200px) {
+  .page-login .main-wrapper {
+    width: 40%;
+  }
+}
+
+@media only screen and (max-width: 768px) {
+  .page-login .main-wrapper {
+    width: 50%;
+  }
+}
+
+@media only screen and (max-width: 480px) {
+  .page-login .main-wrapper {
+    width: 70%;
+  }
+}
+/*********************************************
+*********************************************/
+.page-login .form-wrapper {
+  margin-top: 12px;
+}
+
+form#login-form {
+  @extend .text-white, .font-condensed;
+}
+
+form#login-form div.form-group:not(:first-child) {
+  @extend .mb-0;
+}
+
+.field-label {
+  @extend .mb-0, .mt-3;
+}
+
+.login-button-wrapper {
+  @extend .form-group, .text-center, .mt-3, .mb-5;
+}
+
+.btn-alternate-login {
+  @extend .fg-primary, .font-condensed-bold, .fg-white;
+}
+
+.login-separator {
+  @extend .fg-white, .m-2;
+}
+
+.login-button {
+  @extend .btn-custom, .btn-blue, .font-condensed-bold, .mb-5;
+}
+
+.login-error {
+  @extend .form-group, .text-right, .font-rem-80;
+  color: red;
+}
+
+
+/*********************************************
+# Login Button
+*********************************************/
+
+a:hover {
+  text-decoration: underline;
+  color: white;
+}

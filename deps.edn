@@ -3,7 +3,9 @@
         reagent                   {:mvn/version "1.1.0"
                                    :exclusions [cljsjs/react cljsjs/react-dom
                                                 cljsjs/react-dom-server]}
-        re-frame                  {:mvn/version "1.2.0"}}
+        re-frame                  {:mvn/version "1.2.0"}
+        day8.re-frame/http-fx     {:mvn/version "0.2.3"}
+        lambdaisland/uri          {:mvn/version "1.4.70"}}
  :paths ["src" "resources"]
  :aliases {:fig {:extra-deps
                   {com.bhauman/rebel-readline-cljs {:mvn/version "0.1.4"}
@@ -11,4 +13,6 @@
                  :extra-paths ["target" "test"]}
            :build {:main-opts ["-m" "figwheel.main" "-b" "dev" "-r"]}
            :min   {:main-opts ["-m" "figwheel.main" "-O" "advanced" "-bo" "dev"]}
-           :test  {:main-opts ["-m" "figwheel.main" "-co" "test.cljs.edn" "-m" "com.test-runner"]}}}
+           :test  {:main-opts ["-m" "figwheel.main" "-co" "test.cljs.edn" "-m" "com.test-runner"]}
+           :build-sass {:extra-deps {deraen/sass4clj {:mvn/version "0.3.1"}}
+                        :main-opts  ["-e" "(require,'sass4clj.core),(sass4clj.core/sass-compile-to-file,\"resources/sass/style.scss\",\"resources/public/css/style.css\",{:source-map,false,:source-paths,[\"node_modules\"]})"]}}}
