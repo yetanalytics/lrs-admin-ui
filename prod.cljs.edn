@@ -1,6 +1,3 @@
 {:main com.yetanalytics.lrs-admin-ui.core
- :optimizations :advanced
- :output-dir "dist"
- :out "dist/main.js"
  :externs ["externs/react.ext.js"
            "externs/react-dom.ext.js"]}

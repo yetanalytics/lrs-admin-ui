@@ -6,9 +6,8 @@ clean:
 node_modules:
 	npm install
 
-
 dist/main.js: node_modules
-	clojure -M -m cljs.main -co prod.cljs.edn -c
+	clojure -Mfig -m figwheel.main -O advanced -bo prod
 
 dev: 	node_modules
 	clojure -A:fig:build
