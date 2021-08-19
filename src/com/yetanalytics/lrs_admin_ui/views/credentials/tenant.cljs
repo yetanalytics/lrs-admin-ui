@@ -13,7 +13,7 @@
        [:span "Demo"]]
       [:div {:class "tenant-count-wrapper"}
        [:span {:class "fg-secondary"} "Number of Credentials: "]
-       [:span "2"]]]
+       [:span (count credentials)]]]
      [:div {:class "api-keys-table-header"} "API Key"]
      [:ol {:class "api-keys-list accordion"}
       ;;will repeat for each key

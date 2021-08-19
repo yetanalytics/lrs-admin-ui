@@ -10,6 +10,4 @@
     "Credentials Management"]
    ;;this will be looped for all tenants if tenant mode is enabled (third)
    [tenant]
-
-   #_[:div {:class "border-2 border-dashed my-5"}]
    ])
