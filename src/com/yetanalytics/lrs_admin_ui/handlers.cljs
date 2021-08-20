@@ -6,8 +6,7 @@
             [com.yetanalytics.lrs-admin-ui.functions.http :as httpfn]
             [com.yetanalytics.lrs-admin-ui.functions.storage :as stor]
             [ajax.core :as ajax]
-            [clojure.string :as s]
-            [clojure.pprint :refer [pprint]]))
+            [clojure.string :as s]))
 
 (def global-interceptors
   [db/check-spec-interceptor])
@@ -104,7 +103,6 @@
 (re-frame/reg-event-fx
  :server-error
  (fn [{:keys [db]} [_ {:keys [body status] :as response}]]
-   (print status)
    (cond
      (= status 401) {:dispatch [:session/set-token nil]})))
 
@@ -223,7 +221,6 @@
  :accounts/load-accounts
  global-interceptors
  (fn [_ _]
-   (println "loading accounts")
    {:http-xhrio {:method          :get
                  :uri             (httpfn/serv-uri "/admin/account")
                  :response-format (ajax/json-response-format {:keywords? true})
@@ -254,7 +251,6 @@
  :accounts/create-account
  global-interceptors
  (fn [_ _]
-   (println "creating new account")
    {:http-xhrio {:method          :post
                  :uri             (httpfn/serv-uri "/admin/account/create")
                  :response-format (ajax/json-response-format {:keywords? true})
