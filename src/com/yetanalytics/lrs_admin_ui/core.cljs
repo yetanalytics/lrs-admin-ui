@@ -8,6 +8,8 @@
    [re-frame.core :refer [dispatch-sync]]
    [com.yetanalytics.lrs-admin-ui.views :as views]))
 
+(set! *warn-on-infer* true)
+
 (defn mount [el]
   (println "Rendering View")
   (rdom/render [views/app] el))
