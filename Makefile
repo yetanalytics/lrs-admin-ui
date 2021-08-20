@@ -14,16 +14,16 @@ resources/public/css/style.css: node_modules
 
 build-sass: resources/public/css/style.css
 
-target/public/cljs-out/prod-main.js: node_modules
+target/public/cljs-out/prod/main_bundle.js: node_modules
 	clojure -Mfig -m figwheel.main -O advanced -bo prod
 
 target/bundle/index.html:
 	mkdir -p target/bundle
 	cp resources/public/index_prod.html target/bundle/index.html
 
-target/bundle/main.js: target/public/cljs-out/prod-main.js
+target/bundle/main.js: target/public/cljs-out/prod/main_bundle.js
 	mkdir -p target/bundle
-	cp target/public/cljs-out/prod-main.js target/bundle/main.js
+	cp target/public/cljs-out/prod/main_bundle.js target/bundle/main.js
 
 target/bundle/css: build-sass
 	mkdir -p target/bundle
