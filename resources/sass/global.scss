@@ -616,6 +616,27 @@ main:not(.page-list-manager) table tbody tr:nth-child(even) {
 }
 
 /**************************************************
+# Nice Inputs
+**************************************************/
+
+input.round{
+  -webkit-border-radius: 20px;
+  -moz-border-radius: 20px;
+  border-radius: 20px;
+  border: 2px solid #137BCE;
+  color: #11375C !important;
+  width: 250px;
+  height: 30px;
+  padding-left: 10px;
+}
+
+input:focus.round {
+  outline: none;
+  border: 2px solid #11375C;
+  color: #2d9fd9;
+}
+
+/**************************************************
 # Left Align
 **************************************************/
 .container-fluid {
@@ -1040,7 +1061,7 @@ input.key-display {
 }
 
 input.new-account {
-  padding-left: 5px;
+  padding-left: 15px;
   margin-left: 10px;
 
 }

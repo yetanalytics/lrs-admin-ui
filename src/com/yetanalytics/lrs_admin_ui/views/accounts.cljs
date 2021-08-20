@@ -1,7 +1,9 @@
 (ns com.yetanalytics.lrs-admin-ui.views.accounts
   (:require
+   [reagent.core :as r]
    [re-frame.core :refer [subscribe dispatch]]
-   [com.yetanalytics.lrs-admin-ui.functions :as fns]))
+   [com.yetanalytics.lrs-admin-ui.functions :as fns]
+   [com.yetanalytics.lrs-admin-ui.functions.copy :refer [copy-text]]))
 
 
 
@@ -19,26 +21,42 @@
              :class "icon-delete"} "Delete"]]]]]]])
 
 (defn new-account []
-  (let [new-account @(subscribe [:db/get-new-account])]
-    [:div {:class "create-account-inputs"}
-     [:div {:class "row"}
-      [:label {:for "new-username-input"} "Username:"]
-      [:input {:value (:username new-account)
-               :class "new-account"
-               :id "new-username-input"
-               :on-change #(dispatch [:new-account/set-username (fns/ps-event-val %)])}]]
-     [:div {:class "row"}
-      [:label {:for "new-password-input"} "Password:"]
-      [:input {:value (:password new-account)
-               :class "new-account"
-               :id "new-password-input"
-               :on-change #(dispatch [:new-account/set-password (fns/ps-event-val %)])}]]
-     [:div {:class "row"}
-      [:ul {:class "action-icon-list"}
-       [:li
-        [:a {:href "#!",
-             :on-click #(dispatch [:new-account/generate-password])
-             :class "icon-gen"} [:i "Generate Password"]]]]]]))
+  (let [hide-pass (r/atom true)]
+    (fn []
+      (let [new-account @(subscribe [:db/get-new-account])]
+        [:div {:class "create-account-inputs"}
+         [:div {:class "row"}
+          [:label {:for "new-username-input"} "Username:"]
+          [:input {:value (:username new-account)
+                   :class "new-account round"
+                   :id "new-username-input"
+                   :on-change #(dispatch [:new-account/set-username (fns/ps-event-val %)])}]]
+         [:div {:class "row pt-2"}
+          [:label {:for "new-password-input"} "Password:"]
+          [:input (cond-> {:value (:password new-account)
+                           :class "new-account round"
+                           :id "new-password-input"
+                           :on-change #(dispatch [:new-account/set-password
+                                                  (fns/ps-event-val %)])}
+                    @hide-pass (merge {:type "password"}))]
+          [:ul {:class "action-icon-list"}
+           [:li
+            [:a {:href "#!",
+                 :class "icon-secret pointer"
+                 :on-click #(swap! hide-pass not)}
+             (str (cond
+                    @hide-pass "Show"
+                    :else "Hide"))]]
+           [:li
+            [copy-text
+             {:text (:password new-account)}
+             [:a {:class "icon-copy pointer"} "Copy"]]]]]
+         [:div {:class "row"}
+          [:ul {:class "action-icon-list"}
+           [:li
+            [:a {:href "#!",
+                 :on-click #(dispatch [:new-account/generate-password])
+                 :class "icon-gen"} [:i "Generate Password"]]]]]]))))
 
 (defn accounts []
   (dispatch [:accounts/load-accounts])
