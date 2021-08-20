@@ -418,6 +418,10 @@ p {
   border-color: #A8A8A8;
 }
 
+.h-divider {
+  @extend .border-2, .border-dashed, .my-5;
+}
+
 /**************************************************
 # Banner Menu Section
 **************************************************/
@@ -779,16 +783,6 @@ table i {
   margin-left: 32px;
 }
 
-.accordion > li:before {
-  content: counter(inst);
-  font-family: RamaGothicERegular;
-  font-size: 28px;
-  display: inline-block;
-  position: absolute;
-  left: -24px;
-  top: 6px;
-}
-
 .accordion .accordion-container .accordion-header {
   background-color: #E8E8E8;
   padding: 8px 18px 6px 18px;
@@ -903,6 +897,14 @@ table i {
   background: url('../images/icons/icon-save-black.svg') no-repeat left center;
 }
 
+.action-icon-list li a.icon-gen {
+  background: url('../images/icons/icon-gen-blue.svg') no-repeat left center;
+}
+
+.action-icon-list li a.icon-gen:hover {
+  background: url('../images/icons/icon-gen-black.svg') no-repeat left center;
+}
+
 a.icon-copy {
   background: url('../images/icons/icon-copy-blue.svg') no-repeat left center;
   display: inline-block;
@@ -957,7 +959,15 @@ a.icon-copy:hover {
   @extend .mb-2;
 }
 
-
+.api-keys-list.accordion > li:before {
+  content: counter(inst);
+  font-family: RamaGothicERegular;
+  font-size: 28px;
+  display: inline-block;
+  position: absolute;
+  left: -24px;
+  top: 6px;
+}
 
 .secret-key-label {
   @extend .action-label, .w-100-px;
@@ -999,6 +1009,42 @@ input.key-display {
   font-size: .8em;
   background-color: #E8E8E8;
 }
+
+/**************************************************
+# Accounts
+***************************************************/
+
+.accounts-table-header {
+  @extend .api-keys-table-header;
+}
+
+.accounts-table-actions {
+  @extend .api-keys-table-actions;
+}
+
+.accounts-list {
+  @extend .api-keys-list;
+}
+
+.account-col {
+  @extend .api-key-col;
+}
+
+.account-col-header {
+  @extend .api-key-col-header;
+}
+
+.account-row {
+  @extend .api-key-row;
+  cursor: auto;
+}
+
+input.new-account {
+  padding-left: 5px;
+  margin-left: 10px;
+
+}
+
 
 /**************************************************
 # Roles
