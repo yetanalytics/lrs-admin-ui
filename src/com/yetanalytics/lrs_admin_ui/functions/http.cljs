@@ -3,7 +3,8 @@
             [clojure.pprint    :refer [pprint]]
             [ajax.interceptors :refer [to-interceptor]]
             [lambdaisland.uri  :as uri]
-            [goog.string       :refer [format]]))
+            [goog.string       :refer [format]]
+            goog.string.format))
 
 
 ;;URL Manipulation
