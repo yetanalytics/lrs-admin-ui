@@ -19,3 +19,7 @@ To build the stylesheets run:
 To clean all compiled files:
 
     make clean
+
+To compile everything for production to `target/bundle`:
+
+    make bundle
