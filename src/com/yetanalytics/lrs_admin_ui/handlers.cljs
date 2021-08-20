@@ -17,7 +17,7 @@
  (fn [_ _]
    {::db/session {:page :credentials
                   :token (stor/get-item "lrs-jwt")
-                  :username nil}
+                  :username (stor/get-item "username")}
     ::db/login {:username "username"
                 :password "password"}
     ::db/credentials []
@@ -66,23 +66,31 @@
  :login/success-handler
  global-interceptors
  (fn [{:keys [db]} [_ {:keys [json-web-token]}]]
-   {:dispatch [:session/set-token json-web-token]
-    :db (assoc-in db [::db/session :username]
-                  @(re-frame/subscribe [:login/get-username]))}))
+   (let [username @(re-frame/subscribe [:login/get-username])]
+     {:fx [[:dispatch [:session/set-token json-web-token]]
+           [:dispatch [:session/set-username username]]]})))
+
+(re-frame/reg-event-fx
+ :session/set-username
+ global-interceptors
+ (fn [{:keys [db]} [_ username]]
+   {:db (assoc-in db [::db/session :username]
+                  username)
+    :session/store ["username" username]}))
 
 (re-frame/reg-fx
- :store-token
- (fn [token]
-   (if token
-     (stor/set-item! "lrs-jwt" token)
-     (stor/remove-item! "lrs-jwt"))))
+ :session/store
+ (fn [[key value]]
+   (if value
+     (stor/set-item! key value)
+     (stor/remove-item! key))))
 
 (re-frame/reg-event-fx
  :session/set-token
  global-interceptors
  (fn [{:keys [db]} [_ token]]
    {:db (assoc-in db [::db/session :token] token)
-    :store-token token}))
+    :session/store ["lrs-jwt" token]}))
 
 (re-frame/reg-event-db
  :session/login-failure
@@ -105,6 +113,12 @@
  (fn [{:keys [db]} [_ {:keys [body status] :as response}]]
    (cond
      (= status 401) {:dispatch [:session/set-token nil]})))
+
+(re-frame/reg-event-fx
+ :session/logout
+ (fn [_ _]
+   {:fx [[:dispatch [:session/set-token nil]]
+         [:dispatch [:session/set-username nil]]]}))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -17,5 +17,5 @@
            :href "#"
            :on-click (fn [e]
                        (fns/ps-event e)
-                       (dispatch-sync [:session/set-token nil]))}
+                       (dispatch-sync [:session/logout]))}
        "Logout"]]]]])
