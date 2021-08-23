@@ -14,4 +14,5 @@
   [:div {:class "banner-link-box"}
    [:ul
     [menu-item {:name "Credentials Management" :page :credentials}]
+    [menu-item {:name "Account Management" :page :accounts}]
     [menu-item {:name "Statement Browser" :page :browser}]]])

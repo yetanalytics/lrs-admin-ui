@@ -24,3 +24,13 @@
   (if (> len (count text))
     text
     (str (subs text 0 (- len 3)) "...")))
+
+(defn pass-gen
+  "Given length generate a password with random letters numbers and specials"
+  [n]
+  (let [chars (map char (concat (range 48 57)
+                                (range 97 122)
+                                (range 65 90)
+                                [\! \? \#]))
+        password (take n (repeatedly #(rand-nth chars)))]
+    (reduce str password)))

@@ -7,19 +7,20 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (s/def :session/page keyword?)
-(s/def :session/token
-  (s/nilable string?))
+(s/def :session/token (s/nilable string?))
+(s/def :session/username (s/nilable string?))
 (s/def ::session
   (s/keys :req-un [:session/page
-                   :session/token]))
+                   :session/token
+                   :session/username]))
 
 (s/def :login/username (s/nilable string?))
 (s/def :login/password (s/nilable string?))
 (s/def :login/error (s/nilable string?))
 (s/def ::login
-  (s/keys :req-un [:session/username
-                   :session/password]
-          :opt-un [:session/error]))
+  (s/keys :req-un [:login/username
+                   :login/password]
+          :opt-un [:login/error]))
 
 
 (s/def :credential/api-key string?)
@@ -36,6 +37,22 @@
 (s/def ::credentials
   (s/every ::credential))
 
+(s/def :new-account/username (s/nilable string?))
+(s/def :new-account/password (s/nilable string?))
+
+(s/def ::new-account
+  (s/keys :req-un [:new-account/username
+                   :new-account/password]))
+
+(s/def :account/username (s/nilable string?))
+(s/def :account/account-id string?)
+
+(s/def ::account
+  (s/keys :req-un [:account/account-id
+                   :account/username]))
+
+(s/def ::accounts (s/every ::account))
+
 (s/def :browser/content (s/nilable string?))
 (s/def :browser/address (s/nilable string?))
 (s/def :browser/credential (s/nilable
@@ -50,7 +67,8 @@
 (s/def ::db (s/keys :req [::session
                           ::credentials
                           ::login
-                          ::browser]))
+                          ::browser
+                          ::accounts]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Continuous DB Validation

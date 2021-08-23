@@ -27,9 +27,26 @@
    (:token session)))
 
 (reg-sub
+ :session/get-username
+ (fn [_ _]
+   (subscribe [:db/get-session]))
+ (fn [session _]
+   (:username session)))
+
+(reg-sub
  :db/get-login
  (fn [db _]
    (::db/login db)))
+
+(reg-sub
+ :db/get-accounts
+ (fn [db _]
+   (::db/accounts db)))
+
+(reg-sub
+ :db/get-new-account
+ (fn [db _]
+   (::db/new-account db)))
 
 (reg-sub
  :login/get-username
