@@ -5,8 +5,6 @@
    [com.yetanalytics.lrs-admin-ui.functions :as fns]
    [com.yetanalytics.lrs-admin-ui.functions.copy :refer [copy-text]]))
 
-
-
 (defn account [{:keys [username account-id]}]
   [:li {:class "mb-2"}
    [:div {:class "accordion-container"}
