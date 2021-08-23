@@ -305,4 +305,4 @@
  :new-account/generate-password
  global-interceptors
  (fn [_ _]
-   {:dispatch [:new-account/set-password (fns/pass-gen 10)]}))
+   {:dispatch [:new-account/set-password (fns/pass-gen 12)]}))
