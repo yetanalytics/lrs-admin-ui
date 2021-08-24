@@ -34,6 +34,12 @@
    (:username session)))
 
 (reg-sub
+ :notification/get-notification
+ (fn [db _]
+   (::db/notification db)))
+
+
+(reg-sub
  :db/get-login
  (fn [db _]
    (::db/login db)))
@@ -61,13 +67,6 @@
    (subscribe [:db/get-login]))
  (fn [login _]
    (:password login)))
-
-(reg-sub
- :login/get-error
- (fn [_ _]
-   (subscribe [:db/get-login]))
- (fn [login _]
-   (:error login)))
 
 (reg-sub
  :db/get-credentials

@@ -36,9 +36,6 @@
                 :on-change #(dispatch [:login/set-password
                                        (fns/ps-event-val %)])
                 :id "password"}]]
-
-      [:div {:class "login-error"}
-       @(subscribe [:login/get-error])]
       ;;To revisit when functionality is possible
       #_[:div {:class "form-group text-right", :id "forgot-pwd"}
        [:a {:class "fg-primary font-rem-80", :href "#"} "Forgot your password? "

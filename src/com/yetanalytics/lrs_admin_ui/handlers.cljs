@@ -6,7 +6,9 @@
             [com.yetanalytics.lrs-admin-ui.functions.http :as httpfn]
             [com.yetanalytics.lrs-admin-ui.functions.storage :as stor]
             [ajax.core :as ajax]
-            [clojure.string :as s]))
+            [clojure.string :as s]
+            [goog.string       :refer [format]]
+            goog.string.format))
 
 (def global-interceptors
   [db/check-spec-interceptor])
@@ -44,12 +46,6 @@
  (fn [db [_ password]]
    (assoc-in db [::db/login :password] password)))
 
-(re-frame/reg-event-db
- :login/error
- global-interceptors
- (fn [db [_ error]]
-   (assoc-in db [::db/login :error] error)))
-
 (re-frame/reg-event-fx
  :session/authenticate
  global-interceptors
@@ -60,7 +56,7 @@
                  :response-format (ajax/json-response-format {:keywords? true})
                  :params          @(re-frame/subscribe [:db/get-login])
                  :on-success      [:login/success-handler]
-                 :on-failure      [:login/login-failure]}}))
+                 :on-failure      [:server-error]}}))
 
 (re-frame/reg-event-fx
  :login/success-handler
@@ -92,12 +88,6 @@
    {:db (assoc-in db [::db/session :token] token)
     :session/store ["lrs-jwt" token]}))
 
-(re-frame/reg-event-db
- :session/login-failure
- global-interceptors
- (fn [db [_ {:keys [body]}]]
-   (assoc-in db [::db/login :error] body)))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; General
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -110,15 +100,29 @@
 
 (re-frame/reg-event-fx
  :server-error
- (fn [{:keys [db]} [_ {:keys [body status] :as response}]]
-   (cond
-     (= status 401) {:dispatch [:session/set-token nil]})))
+ (fn [{:keys [db]} [_ {:keys [response status] :as response}]]
+   (println response)
+   (let [fx (cond-> [[:dispatch [:notification/notify true (:error response)]]]
+              (= status 401) (merge [:dispatch [:session/set-token nil]]))]
+     {:fx fx})))
 
 (re-frame/reg-event-fx
  :session/logout
  (fn [_ _]
    {:fx [[:dispatch [:session/set-token nil]]
          [:dispatch [:session/set-username nil]]]}))
+
+(re-frame/reg-event-fx
+ :notification/notify
+ (fn [{:keys [db]} [_ error msg]]
+   {:db (assoc db ::db/notification {:visible? true
+                                     :error? error
+                                     :msg msg})}))
+
+(re-frame/reg-event-fx
+ :notification/hide
+ (fn [{:keys [db]} [_ _]]
+   {:db (assoc-in db [::db/notification :visible?] false)}))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -196,9 +200,18 @@
                  :params          credential
                  :format          (ajax/json-request-format)
                  :response-format (ajax/json-response-format {:keywords? true})
-                 :on-success      [:credentials/load-credentials]
+                 :on-success      [:credentials/save-success]
                  :on-failure      [:server-error]
                  :interceptors    [httpfn/add-jwt-interceptor]}}))
+
+(re-frame/reg-event-fx
+ :credentials/save-success
+ global-interceptors
+ (fn [{:keys [db]} [_ {:keys [api-key]}]]
+   {:fx [[:dispatch [:credentials/load-credentials]]
+         [:dispatch [:notification/notify false
+                     (format "Updated credential with key: %s"
+                             (fns/elide api-key 10))]]]}))
 
 (re-frame/reg-event-fx
  :credentials/create-credential
@@ -209,9 +222,18 @@
                  :params          credential
                  :format          (ajax/json-request-format)
                  :response-format (ajax/json-response-format {:keywords? true})
-                 :on-success      [:credentials/load-credentials]
+                 :on-success      [:credentials/create-success]
                  :on-failure      [:server-error]
                  :interceptors    [httpfn/add-jwt-interceptor]}}))
+
+(re-frame/reg-event-fx
+ :credentials/create-success
+ global-interceptors
+ (fn [{:keys [db]} [_ {:keys [api-key]}]]
+   {:fx [[:dispatch [:credentials/load-credentials]]
+         [:dispatch [:notification/notify false
+                     (format "Created credential with key: %s"
+                             (fns/elide api-key 10))]]]}))
 
 (re-frame/reg-event-fx
  :credentials/delete-credential
@@ -222,9 +244,19 @@
                  :params          credential
                  :format          (ajax/json-request-format)
                  :response-format (ajax/json-response-format {:keywords? true})
-                 :on-success      [:credentials/load-credentials]
+                 :on-success      [:credentials/delete-success]
                  :on-failure      [:server-error]
                  :interceptors    [httpfn/add-jwt-interceptor]}}))
+
+(re-frame/reg-event-fx
+ :credentials/delete-success
+ global-interceptors
+ (fn [{:keys [db]} [_ {:keys [api-key]}]]
+   {:fx [[:dispatch [:credentials/load-credentials]]
+         [:dispatch [:notification/notify false
+                     (format "Deleted credential with key: %s"
+                             (fns/elide api-key 10))]]]}))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Account Management
