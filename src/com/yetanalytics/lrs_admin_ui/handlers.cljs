@@ -149,7 +149,7 @@
                                      :msg msg})
     ;;set a timer to clear it eventually
     :debounce-dispatch-later {:key :notification-hide
-                              :ms 3000
+                              :ms 4000
                               :dispatch [:notification/hide]}}))
 
 (re-frame/reg-event-fx
