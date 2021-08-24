@@ -101,23 +101,25 @@
 (re-frame/reg-event-fx
  :server-error
  (fn [{:keys [db]} [_ {:keys [response status] :as response}]]
-   (println response)
-   (let [fx (cond-> [[:dispatch [:notification/notify true (:error response)]]]
-              (= status 401) (merge [:dispatch [:session/set-token nil]]))]
-     {:fx fx})))
+   ;;extract the error and present it in a notification. If 401, log out.
+   {:fx (cond-> [[:dispatch [:notification/notify true (:error response)]]]
+          (= status 401) (merge [:dispatch [:session/set-token nil]]))}))
 
 (re-frame/reg-event-fx
  :session/logout
  (fn [_ _]
    {:fx [[:dispatch [:session/set-token nil]]
-         [:dispatch [:session/set-username nil]]]}))
+         [:dispatch [:session/set-username nil]]
+         [:dispatch [:notification/notify false "You have logged out."]]]}))
 
 (re-frame/reg-event-fx
  :notification/notify
  (fn [{:keys [db]} [_ error msg]]
    {:db (assoc db ::db/notification {:visible? true
                                      :error? error
-                                     :msg msg})}))
+                                     :msg msg})
+    ;;set a timer to clear it eventually
+    :dispatch-later {:ms 3000 :dispatch [:notification/hide]}}))
 
 (re-frame/reg-event-fx
  :notification/hide
@@ -283,9 +285,17 @@
                  :response-format (ajax/json-response-format {:keywords? true})
                  :params          {:account-id account-id}
                  :format          (ajax/json-request-format)
-                 :on-success      [:accounts/load-accounts]
+                 :on-success      [:accounts/delete-success]
                  :on-failure      [:server-error]
                  :interceptors    [httpfn/add-jwt-interceptor]}}))
+
+(re-frame/reg-event-fx
+ :accounts/delete-success
+ global-interceptors
+ (fn [{:keys [db]} [_ {:keys [account-id]}]]
+   {:fx [[:dispatch [:accounts/load-accounts]]
+         [:dispatch [:notification/notify false
+                     (format "Deleted account with id: %s" account-id)]]]}))
 
 (re-frame/reg-event-db
  :accounts/set-accounts
@@ -302,7 +312,7 @@
                  :response-format (ajax/json-response-format {:keywords? true})
                  :params          @(re-frame/subscribe [:db/get-new-account])
                  :format          (ajax/json-request-format)
-                 :on-success      [:new-account/create-success]
+                 :on-success      [:accounts/create-success]
                  :on-failure      [:server-error]
                  :interceptors    [httpfn/add-jwt-interceptor]}}))
 
@@ -313,13 +323,15 @@
    (assoc db ::db/new-account new-account)))
 
 (re-frame/reg-event-fx
- :new-account/create-success
+ :accounts/create-success
  global-interceptors
- (fn [_ _]
+ (fn [_ [_ {:keys [account-id]}]]
    {:fx [[:dispatch [:accounts/load-accounts]]
          [:dispatch [:new-account/set-new-account
                      {:username nil
-                      :password nil}]]]}))
+                      :password nil}]]
+         [:dispatch [:notification/notify false
+                     (format "Created account with id: %s" account-id)]]]}))
 
 (re-frame/reg-event-db
  :new-account/set-username

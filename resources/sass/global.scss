@@ -776,11 +776,17 @@ table i {
   top: 0px;
   left: 0px;
   width: 100%;
-  height: 35px;
-  opacity: 0.9;
+  height: 0px;
+  opacity: 0;
   text-align: center;
   z-index: 9999;
-  border-radius: 0px
+  border-radius: 0px;
+  transition: opacity 1s, height 1s;
+}
+
+.alert-bar.visible {
+  opacity: 0.9;
+  height: 35px;
 }
 
 .alert-bar.error {
@@ -798,7 +804,14 @@ table i {
 }
 
 span.close-alert {
+  @extend .pointer;
   padding-left: 10px;
+  opacity: inherit;
+}
+
+img.close-alert {
+  height: 18px;
+  width: 18px;
 }
 
 

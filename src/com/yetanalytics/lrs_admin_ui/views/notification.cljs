@@ -7,17 +7,16 @@
 (defn alert-bar []
   (let [{:keys [error? visible? msg]}
         @(subscribe [:notification/get-notification])]
-    (when visible?
-      [:div {:class (cond-> "alert-bar"
-                      error? (str " error"))}
+    [:div {:class (cond-> "alert-bar"
+                    error? (str " error")
+                    visible? (str " visible"))}
+     (when visible?
        [:p {:class "alert"}
         msg
         [:span {:class "close-alert pointer"
                 :on-click #(dispatch [:notification/hide])}
-         [:img {:src (format "/images/icons/icon-close-%s.svg"
+         [:img {:class "close-alert"
+                :src (format "/images/icons/icon-close-%s.svg"
                              (cond
                                error? "black"
-                               :else "white"))
-                :height "18px"
-                :width "18px"
-                :class "close-alert"}]]]])))
+                               :else "white"))}]]])]))
