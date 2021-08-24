@@ -1,13 +1,14 @@
 (ns com.yetanalytics.lrs-admin-ui.handlers
-  (:require [re-frame.core  :as re-frame]
-            [com.yetanalytics.lrs-admin-ui.db :as db]
+  (:require [re-frame.core                                   :as re-frame]
+            [reagent.core                                    :as r]
+            [com.yetanalytics.lrs-admin-ui.db                :as db]
             [day8.re-frame.http-fx]
-            [com.yetanalytics.lrs-admin-ui.functions :as fns]
-            [com.yetanalytics.lrs-admin-ui.functions.http :as httpfn]
+            [com.yetanalytics.lrs-admin-ui.functions         :as fns]
+            [com.yetanalytics.lrs-admin-ui.functions.http    :as httpfn]
             [com.yetanalytics.lrs-admin-ui.functions.storage :as stor]
-            [ajax.core :as ajax]
-            [clojure.string :as s]
-            [goog.string       :refer [format]]
+            [ajax.core                                       :as ajax]
+            [clojure.string                                  :as s]
+            [goog.string                                     :refer [format]]
             goog.string.format))
 
 (def global-interceptors
@@ -28,7 +29,10 @@
                       :password nil}
     ::db/browser {:content nil
                   :address nil
-                  :credential nil}}))
+                  :credential nil}
+    ::db/notification {:visible? false
+                       :error? false
+                       :msg nil}}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Login / Auth
@@ -112,6 +116,31 @@
          [:dispatch [:session/set-username nil]]
          [:dispatch [:notification/notify false "You have logged out."]]]}))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Notifications / Alert Bar
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Unfortunately need a stateful custom Effect for hiding the alert after a bit.
+;; 're-frame/dispatch-later' mostly works but if two notifications are too close
+;; the first one's hide dispatch will prematurely close the second one since the
+;; dispatches are unaware of each other
+(defonce dispatch-timeouts (r/atom {}))
+
+;; inspired by https://purelyfunctional.tv/guide/timeout-effect-in-re-frame/
+(re-frame/reg-fx
+ :debounce-dispatch-later
+ (fn [{:keys [key dispatch ms]}]
+   (when-some [existing (get @dispatch-timeouts key)]
+     (js/clearTimeout existing)
+     (swap! dispatch-timeouts dissoc key))
+   (when (some? dispatch)
+     (swap! dispatch-timeouts assoc key
+            (js/setTimeout
+             (fn []
+               (re-frame/dispatch dispatch))
+             ms)))))
+
+
 (re-frame/reg-event-fx
  :notification/notify
  (fn [{:keys [db]} [_ error msg]]
@@ -119,7 +148,9 @@
                                      :error? error
                                      :msg msg})
     ;;set a timer to clear it eventually
-    :dispatch-later {:ms 3000 :dispatch [:notification/hide]}}))
+    :debounce-dispatch-later {:key :notification-hide
+                              :ms 3000
+                              :dispatch [:notification/hide]}}))
 
 (re-frame/reg-event-fx
  :notification/hide

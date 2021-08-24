@@ -75,7 +75,8 @@
                           ::credentials
                           ::login
                           ::browser
-                          ::accounts]))
+                          ::accounts
+                          ::notification]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Continuous DB Validation
