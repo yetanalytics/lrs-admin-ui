@@ -16,11 +16,9 @@
 
 (s/def :login/username (s/nilable string?))
 (s/def :login/password (s/nilable string?))
-(s/def :login/error (s/nilable string?))
 (s/def ::login
   (s/keys :req-un [:login/username
-                   :login/password]
-          :opt-un [:login/error]))
+                   :login/password]))
 
 
 (s/def :credential/api-key string?)
@@ -59,6 +57,7 @@
                             (s/keys :req-un [:credential/api-key
                                              :credential/secret-key
                                              :credential/scopes])))
+
 (s/def ::browser
   (s/keys :req-un [:browser/content
                    :browser/address
@@ -67,13 +66,23 @@
 (s/def ::server-host string?)
 (s/def ::xapi-prefix string?) ;; default /xapi
 
+(s/def :notification/id int?)
+(s/def :notification/error? boolean?)
+(s/def :notification/msg (s/nilable string?))
+
+(s/def ::notification (s/keys :req-un [:notification/error?
+                                       :notification/msg]))
+
+(s/def ::notifications (s/every ::notification))
+
 (s/def ::db (s/keys :req [::session
                           ::credentials
                           ::login
                           ::browser
                           ::accounts
                           ::server-host
-                          ::xapi-prefix]))
+                          ::xapi-prefix
+                          ::notifications]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Continuous DB Validation
