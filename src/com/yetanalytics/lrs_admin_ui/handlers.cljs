@@ -359,8 +359,6 @@
  :accounts/create-success
  global-interceptors
  (fn [_ [_ username {:keys [account-id] :as response}]]
-   (println username)
-   (println response)
    {:fx [[:dispatch [:accounts/load-accounts]]
          [:dispatch [:new-account/set-new-account
                      {:username nil
