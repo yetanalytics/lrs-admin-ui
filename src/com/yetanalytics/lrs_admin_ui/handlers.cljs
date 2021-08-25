@@ -14,8 +14,10 @@
 (re-frame/reg-event-db
  :db/init
  global-interceptors
- (fn [_ [_ & [?server-host
-              ?xapi-prefix]]]
+ (fn [_ [_ & {server-host "serverHost"
+              xapi-prefix "xapiPrefix"
+              :or {server-host ""
+                   xapi-prefix "/xapi"}}]]
    {::db/session {:page :credentials
                   :token (stor/get-item "lrs-jwt")
                   :username (stor/get-item "username")}
@@ -28,10 +30,8 @@
     ::db/browser {:content nil
                   :address nil
                   :credential nil}
-    ::db/server-host (or ?server-host
-                         "")
-    ::db/xapi-prefix (or ?xapi-prefix
-                         "/xapi")}))
+    ::db/server-host server-host
+    ::db/xapi-prefix xapi-prefix}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Login / Auth
