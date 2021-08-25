@@ -310,23 +310,23 @@
 (re-frame/reg-event-fx
  :accounts/delete-account
  global-interceptors
- (fn [_ [_ account-id]]
+ (fn [_ [_ {:keys [account-id username]}]]
    {:http-xhrio {:method          :delete
                  :uri             (httpfn/serv-uri "/admin/account")
                  :response-format (ajax/json-response-format {:keywords? true})
                  :params          {:account-id account-id}
                  :format          (ajax/json-request-format)
-                 :on-success      [:accounts/delete-success]
+                 :on-success      [:accounts/delete-success username]
                  :on-failure      [:server-error]
                  :interceptors    [httpfn/add-jwt-interceptor]}}))
 
 (re-frame/reg-event-fx
  :accounts/delete-success
  global-interceptors
- (fn [{:keys [db]} [_ {:keys [account-id]}]]
+ (fn [{:keys [db]} [_ username {:keys [account-id]}]]
    {:fx [[:dispatch [:accounts/load-accounts]]
          [:dispatch [:notification/notify false
-                     (format "Deleted account with id: %s" account-id)]]]}))
+                     (format "Deleted account with username: %s" username)]]]}))
 
 (re-frame/reg-event-db
  :accounts/set-accounts
@@ -338,14 +338,16 @@
  :accounts/create-account
  global-interceptors
  (fn [_ _]
-   {:http-xhrio {:method          :post
-                 :uri             (httpfn/serv-uri "/admin/account/create")
-                 :response-format (ajax/json-response-format {:keywords? true})
-                 :params          @(re-frame/subscribe [:db/get-new-account])
-                 :format          (ajax/json-request-format)
-                 :on-success      [:accounts/create-success]
-                 :on-failure      [:server-error]
-                 :interceptors    [httpfn/add-jwt-interceptor]}}))
+   (let [{:keys [username] :as new-account}
+         @(re-frame/subscribe [:db/get-new-account])]
+     {:http-xhrio {:method          :post
+                   :uri             (httpfn/serv-uri "/admin/account/create")
+                   :response-format (ajax/json-response-format {:keywords? true})
+                   :params          new-account
+                   :format          (ajax/json-request-format)
+                   :on-success      [:accounts/create-success username]
+                   :on-failure      [:server-error]
+                   :interceptors    [httpfn/add-jwt-interceptor]}})))
 
 (re-frame/reg-event-db
  :new-account/set-new-account
@@ -356,13 +358,15 @@
 (re-frame/reg-event-fx
  :accounts/create-success
  global-interceptors
- (fn [_ [_ {:keys [account-id]}]]
+ (fn [_ [_ username {:keys [account-id] :as response}]]
+   (println username)
+   (println response)
    {:fx [[:dispatch [:accounts/load-accounts]]
          [:dispatch [:new-account/set-new-account
                      {:username nil
                       :password nil}]]
          [:dispatch [:notification/notify false
-                     (format "Created account with id: %s" account-id)]]]}))
+                     (format "Created account with username: %s" username)]]]}))
 
 (re-frame/reg-event-db
  :new-account/set-username

@@ -63,7 +63,7 @@
                    :browser/address
                    :browser/credential]))
 
-(s/def :notification/visible? boolen?)
+(s/def :notification/visible? boolean?)
 (s/def :notification/error? boolean?)
 (s/def :notification/msg (s/nilable string?))
 

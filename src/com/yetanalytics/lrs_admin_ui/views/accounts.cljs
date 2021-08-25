@@ -5,7 +5,7 @@
    [com.yetanalytics.lrs-admin-ui.functions :as fns]
    [com.yetanalytics.lrs-admin-ui.functions.copy :refer [copy-text]]))
 
-(defn account [{:keys [username account-id]}]
+(defn account [{:keys [username account-id] :as account}]
   [:li {:class "mb-2"}
    [:div {:class "accordion-container"}
     [:div {:class "account-row"}
@@ -15,7 +15,7 @@
       [:ul {:class "action-icon-list"}
        [:li
         [:a {:href "#!",
-             :on-click #(dispatch [:accounts/delete-account account-id])
+             :on-click #(dispatch [:accounts/delete-account account])
              :class "icon-delete"} "Delete"]]]]]]])
 
 (defn new-account []
