@@ -1,12 +1,15 @@
 (ns com.yetanalytics.lrs-admin-ui.handlers
-  (:require [re-frame.core  :as re-frame]
-            [com.yetanalytics.lrs-admin-ui.db :as db]
+  (:require [re-frame.core                                   :as re-frame]
+            [reagent.core                                    :as r]
+            [com.yetanalytics.lrs-admin-ui.db                :as db]
             [day8.re-frame.http-fx]
-            [com.yetanalytics.lrs-admin-ui.functions :as fns]
-            [com.yetanalytics.lrs-admin-ui.functions.http :as httpfn]
+            [com.yetanalytics.lrs-admin-ui.functions         :as fns]
+            [com.yetanalytics.lrs-admin-ui.functions.http    :as httpfn]
             [com.yetanalytics.lrs-admin-ui.functions.storage :as stor]
-            [ajax.core :as ajax]
-            [clojure.string :as s]))
+            [ajax.core                                       :as ajax]
+            [clojure.string                                  :as s]
+            [goog.string                                     :refer [format]]
+            goog.string.format))
 
 (def global-interceptors
   [db/check-spec-interceptor])
@@ -26,7 +29,8 @@
                       :password nil}
     ::db/browser {:content nil
                   :address nil
-                  :credential nil}}))
+                  :credential nil}
+    ::db/notifications []}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Login / Auth
@@ -44,12 +48,6 @@
  (fn [db [_ password]]
    (assoc-in db [::db/login :password] password)))
 
-(re-frame/reg-event-db
- :login/error
- global-interceptors
- (fn [db [_ error]]
-   (assoc-in db [::db/login :error] error)))
-
 (re-frame/reg-event-fx
  :session/authenticate
  global-interceptors
@@ -60,7 +58,7 @@
                  :response-format (ajax/json-response-format {:keywords? true})
                  :params          @(re-frame/subscribe [:db/get-login])
                  :on-success      [:login/success-handler]
-                 :on-failure      [:login/login-failure]}}))
+                 :on-failure      [:server-error]}}))
 
 (re-frame/reg-event-fx
  :login/success-handler
@@ -92,12 +90,6 @@
    {:db (assoc-in db [::db/session :token] token)
     :session/store ["lrs-jwt" token]}))
 
-(re-frame/reg-event-db
- :session/login-failure
- global-interceptors
- (fn [db [_ {:keys [body]}]]
-   (assoc-in db [::db/login :error] body)))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; General
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -110,16 +102,78 @@
 
 (re-frame/reg-event-fx
  :server-error
- (fn [{:keys [db]} [_ {:keys [body status] :as response}]]
-   (cond
-     (= status 401) {:dispatch [:session/set-token nil]})))
+ (fn [{:keys [db]} [_ {:keys [response status] :as error}]]
+   ;;extract the error and present it in a notification. If 401 or 0, log out.
+   (let [message (if (= status 0)
+                   "Could not connect to LRS!"
+                   (or (:error response)
+                       "An unexpected error has occured!"))]
+     {:fx (cond-> [[:dispatch [:notification/notify true message]]]
+            (some #(= status %) [0 401])
+            (merge [:dispatch [:session/set-token nil]]))})))
 
 (re-frame/reg-event-fx
  :session/logout
  (fn [_ _]
    {:fx [[:dispatch [:session/set-token nil]]
-         [:dispatch [:session/set-username nil]]]}))
+         [:dispatch [:session/set-username nil]]
+         [:dispatch [:notification/notify false "You have logged out."]]]}))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Notifications / Alert Bar
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Unfortunately need a stateful custom Effect for hiding the alert after a bit.
+;; 're-frame/dispatch-later' mostly works but if two notifications are too close
+;; the first one's hide dispatch will prematurely close the second one since the
+;; dispatches are unaware of each other
+(defonce dispatch-timeouts (r/atom {}))
+
+;; inspired by https://purelyfunctional.tv/guide/timeout-effect-in-re-frame/
+(re-frame/reg-fx
+ :debounce-dispatch-later
+ (fn [{:keys [key dispatch ms]}]
+   (when-some [existing (get @dispatch-timeouts key)]
+     (js/clearTimeout existing)
+     (swap! dispatch-timeouts dissoc key))
+   (when (some? dispatch)
+     (swap! dispatch-timeouts assoc key
+            (js/setTimeout
+             (fn []
+               (re-frame/dispatch dispatch))
+             ms)))))
+
+
+(defn remove-notice
+  "Given a notice id and a collection of notifications return the collection
+  with all notices of that id removed"
+  [notifications notice-id]
+  (filterv (fn [{:keys [id] :as notification}]
+             (when (not (= id notice-id))
+               notification))
+           notifications))
+
+(re-frame/reg-event-fx
+ :notification/notify
+ (fn [{:keys [db]} [_ error msg]]
+   (let [notice-id (hash msg)
+         notifications (get db ::db/notifications)]
+     ;; Remove identical notifications, add the new one and (re)set a timer
+     {:db (assoc db ::db/notifications
+                 (conj (remove-notice notifications notice-id)
+                       {:id notice-id
+                        :error? error
+                        :msg msg}))
+      ;;set a timer to clear it eventually
+      :debounce-dispatch-later {:key notice-id
+                                :ms 5000
+                                :dispatch [:notification/hide notice-id]}})))
+
+(re-frame/reg-event-fx
+ :notification/hide
+ (fn [{:keys [db]} [_ id]]
+   {:db (assoc db ::db/notifications
+               (remove-notice (get db ::db/notifications) id))}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Data Browser
@@ -196,9 +250,18 @@
                  :params          credential
                  :format          (ajax/json-request-format)
                  :response-format (ajax/json-response-format {:keywords? true})
-                 :on-success      [:credentials/load-credentials]
+                 :on-success      [:credentials/save-success]
                  :on-failure      [:server-error]
                  :interceptors    [httpfn/add-jwt-interceptor]}}))
+
+(re-frame/reg-event-fx
+ :credentials/save-success
+ global-interceptors
+ (fn [{:keys [db]} [_ {:keys [api-key]}]]
+   {:fx [[:dispatch [:credentials/load-credentials]]
+         [:dispatch [:notification/notify false
+                     (format "Updated credential with key: %s"
+                             (fns/elide api-key 10))]]]}))
 
 (re-frame/reg-event-fx
  :credentials/create-credential
@@ -209,9 +272,18 @@
                  :params          credential
                  :format          (ajax/json-request-format)
                  :response-format (ajax/json-response-format {:keywords? true})
-                 :on-success      [:credentials/load-credentials]
+                 :on-success      [:credentials/create-success]
                  :on-failure      [:server-error]
                  :interceptors    [httpfn/add-jwt-interceptor]}}))
+
+(re-frame/reg-event-fx
+ :credentials/create-success
+ global-interceptors
+ (fn [{:keys [db]} [_ {:keys [api-key]}]]
+   {:fx [[:dispatch [:credentials/load-credentials]]
+         [:dispatch [:notification/notify false
+                     (format "Created credential with key: %s"
+                             (fns/elide api-key 10))]]]}))
 
 (re-frame/reg-event-fx
  :credentials/delete-credential
@@ -222,9 +294,19 @@
                  :params          credential
                  :format          (ajax/json-request-format)
                  :response-format (ajax/json-response-format {:keywords? true})
-                 :on-success      [:credentials/load-credentials]
+                 :on-success      [:credentials/delete-success]
                  :on-failure      [:server-error]
                  :interceptors    [httpfn/add-jwt-interceptor]}}))
+
+(re-frame/reg-event-fx
+ :credentials/delete-success
+ global-interceptors
+ (fn [{:keys [db]} [_ {:keys [api-key]}]]
+   {:fx [[:dispatch [:credentials/load-credentials]]
+         [:dispatch [:notification/notify false
+                     (format "Deleted credential with key: %s"
+                             (fns/elide api-key 10))]]]}))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Account Management
@@ -245,15 +327,23 @@
 (re-frame/reg-event-fx
  :accounts/delete-account
  global-interceptors
- (fn [_ [_ account-id]]
+ (fn [_ [_ {:keys [account-id username]}]]
    {:http-xhrio {:method          :delete
                  :uri             (httpfn/serv-uri "/admin/account")
                  :response-format (ajax/json-response-format {:keywords? true})
                  :params          {:account-id account-id}
                  :format          (ajax/json-request-format)
-                 :on-success      [:accounts/load-accounts]
+                 :on-success      [:accounts/delete-success username]
                  :on-failure      [:server-error]
                  :interceptors    [httpfn/add-jwt-interceptor]}}))
+
+(re-frame/reg-event-fx
+ :accounts/delete-success
+ global-interceptors
+ (fn [{:keys [db]} [_ username {:keys [account-id]}]]
+   {:fx [[:dispatch [:accounts/load-accounts]]
+         [:dispatch [:notification/notify false
+                     (format "Deleted account with username: %s" username)]]]}))
 
 (re-frame/reg-event-db
  :accounts/set-accounts
@@ -265,14 +355,16 @@
  :accounts/create-account
  global-interceptors
  (fn [_ _]
-   {:http-xhrio {:method          :post
-                 :uri             (httpfn/serv-uri "/admin/account/create")
-                 :response-format (ajax/json-response-format {:keywords? true})
-                 :params          @(re-frame/subscribe [:db/get-new-account])
-                 :format          (ajax/json-request-format)
-                 :on-success      [:new-account/create-success]
-                 :on-failure      [:server-error]
-                 :interceptors    [httpfn/add-jwt-interceptor]}}))
+   (let [{:keys [username] :as new-account}
+         @(re-frame/subscribe [:db/get-new-account])]
+     {:http-xhrio {:method          :post
+                   :uri             (httpfn/serv-uri "/admin/account/create")
+                   :response-format (ajax/json-response-format {:keywords? true})
+                   :params          new-account
+                   :format          (ajax/json-request-format)
+                   :on-success      [:accounts/create-success username]
+                   :on-failure      [:server-error]
+                   :interceptors    [httpfn/add-jwt-interceptor]}})))
 
 (re-frame/reg-event-db
  :new-account/set-new-account
@@ -281,13 +373,15 @@
    (assoc db ::db/new-account new-account)))
 
 (re-frame/reg-event-fx
- :new-account/create-success
+ :accounts/create-success
  global-interceptors
- (fn [_ _]
+ (fn [_ [_ username {:keys [account-id] :as response}]]
    {:fx [[:dispatch [:accounts/load-accounts]]
          [:dispatch [:new-account/set-new-account
                      {:username nil
-                      :password nil}]]]}))
+                      :password nil}]]
+         [:dispatch [:notification/notify false
+                     (format "Created account with username: %s" username)]]]}))
 
 (re-frame/reg-event-db
  :new-account/set-username

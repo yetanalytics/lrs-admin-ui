@@ -33,7 +33,9 @@
         [:option "Choose a Credential to Browse"]
         (map-indexed
          (fn [idx credential]
-           [:option {:value (:api-key credential)} (fns/elide (:api-key credential) 20)])
+           [:option {:value (:api-key credential)
+                     :key (str "browser-credential-" idx)}
+            (fns/elide (:api-key credential) 20)])
          credentials)]
        ]]
      [:p [:em (str "Current Query: " @(subscribe [:browser/get-address]))]]
