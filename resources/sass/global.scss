@@ -781,16 +781,21 @@ table i {
   text-align: center;
   z-index: 9999;
   border-radius: 0px;
-  -webkit-animation: fadein 1s; /* Safari, Chrome and Opera > 12.1 */
-  -moz-animation: fadein 1s; /* Firefox < 16 */
-  -ms-animation: fadein 1s; /* Internet Explorer */
-  -o-animation: fadein 1s; /* Opera < 12.1 */
-  animation: fadein 1s;
+  -webkit-animation: fadein 1.2s, expand .8s; /* Safari, Chrome and Opera > 12.1 */
+  -moz-animation: fadein 1.2s, expand .8s; /* Firefox < 16 */
+  -ms-animation: fadein 1.2s, expand .8s; /* Internet Explorer */
+  -o-animation: fadein 1.2s, expand .8s; /* Opera < 12.1 */
+  animation: fadein 1.2s, expand .8s;
 }
 
 @keyframes fadein {
   from { opacity: 0; }
   to   { opacity: 0.9; }
+}
+
+@keyframes expand {
+  from { height: 0px; }
+  to   { height: 35px; }
 }
 
 .alert-bar.error {
