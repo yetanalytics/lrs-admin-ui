@@ -51,12 +51,12 @@
 (re-frame/reg-event-fx
  :session/authenticate
  global-interceptors
- (fn [_ _]
+ (fn [{:keys [db]} _]
    {:http-xhrio {:method          :post
                  :uri             (httpfn/serv-uri "/admin/account/login")
                  :format          (ajax/json-request-format)
                  :response-format (ajax/json-response-format {:keywords? true})
-                 :params          @(re-frame/subscribe [:db/get-login])
+                 :params          (::db/login db)
                  :on-success      [:login/success-handler]
                  :on-failure      [:server-error]}}))
 
@@ -64,7 +64,7 @@
  :login/success-handler
  global-interceptors
  (fn [{:keys [db]} [_ {:keys [json-web-token]}]]
-   (let [username @(re-frame/subscribe [:login/get-username])]
+   (let [{:keys [username]} (::db/login db)]
      {:fx [[:dispatch [:session/set-token json-web-token]]
            [:dispatch [:session/set-username username]]]})))
 
@@ -207,8 +207,8 @@
  :browser/update-credential
  global-interceptors
  (fn [{:keys [db]} [_ key]]
-   (let [credential (first (filter  #(= key (:api-key %))
-                                    @(re-frame/subscribe [:db/get-credentials])))]
+   (let [credential (first (filter #(= key (:api-key %))
+                                   (::db/credentials db)))]
      (when credential
        {:db (assoc-in db [::db/browser :credential] credential)
         :dispatch [:browser/load-xapi]}))))
@@ -354,9 +354,9 @@
 (re-frame/reg-event-fx
  :accounts/create-account
  global-interceptors
- (fn [_ _]
+ (fn [{:keys [db]} _]
    (let [{:keys [username] :as new-account}
-         @(re-frame/subscribe [:db/get-new-account])]
+         (::db/new-account db)]
      {:http-xhrio {:method          :post
                    :uri             (httpfn/serv-uri "/admin/account/create")
                    :response-format (ajax/json-response-format {:keywords? true})
