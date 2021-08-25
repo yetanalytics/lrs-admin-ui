@@ -11,11 +11,14 @@
 
 (defn build-xapi-url
   [server-host xapi-prefix path params]
-  (let [param-map (cond-> {:unwrap_html true}
+  (let [path' (or path
+                  (format "%s/statements"
+                          xapi-prefix))
+        param-map (cond-> {:unwrap_html true}
                     (some? params)
                     (merge (uri/query-map params)))
         params' (uri/map->query-string param-map)]
-    (format "%s%s/statements?%s" server-host xapi-prefix params')))
+    (format "%s%s?%s" server-host path' params')))
 
 (defn is-rel?
   [url]
