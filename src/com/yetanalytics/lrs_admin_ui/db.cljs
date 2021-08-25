@@ -64,11 +64,16 @@
                    :browser/address
                    :browser/credential]))
 
+(s/def ::server-host string?)
+(s/def ::xapi-prefix string?) ;; default /xapi
+
 (s/def ::db (s/keys :req [::session
                           ::credentials
                           ::login
                           ::browser
-                          ::accounts]))
+                          ::accounts
+                          ::server-host
+                          ::xapi-prefix]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Continuous DB Validation

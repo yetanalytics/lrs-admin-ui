@@ -18,7 +18,7 @@
   (when-let [el (gdom/getElement "app")]
     (mount el)))
 
-(defonce init
+(defn ^:export init [& endpoint]
   (do
     (dispatch-sync [:db/init])
     (mount-app-element)))

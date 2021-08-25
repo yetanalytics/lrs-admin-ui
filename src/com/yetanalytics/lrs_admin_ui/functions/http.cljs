@@ -5,25 +5,23 @@
             [goog.string       :refer [format]]
             goog.string.format))
 
-
 ;;URL Manipulation
 ;;TODO: feed from config OR possibly assume relative path depending on bundle
 ;;choices
-(def server-host "http://localhost:8080")
-(def default-xapi-path "/xapi/statements")
+#_(def server-host "http://localhost:8080")
+#_(def default-xapi-path "/xapi/statements")
 
 (defn serv-uri
-  [path]
+  [server-host path]
   (str server-host path))
 
 (defn build-xapi-url
-  [path params]
-  (let [path' (or path default-xapi-path)
-        param-map (cond-> {:unwrap_html true}
+  [server-host xapi-prefix path params]
+  (let [param-map (cond-> {:unwrap_html true}
                     (some? params)
                     (merge (uri/query-map params)))
         params' (uri/map->query-string param-map)]
-    (format "%s%s?%s" server-host path' params')))
+    (format "%s%s/statements?%s" server-host xapi-prefix params')))
 
 (defn is-rel?
   [url]
