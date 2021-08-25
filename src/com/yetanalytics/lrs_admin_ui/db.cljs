@@ -63,20 +63,21 @@
                    :browser/address
                    :browser/credential]))
 
-(s/def :notification/visible? boolean?)
+(s/def :notification/id int?)
 (s/def :notification/error? boolean?)
 (s/def :notification/msg (s/nilable string?))
 
 (s/def ::notification (s/keys :req-un [:notification/error?
-                                       :notification/visible?
                                        :notification/msg]))
+
+(s/def ::notifications (s/every ::notification))
 
 (s/def ::db (s/keys :req [::session
                           ::credentials
                           ::login
                           ::browser
                           ::accounts
-                          ::notification]))
+                          ::notifications]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Continuous DB Validation

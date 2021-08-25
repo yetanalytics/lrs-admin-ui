@@ -34,9 +34,9 @@
    (:username session)))
 
 (reg-sub
- :notification/get-notification
+ :notifications/get-notifications
  (fn [db _]
-   (::db/notification db)))
+   (::db/notifications db)))
 
 
 (reg-sub

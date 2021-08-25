@@ -30,9 +30,7 @@
     ::db/browser {:content nil
                   :address nil
                   :credential nil}
-    ::db/notification {:visible? false
-                       :error? false
-                       :msg nil}}))
+    ::db/notifications []}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Login / Auth
@@ -145,22 +143,36 @@
              ms)))))
 
 
+(defn remove-notice
+  "Given a notice id and a collection of notifications return the collection
+  with all notices of that id removed"
+  [notifications notice-id]
+  (filterv (fn [{:keys [id] :as notification}]
+             (when (not (= id notice-id))
+               notification))
+           notifications))
+
 (re-frame/reg-event-fx
  :notification/notify
  (fn [{:keys [db]} [_ error msg]]
-   {:db (assoc db ::db/notification {:visible? true
-                                     :error? error
-                                     :msg msg})
-    ;;set a timer to clear it eventually
-    :debounce-dispatch-later {:key :notification-hide
-                              :ms 4000
-                              :dispatch [:notification/hide]}}))
+   (let [notice-id (hash msg)
+         notifications (get db ::db/notifications)]
+     ;; Remove identical notifications, add the new one and (re)set a timer
+     {:db (assoc db ::db/notifications
+                 (conj (remove-notice notifications notice-id)
+                       {:id notice-id
+                        :error? error
+                        :msg msg}))
+      ;;set a timer to clear it eventually
+      :debounce-dispatch-later {:key notice-id
+                                :ms 5000
+                                :dispatch [:notification/hide notice-id]}})))
 
 (re-frame/reg-event-fx
  :notification/hide
- (fn [{:keys [db]} [_ _]]
-   {:db (assoc-in db [::db/notification :visible?] false)}))
-
+ (fn [{:keys [db]} [_ id]]
+   {:db (assoc db ::db/notifications
+               (remove-notice (get db ::db/notifications) id))}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Data Browser
