@@ -104,10 +104,14 @@
 
 (re-frame/reg-event-fx
  :server-error
- (fn [{:keys [db]} [_ {:keys [response status] :as response}]]
-   ;;extract the error and present it in a notification. If 401, log out.
-   {:fx (cond-> [[:dispatch [:notification/notify true (:error response)]]]
-          (= status 401) (merge [:dispatch [:session/set-token nil]]))}))
+ (fn [{:keys [db]} [_ {:keys [response status] :as error}]]
+   ;;extract the error and present it in a notification. If 401 or 0, log out.
+   (let [message (if (= status 0)
+                   "Could not connect to LRS!"
+                   (:error response))]
+     {:fx (cond-> [[:dispatch [:notification/notify true message]]]
+            (some #(= status %) [0 401])
+            (merge [:dispatch [:session/set-token nil]]))})))
 
 (re-frame/reg-event-fx
  :session/logout
