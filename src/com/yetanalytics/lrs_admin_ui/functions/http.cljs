@@ -5,12 +5,6 @@
             [goog.string       :refer [format]]
             goog.string.format))
 
-;;URL Manipulation
-;;TODO: feed from config OR possibly assume relative path depending on bundle
-;;choices
-#_(def server-host "http://localhost:8080")
-#_(def default-xapi-path "/xapi/statements")
-
 (defn serv-uri
   [server-host path]
   (str server-host path))
