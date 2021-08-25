@@ -29,7 +29,7 @@
                   :address nil
                   :credential nil}
     ::db/server-host (or ?server-host
-                         "http://localhost:8080")
+                         "")
     ::db/xapi-prefix (or ?xapi-prefix
                          "/xapi")}))
 
