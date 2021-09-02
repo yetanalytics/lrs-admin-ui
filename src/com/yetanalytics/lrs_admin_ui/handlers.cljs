@@ -17,7 +17,10 @@
 (re-frame/reg-event-db
  :db/init
  global-interceptors
- (fn [_ _]
+ (fn [_ [_ & {server-host "serverHost"
+              xapi-prefix "xapiPrefix"
+              :or {server-host ""
+                   xapi-prefix "/xapi"}}]]
    {::db/session {:page :credentials
                   :token (stor/get-item "lrs-jwt")
                   :username (stor/get-item "username")}
@@ -30,6 +33,8 @@
     ::db/browser {:content nil
                   :address nil
                   :credential nil}
+    ::db/server-host server-host
+    ::db/xapi-prefix xapi-prefix
     ::db/notifications []}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -51,9 +56,12 @@
 (re-frame/reg-event-fx
  :session/authenticate
  global-interceptors
- (fn [{:keys [db]} _]
+ (fn [{{server-host ::db/server-host
+        :as db} :db} _]
    {:http-xhrio {:method          :post
-                 :uri             (httpfn/serv-uri "/admin/account/login")
+                 :uri             (httpfn/serv-uri
+                                   server-host
+                                   "/admin/account/login")
                  :format          (ajax/json-request-format)
                  :response-format (ajax/json-response-format {:keywords? true})
                  :params          (::db/login db)
@@ -182,8 +190,10 @@
 (re-frame/reg-event-fx
  :browser/load-xapi
  global-interceptors
- (fn [_ [_ {:keys [path params]}]]
-   (let [xapi-url (httpfn/build-xapi-url path params)]
+ (fn [{{server-host ::db/server-host
+        xapi-prefix ::db/xapi-prefix} :db} [_ {:keys [path params]}]]
+   (let [xapi-url (httpfn/build-xapi-url
+                   server-host xapi-prefix path params)]
      {:dispatch   [:browser/set-address xapi-url]
       :http-xhrio {:method          :get
                    :uri             xapi-url
@@ -227,9 +237,11 @@
 (re-frame/reg-event-fx
  :credentials/load-credentials
  global-interceptors
- (fn [_ _]
+ (fn [{{server-host ::db/server-host} :db} _]
    {:http-xhrio {:method          :get
-                 :uri             (httpfn/serv-uri "/admin/creds")
+                 :uri             (httpfn/serv-uri
+                                   server-host
+                                   "/admin/creds")
                  :response-format (ajax/json-response-format {:keywords? true})
                  :on-success      [:credentials/set-credentials]
                  :on-failure      [:server-error]
@@ -244,9 +256,12 @@
 (re-frame/reg-event-fx
  :credentials/save-credential
  global-interceptors
- (fn [{:keys [db]} [_ credential]]
+ (fn [{{server-host ::db/server-host
+        :as db} :db} [_ credential]]
    {:http-xhrio {:method          :put
-                 :uri             (httpfn/serv-uri "/admin/creds")
+                 :uri             (httpfn/serv-uri
+                                   server-host
+                                   "/admin/creds")
                  :params          credential
                  :format          (ajax/json-request-format)
                  :response-format (ajax/json-response-format {:keywords? true})
@@ -266,9 +281,12 @@
 (re-frame/reg-event-fx
  :credentials/create-credential
  global-interceptors
- (fn [{:keys [db]} [_ credential]]
+ (fn [{{server-host ::db/server-host
+        :as db} :db} [_ credential]]
    {:http-xhrio {:method          :post
-                 :uri             (httpfn/serv-uri "/admin/creds")
+                 :uri             (httpfn/serv-uri
+                                   server-host
+                                   "/admin/creds")
                  :params          credential
                  :format          (ajax/json-request-format)
                  :response-format (ajax/json-response-format {:keywords? true})
@@ -288,9 +306,12 @@
 (re-frame/reg-event-fx
  :credentials/delete-credential
  global-interceptors
- (fn [{:keys [db]} [_ credential]]
+ (fn [{{server-host ::db/server-host
+        :as db} :db} [_ credential]]
    {:http-xhrio {:method          :delete
-                 :uri             (httpfn/serv-uri "/admin/creds")
+                 :uri             (httpfn/serv-uri
+                                   server-host
+                                   "/admin/creds")
                  :params          credential
                  :format          (ajax/json-request-format)
                  :response-format (ajax/json-response-format {:keywords? true})
@@ -316,9 +337,11 @@
 (re-frame/reg-event-fx
  :accounts/load-accounts
  global-interceptors
- (fn [_ _]
+ (fn [{{server-host ::db/server-host} :db} _]
    {:http-xhrio {:method          :get
-                 :uri             (httpfn/serv-uri "/admin/account")
+                 :uri             (httpfn/serv-uri
+                                   server-host
+                                   "/admin/account")
                  :response-format (ajax/json-response-format {:keywords? true})
                  :on-success      [:accounts/set-accounts]
                  :on-failure      [:server-error]
@@ -327,9 +350,11 @@
 (re-frame/reg-event-fx
  :accounts/delete-account
  global-interceptors
- (fn [_ [_ {:keys [account-id username]}]]
+ (fn [{{server-host ::db/server-host} :db} [_ {:keys [account-id username]}]]
    {:http-xhrio {:method          :delete
-                 :uri             (httpfn/serv-uri "/admin/account")
+                 :uri             (httpfn/serv-uri
+                                   server-host
+                                   "/admin/account")
                  :response-format (ajax/json-response-format {:keywords? true})
                  :params          {:account-id account-id}
                  :format          (ajax/json-request-format)
@@ -354,11 +379,14 @@
 (re-frame/reg-event-fx
  :accounts/create-account
  global-interceptors
- (fn [{:keys [db]} _]
+ (fn [{{server-host ::db/server-host
+        :as db} :db} _]
    (let [{:keys [username] :as new-account}
          (::db/new-account db)]
      {:http-xhrio {:method          :post
-                   :uri             (httpfn/serv-uri "/admin/account/create")
+                   :uri             (httpfn/serv-uri
+                                     server-host
+                                     "/admin/account/create")
                    :response-format (ajax/json-response-format {:keywords? true})
                    :params          new-account
                    :format          (ajax/json-request-format)

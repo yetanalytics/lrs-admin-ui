@@ -63,6 +63,9 @@
                    :browser/address
                    :browser/credential]))
 
+(s/def ::server-host string?)
+(s/def ::xapi-prefix string?) ;; default /xapi
+
 (s/def :notification/id int?)
 (s/def :notification/error? boolean?)
 (s/def :notification/msg (s/nilable string?))
@@ -77,6 +80,8 @@
                           ::login
                           ::browser
                           ::accounts
+                          ::server-host
+                          ::xapi-prefix
                           ::notifications]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
