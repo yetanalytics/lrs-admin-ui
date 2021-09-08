@@ -967,6 +967,14 @@ span.close-alert img {
   background: url('../images/icons/icon-close-black.svg') no-repeat left center;
 }
 
+a.icon-close {
+  background: url('../images/icons/icon-close-blue.svg') no-repeat left center;
+}
+
+a.icon-close:hover {
+  background: url('../images/icons/icon-close-black.svg') no-repeat left center;
+}
+
 .action-icon-list li a.icon-save {
   background: url('../images/icons/icon-save-blue.svg') no-repeat left center;
 }

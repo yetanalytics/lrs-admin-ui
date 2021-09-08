@@ -3,7 +3,7 @@
    [re-frame.core :refer [subscribe dispatch]]
    [com.yetanalytics.lrs-admin-ui.functions :as fns]
    [com.yetanalytics.lrs-admin-ui.functions.http :as httpfn]
-   [clojure.pprint :refer [pprint]]))
+   [clojure.string :refer [blank?]]))
 
 (defn process-click
   "Extract the pertinent parts of an element from an event and instrument links
@@ -26,11 +26,11 @@
       "Data Browser"]
      [:p
       [:span
-       [:em "Credentials to Use: "]
+       [:b "Credentials to Use: "]
        [:select {:name (str "update_credential")
                  :on-change #(dispatch [:browser/update-credential
                                         (fns/ps-event-val %)])}
-        [:option "Choose a Credential to Browse"]
+        [:option "Credential to Browse"]
         (map-indexed
          (fn [idx credential]
            [:option {:value (:api-key credential)
@@ -38,7 +38,18 @@
             (fns/elide (:api-key credential) 20)])
          credentials)]
        ]]
-     [:p [:em (str "Current Query: " @(subscribe [:browser/get-address]))]]
-     [:div {:class "browser"
-            :on-click process-click
-            "dangerouslySetInnerHTML" #js{:__html content}}]]))
+     (let [address @(subscribe [:browser/get-address])]
+       (when (some? address)
+         [:div
+          [:p [:b (str "Current Query: " address)]]
+          [:ul {:class "action-icon-list"}
+           [:li
+            [:a {:href "#!",
+                 :on-click #(dispatch [:browser/load-xapi])
+                 :class "icon-close"} "Clear Filters"]]]]))
+     (if (blank? content)
+       [:div {:class "browser"}
+        "Please Choose an API Key Above to Browse LRS Data"]
+       [:div {:class "browser"
+              :on-click process-click
+              "dangerouslySetInnerHTML" #js{:__html content}}])]))

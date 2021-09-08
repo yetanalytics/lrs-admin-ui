@@ -174,10 +174,43 @@ input.truncator-toggle:checked ~ label.truncator-toggle-label:after {
 }
 
 .browser {
-  font-family: monospace;
-  font-size: .7em;
+  /*font-family: monospace;*/
+  font-size: .8em;
+  border: 2px solid black;
+  margin-top: 10px;
+  overflow-x: auto;
 }
 
 div.json {
   box-sizing: content-box;
+}
+
+.white-on-blue {
+  background-color: #11375C;
+  color: white;
+}
+
+div.json-array[data-path="statements"] > div.json-array-element > div.json-map > div.json-map-entry[data-entry-key-name="id"] > div.json-map-entry-key {
+  @extend .white-on-blue;
+}
+
+div.json-map-entry[data-entry-key-name="statements"] > div.json-map-entry-key {
+  @extend .white-on-blue;
+  height: 40px;
+}
+
+div.json-map-entry[data-entry-key-name="more"] > div.json-map-entry-key {
+  @extend .white-on-blue;
+}
+
+div.browser > div.json-map > div.json-map-entry[data-entry-key-name="id"] > div.json.json-map-entry-key {
+  @extend .white-on-blue;
+}
+
+div.json-map-entry-key {
+  padding: .5em .5em .5em .5em;
+}
+
+div.browser a:hover {
+  color: black;
 }
