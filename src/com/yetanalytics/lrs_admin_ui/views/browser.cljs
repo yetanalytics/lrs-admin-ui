@@ -46,7 +46,7 @@
            [:li
             [:a {:href "#!",
                  :on-click #(dispatch [:browser/load-xapi])
-                 :class "icon-close"} "Clear Filters"]]]]))
+                 :class "icon-clear-filters"} "Clear Filters"]]]]))
      (if (blank? content)
        [:div {:class "browser"}
         "Please Choose an API Key Above to Browse LRS Data"]
