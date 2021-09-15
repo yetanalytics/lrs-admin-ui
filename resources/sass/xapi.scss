@@ -23,24 +23,24 @@ body > main {
 /* JSON-specific */
 .json-map {
   display:grid;
-  gap: 0.25em 0;
+  /*gap: 0 0.25em; -- eliminated from original */
   grid-template-columns: 1fr;
   position: relative;
 }
 
 .json-array {
   display:grid;
-  gap: 0.25em 0;
+  /*gap: 0.25em 0; -- eliminated from original */
   position: relative;
 }
 
 .json-array:not(.columnar) {
-  padding-bottom: .25em;
+  /* padding-bottom: .25em; --eliminated from original */
 }
 
 .json-array.columnar {
   grid-template-columns: repeat(auto-fill, minmax(max-content, 8em));
-  gap: 0 0.25em;
+  /*gap: 0 0.25em; -- eliminated from original */
 }
 
 .json-array-element {
@@ -50,7 +50,7 @@ body > main {
   display:grid;
   grid-template-columns: minmax(max-content, 9em) 1fr;
   align-items: baseline;
-  border-bottom: #EBEBEB solid 0.1em;
+  /* border-bottom: #EBEBEB solid 0.1em; -- eliminated from original */
 }
 
 /* json-map-action shares layout styling with json-map-entry but contains actions */
@@ -64,7 +64,7 @@ body > main {
   padding: 1em 1em 1em 1.25em;
   background-color: rgba(0,0,0,.025);
   height: calc(100% - 2em);
-  border-right: #EBEBEB solid 0.1em;
+  border-right: #11375C solid 0.1em;
   position: relative;
 }
 
@@ -85,6 +85,7 @@ label.truncator-label {
   padding: 1em 1em 1em 1.25em;
   cursor: pointer;
   border-bottom: #EBEBEB solid 0.1em;
+  margin-bottom: 0px;
 }
 
 .json-map > input.truncator:checked ~ label.truncator-label {
@@ -209,6 +210,7 @@ div.browser > div.json-map > div.json-map-entry[data-entry-key-name="id"] > div.
 
 div.json-map-entry-key {
   padding: .5em .5em .5em .5em;
+  height: 18px;
 }
 
 div.browser a:hover {
