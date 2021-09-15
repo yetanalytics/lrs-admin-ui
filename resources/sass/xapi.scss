@@ -172,6 +172,18 @@ input.truncator-toggle:checked ~ label.truncator-toggle-label:after {
   width: 100%;
   display: grid;
   grid-template-columns: 1fr 1fr;
+  font-style: italic;
+}
+
+.toggle-ascending a {
+  color: white !important;
+  font-style: normal;
+  text-decoration: underline;
+}
+
+div.toggle-ascending a:hover {
+  color: white;
+  text-decoration: none;
 }
 
 .browser {
