@@ -23,24 +23,17 @@ body > main {
 /* JSON-specific */
 .json-map {
   display:grid;
-  /*gap: 0 0.25em; -- eliminated from original */
   grid-template-columns: 1fr;
   position: relative;
 }
 
 .json-array {
   display:grid;
-  /*gap: 0.25em 0; -- eliminated from original */
   position: relative;
-}
-
-.json-array:not(.columnar) {
-  /* padding-bottom: .25em; --eliminated from original */
 }
 
 .json-array.columnar {
   grid-template-columns: repeat(auto-fill, minmax(max-content, 8em));
-  /*gap: 0 0.25em; -- eliminated from original */
 }
 
 .json-array-element {
@@ -50,7 +43,6 @@ body > main {
   display:grid;
   grid-template-columns: minmax(max-content, 9em) 1fr;
   align-items: baseline;
-  /* border-bottom: #EBEBEB solid 0.1em; -- eliminated from original */
 }
 
 /* json-map-action shares layout styling with json-map-entry but contains actions */
