@@ -1,14 +1,13 @@
 (ns com.yetanalytics.lrs-admin-ui.views.credentials.tenant
   (:require
    [com.yetanalytics.lrs-admin-ui.views.credentials.api-key :refer [api-key]]
-   [re-frame.core :refer [subscribe dispatch]]
-   [clojure.pprint :refer [pprint]]))
+   [re-frame.core :refer [subscribe dispatch]]))
 
 (defn tenant []
   (let [credentials @(subscribe [:db/get-credentials])]
     [:div {:class "tenant-wrapper"}
      [:div {:class "credential-details"}
-      [:div {:class "tenant-title-wrapper"}
+      #_[:div {:class "tenant-title-wrapper"}
        [:span {:class "fg-secondary"} "Tenant: "]
        [:span "Demo"]]
       [:div {:class "tenant-count-wrapper"}
