@@ -6,6 +6,7 @@
   [:footer {:class "home-footer"}
    [:div {:class "footer-wrapper"}
     [:span {:class "text-white"}
+     ;; Unescape needed to render special chars.
      (format "%s2021 " (unescapeEntities "&copy;"))
      [:a {:href "https://www.yetanalytics.com"
           :target "_blank"
