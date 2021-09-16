@@ -36,18 +36,10 @@
                 :on-change #(dispatch [:login/set-password
                                        (fns/ps-event-val %)])
                 :id "password"}]]
-      ;;To revisit when functionality is possible
-      #_[:div {:class "form-group text-right", :id "forgot-pwd"}
-       [:a {:class "fg-primary font-rem-80", :href "#"} "Forgot your password? "
-        [:span {:class "fg-white"} "Reset password"]]]
       [:div {:class "login-button-wrapper"}
        [:div
         [:button {:class "login-button"
                   :on-click (fn [e]
                               (fns/ps-event e)
                               (dispatch [:session/authenticate]))} "LOGIN"]]
-       [:div
-        [:a {:class "btn-alternate-login", :href "#"} "No account? Create an account"]]
-       [:p {:class "login-separator"} "OR"]
-       [:div
-        [:button {:class "btn-alternate-login"} "Login with AWS"]]]]]]])
+       [:p {:class "login-separator"} "Trouble logging in? See provided documentation about account management or contact your system administrator."]]]]]])
