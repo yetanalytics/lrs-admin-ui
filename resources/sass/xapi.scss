@@ -23,24 +23,17 @@ body > main {
 /* JSON-specific */
 .json-map {
   display:grid;
-  gap: 0.25em 0;
   grid-template-columns: 1fr;
   position: relative;
 }
 
 .json-array {
   display:grid;
-  gap: 0.25em 0;
   position: relative;
-}
-
-.json-array:not(.columnar) {
-  padding-bottom: .25em;
 }
 
 .json-array.columnar {
   grid-template-columns: repeat(auto-fill, minmax(max-content, 8em));
-  gap: 0 0.25em;
 }
 
 .json-array-element {
@@ -50,7 +43,6 @@ body > main {
   display:grid;
   grid-template-columns: minmax(max-content, 9em) 1fr;
   align-items: baseline;
-  border-bottom: #EBEBEB solid 0.1em;
 }
 
 /* json-map-action shares layout styling with json-map-entry but contains actions */
@@ -64,7 +56,7 @@ body > main {
   padding: 1em 1em 1em 1.25em;
   background-color: rgba(0,0,0,.025);
   height: calc(100% - 2em);
-  border-right: #EBEBEB solid 0.1em;
+  border-right: #11375C solid 0.1em;
   position: relative;
 }
 
@@ -85,6 +77,7 @@ label.truncator-label {
   padding: 1em 1em 1em 1.25em;
   cursor: pointer;
   border-bottom: #EBEBEB solid 0.1em;
+  margin-bottom: 0px;
 }
 
 .json-map > input.truncator:checked ~ label.truncator-label {
@@ -171,13 +164,70 @@ input.truncator-toggle:checked ~ label.truncator-toggle-label:after {
   width: 100%;
   display: grid;
   grid-template-columns: 1fr 1fr;
+  font-style: italic;
+}
+
+.toggle-ascending a {
+  color: white !important;
+  font-style: normal;
+  text-decoration: underline;
+}
+
+div.toggle-ascending a:hover {
+  color: white;
+  text-decoration: none;
 }
 
 .browser {
-  font-family: monospace;
-  font-size: .7em;
+  /*font-family: monospace;*/
+  font-size: .8em;
+  border: 2px solid black;
+  margin-top: 10px;
+  overflow-x: auto;
 }
 
 div.json {
   box-sizing: content-box;
+  white-space: nowrap;
+}
+
+.white-on-blue {
+  background-color: #11375C;
+  color: white;
+}
+
+div.json-array[data-path="statements"] > div.json-array-element > div.json-map > div.json-map-entry[data-entry-key-name="id"] > div.json-map-entry-key {
+  @extend .white-on-blue;
+}
+
+div.json-map-entry[data-entry-key-name="statements"] > div.json-map-entry-key {
+  @extend .white-on-blue;
+  height: 40px;
+}
+
+div.json-map-entry[data-entry-key-name="more"] > div.json-map-entry-key {
+  @extend .white-on-blue;
+}
+
+div.browser > div.json-map > div.json-map-entry[data-entry-key-name="id"] > div.json.json-map-entry-key {
+  @extend .white-on-blue;
+}
+
+div.json-map-entry-key {
+  padding: .5em .5em .5em .5em;
+  height: 18px;
+}
+
+div.browser a:hover {
+  color: black;
+}
+
+.action-icon-list li a.icon-clear-filters {
+  background: url('../images/icons/icon-close-blue.svg') no-repeat left center;
+  padding: 8px;
+  padding-left: 38px;
+}
+
+.action-icon-list li a.icon-clear-filters:hover {
+  background: url('../images/icons/icon-close-black.svg') no-repeat left center;
 }
