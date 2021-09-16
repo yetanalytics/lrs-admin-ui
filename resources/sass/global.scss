@@ -1199,6 +1199,13 @@ p.sub-title {
   width: 30px;
 }
 
+span.support-note {
+  display: block;
+  font-size: .8em;
+  margin-top: 8px;
+  font-style: italic;
+}
+
 @media only screen and (max-width: 768px) {
   .trash-icon {
     width: 24px;

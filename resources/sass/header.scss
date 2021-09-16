@@ -84,7 +84,8 @@ header a:hover {
 footer div {
     font-family: RobotoCondensed;
     font-size: 1.125rem;
-    padding: 38px;
+    padding-top: 23px;
+    padding-bottom: 26px;
 }
 
 @media only screen and (max-width: 768px) {
@@ -92,7 +93,7 @@ footer div {
     footer div {
         font-family: RobotoCondensed;
         font-size: .6rem;
-        padding: 21px;
+        padding-top: 10px;
     }
 
     .banner-link-box.mobile-menu {
@@ -104,15 +105,15 @@ footer div {
         z-index: 1;
     }
 
-        .banner-link-box.mobile-menu > ul {
-            display: block !important;
-            padding: 12px 0;
-        }
+    .banner-link-box.mobile-menu > ul {
+      display: block !important;
+      padding: 12px 0;
+    }
 
-            .banner-link-box.mobile-menu > ul li {
-                padding: 8px 0;
-                text-align: center;
-            }
+    .banner-link-box.mobile-menu > ul li {
+      padding: 8px 0;
+      text-align: center;
+    }
 }
 
 .header-actions-wrapper {

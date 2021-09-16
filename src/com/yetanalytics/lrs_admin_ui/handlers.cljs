@@ -24,8 +24,8 @@
    {::db/session {:page :credentials
                   :token (stor/get-item "lrs-jwt")
                   :username (stor/get-item "username")}
-    ::db/login {:username "username"
-                :password "password"}
+    ::db/login {:username nil
+                :password nil}
     ::db/credentials []
     ::db/accounts []
     ::db/new-account {:username nil
@@ -74,7 +74,9 @@
  (fn [{:keys [db]} [_ {:keys [json-web-token]}]]
    (let [{:keys [username]} (::db/login db)]
      {:fx [[:dispatch [:session/set-token json-web-token]]
-           [:dispatch [:session/set-username username]]]})))
+           [:dispatch [:session/set-username username]]
+           [:dispatch [:login/set-password nil]]
+           [:dispatch [:login/set-username nil]]]})))
 
 (re-frame/reg-event-fx
  :session/set-username
