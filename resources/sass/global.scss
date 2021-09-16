@@ -1176,16 +1176,7 @@ ul.role-select li.role-checkbox {
 .footer-wrapper {
   @extend .bg-primary, .text-white, .text-center, .d-none, .d-md-block;
 }
-/*
-.footer-wrapper a {
-  color: white !important;
-  text-decoration: underline;
-}
 
-.footer-wrapper a:hover {
-  text-decoration: none;
-}
-*/
 .select-option-container img {
   transition: all .4s ease-in-out;
 }
