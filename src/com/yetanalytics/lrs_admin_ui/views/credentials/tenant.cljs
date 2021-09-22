@@ -6,6 +6,11 @@
 (defn tenant []
   (let [credentials @(subscribe [:db/get-credentials])]
     [:div {:class "tenant-wrapper"}
+     [:div {:class "api-keys-table-actions"}
+      [:input {:type "button",
+               :class "btn-blue-bold",
+               :on-click #(dispatch [:credentials/create-credential {:scopes ["all"]}])
+               :value "ADD NEW CREDENTIALS"}]]
      [:div {:class "credential-details"}
       #_[:div {:class "tenant-title-wrapper"}
        [:span {:class "fg-secondary"} "Tenant: "]

@@ -2,7 +2,8 @@
   (:require [reagent.core :as r]
             ["react-copy-to-clipboard" :refer [CopyToClipboard]]))
 
-(defn copy-text [{:keys [text]} element]
+(defn copy-text [{:keys [text on-copy]} element]
   [(r/adapt-react-class CopyToClipboard)
-   {:text text}
+   {:text text
+    :on-copy on-copy}
    element])

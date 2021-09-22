@@ -34,7 +34,8 @@
                       :class "key-display"
                       :read-only true}]
              [copy-text
-              {:text (:api-key credential)}
+              {:text (:api-key credential)
+               :on-copy #(dispatch [:notification/notify false "Copied API Key!"])}
               [:a {:class "icon-copy"}]]]]
            [:div {:class "api-key-col"} "Permissions: "
             (map-indexed (fn [idx scope]
@@ -56,7 +57,8 @@
                             :class "key-display"
                             :read-only true}]
                    [copy-text
-                    {:text (:secret-key credential)}
+                    {:text (:secret-key credential)
+                     :on-copy #(dispatch [:notification/notify false "Copied Secret Key!"])}
                     [:a {:class "icon-copy"}]]]])
                [:ul {:class "action-icon-list"}
                 [:li

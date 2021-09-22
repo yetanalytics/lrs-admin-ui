@@ -47,14 +47,18 @@
                     :else "Hide"))]]
            [:li
             [copy-text
-             {:text (:password new-account)}
+             {:text (:password new-account)
+              :on-copy #(dispatch [:notification/notify false
+                                   "Copied New Password!"])}
              [:a {:class "icon-copy pointer"} "Copy"]]]]]
          [:div {:class "row"}
           [:ul {:class "action-icon-list"}
            [:li
             [:a {:href "#!",
                  :on-click #(dispatch [:new-account/generate-password])
-                 :class "icon-gen"} [:i "Generate Password"]]]]]]))))
+                 :class "icon-gen"} [:i "Generate Password"]]]
+           [:li {:class "password-note"}
+            "Be sure to note or copy the new password as it will not be accessible after creation."]]]]))))
 
 (defn accounts []
   (dispatch [:accounts/load-accounts])
