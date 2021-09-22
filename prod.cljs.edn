@@ -1,4 +1,6 @@
+^{:auto-bundle :webpack}
 {:main com.yetanalytics.lrs-admin-ui.core
+ :target :bundle
  :externs ["externs/react.ext.js"
            "externs/react-dom.ext.js"]
  :language-out :es6

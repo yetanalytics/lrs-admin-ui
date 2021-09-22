@@ -23,7 +23,7 @@ target/bundle/index.html:
 
 target/bundle/main.js: target/public/cljs-out/prod-main.js
 	mkdir -p target/bundle
-	cp target/public/cljs-out/prod-main.js target/bundle/main.js
+	cp target/public/cljs-out/prod/main_bundle.js target/bundle/main.js
 
 target/bundle/css: build-sass
 	mkdir -p target/bundle
