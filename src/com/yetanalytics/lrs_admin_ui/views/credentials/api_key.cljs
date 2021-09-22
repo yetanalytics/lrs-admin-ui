@@ -2,7 +2,8 @@
   (:require
    [reagent.core :as r]
    [re-frame.core :as re-frame :refer [dispatch subscribe]]
-   [com.yetanalytics.lrs-admin-ui.functions.copy :refer [copy-text]]))
+   [com.yetanalytics.lrs-admin-ui.functions.copy :refer [copy-text]]
+   [com.yetanalytics.lrs-admin-ui.functions      :refer [ps-event]]))
 
 (defn has-scope
   [list scope]
@@ -36,7 +37,8 @@
              [copy-text
               {:text (:api-key credential)
                :on-copy #(dispatch [:notification/notify false "Copied API Key!"])}
-              [:a {:class "icon-copy"}]]]]
+              [:a {:class "icon-copy"
+                   :on-click #(ps-event %)}]]]]
            [:div {:class "api-key-col"} "Permissions: "
             (map-indexed (fn [idx scope]
                            [:span {:key (str "scope-display-" idx)}
@@ -59,7 +61,7 @@
                    [copy-text
                     {:text (:secret-key credential)
                      :on-copy #(dispatch [:notification/notify false "Copied Secret Key!"])}
-                    [:a {:class "icon-copy"}]]]])
+                    [:a {:class "icon-copy pointer"}]]]])
                [:ul {:class "action-icon-list"}
                 [:li
                  [:a {:href "#!",
