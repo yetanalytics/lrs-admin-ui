@@ -7,17 +7,21 @@
 (def p-min-len 10)
 (def u-min-len 7)
 
-(s/def :valid-account/password
-  (let [p-contains? (fn [pass chars]
-                      (not-empty (intersection (set pass)
-                                               (set chars))))]
-    (s/and string?
-           #(>= (count %) p-min-len)
-           #(p-contains? % pass/digit-chars)
-           #(p-contains? % pass/upper-chars)
-           #(p-contains? % pass/lower-chars)
-           #(p-contains? % pass/special-chars))))
+(def digit-set (set pass/digit-chars))
+(def upper-set (set pass/upper-chars))
+(def lower-set (set pass/lower-chars))
+(def special-set (set pass/special-chars))
 
+(s/def :valid-account/password
+  (s/and string?
+         #(>= (count %) p-min-len)
+         #(let [pass-set   (set %)
+                has-chars? (partial some pass-set)]
+            (and
+             (has-chars? digit-set)
+             (has-chars? upper-set)
+             (has-chars? lower-set)
+             (has-chars? special-set)))))
 
 (s/def :valid-account/username
   (s/and string?
