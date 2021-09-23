@@ -24,7 +24,7 @@
 
 (s/def :valid-account/username
   (s/and string?
-         #(> (count %) u-min-len)
+         #(>= (count %) u-min-len)
          (partial re-matches #"^[a-zA-Z0-9]*$")))
 
 (s/def ::valid-new-account
