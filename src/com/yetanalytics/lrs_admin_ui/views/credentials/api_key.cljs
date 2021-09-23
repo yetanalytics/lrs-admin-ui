@@ -19,7 +19,8 @@
   [{:keys [idx]}]
   (let [expanded (r/atom false)
         show-secret (r/atom false)
-        edit (r/atom false)]
+        edit (r/atom false)
+        delete-confirm (r/atom false)]
     (fn []
       (let [credential    @(subscribe [:credentials/get-credential idx])
             scopes        (:scopes credential)
@@ -113,7 +114,20 @@
                    [:a {:href "#!",
                         :on-click #(swap! edit not)
                         :class "icon-edit"} "Edit"]]
-                  [:li
-                   [:a {:href "#!",
-                        :on-click #(dispatch [:credentials/delete-credential credential])
-                        :class "icon-delete"} "Delete"]]]])]])]]))))
+                  (if @delete-confirm
+                    [:li
+                     [:span "Are you sure?"]
+                     [:a {:href "#!",
+                          :on-click #(do (dispatch [:credentials/delete-credential credential])
+                                         (swap! delete-confirm not))
+                          :class "confirm-delete"}
+                      "Yes"]
+                     [:a {:href "#!"
+                          :on-click #(swap! delete-confirm not)
+                          :class "confirm-delete"}
+                      "No"]]
+                    [:li
+                     [:a {:href "#!"
+                          :on-click #(swap! delete-confirm not)
+                          :class "icon-delete"}
+                      "Delete"]])]])]])]]))))

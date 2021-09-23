@@ -6,17 +6,32 @@
    [com.yetanalytics.lrs-admin-ui.functions.copy :refer [copy-text]]))
 
 (defn account [{{:keys [account-id username] :as account} :account}]
-  [:li {:class "mb-2"}
-   [:div {:class "accordion-container"}
-    [:div {:class "account-row"}
-     [:div {:class "account-col"}
-      [:p username]]
-     [:div {:class "account-col"}
-      [:ul {:class "action-icon-list"}
-       [:li
-        [:a {:href "#!",
-             :on-click #(dispatch [:accounts/delete-account account])
-             :class "icon-delete"} "Delete"]]]]]]])
+  (let [delete-confirm (r/atom false)]
+    (fn []
+      [:li {:class "mb-2"}
+       [:div {:class "accordion-container"}
+        [:div {:class "account-row"}
+         [:div {:class "account-col"}
+          [:p username]]
+         [:div {:class "account-col"}
+          [:ul {:class "action-icon-list"}
+           (if @delete-confirm
+             [:li
+              [:span "Are you sure?"]
+              [:a {:href "#!",
+                   :on-click #(do (dispatch [:accounts/delete-account account])
+                                  (swap! delete-confirm not))
+                   :class "confirm-delete"}
+               "Yes"]
+              [:a {:href "#!"
+                   :on-click #(swap! delete-confirm not)
+                   :class "confirm-delete"}
+               "No"]]
+             [:li
+              [:a {:href "#!"
+                   :on-click #(swap! delete-confirm not)
+                   :class "icon-delete"}
+               "Delete"]])]]]]])))
 
 (defn new-account []
   (let [hide-pass (r/atom true)]
