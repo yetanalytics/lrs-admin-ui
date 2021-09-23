@@ -1,14 +1,17 @@
 (ns com.yetanalytics.lrs-admin-ui.handlers
-  (:require [re-frame.core                                   :as re-frame]
-            [reagent.core                                    :as r]
-            [com.yetanalytics.lrs-admin-ui.db                :as db]
+  (:require [re-frame.core                                    :as re-frame]
+            [reagent.core                                     :as r]
+            [com.yetanalytics.lrs-admin-ui.db                 :as db]
+            [com.yetanalytics.lrs-admin-ui.input              :as input]
             [day8.re-frame.http-fx]
-            [com.yetanalytics.lrs-admin-ui.functions         :as fns]
-            [com.yetanalytics.lrs-admin-ui.functions.http    :as httpfn]
-            [com.yetanalytics.lrs-admin-ui.functions.storage :as stor]
-            [ajax.core                                       :as ajax]
-            [clojure.string                                  :as s]
-            [goog.string                                     :refer [format]]
+            [com.yetanalytics.lrs-admin-ui.functions          :as fns]
+            [com.yetanalytics.lrs-admin-ui.functions.http     :as httpfn]
+            [com.yetanalytics.lrs-admin-ui.functions.storage  :as stor]
+            [com.yetanalytics.lrs-admin-ui.functions.password :as pass]
+            [ajax.core                                        :as ajax]
+            [clojure.string                                   :as s]
+            [cljs.spec.alpha                                  :refer [valid?]]
+            [goog.string                                      :refer [format]]
             goog.string.format))
 
 (def global-interceptors
@@ -396,16 +399,19 @@
         :as db} :db} _]
    (let [{:keys [username] :as new-account}
          (::db/new-account db)]
-     {:http-xhrio {:method          :post
-                   :uri             (httpfn/serv-uri
-                                     server-host
-                                     "/admin/account/create")
-                   :response-format (ajax/json-response-format {:keywords? true})
-                   :params          new-account
-                   :format          (ajax/json-request-format)
-                   :on-success      [:accounts/create-success username]
-                   :on-failure      [:accounts/create-error]
-                   :interceptors    [httpfn/add-jwt-interceptor]}})))
+     (if (valid? ::input/valid-new-account new-account)
+       {:http-xhrio {:method          :post
+                     :uri             (httpfn/serv-uri
+                                       server-host
+                                       "/admin/account/create")
+                     :response-format (ajax/json-response-format {:keywords? true})
+                     :params          new-account
+                     :format          (ajax/json-request-format)
+                     :on-success      [:accounts/create-success username]
+                     :on-failure      [:accounts/create-error]
+                     :interceptors    [httpfn/add-jwt-interceptor]}}
+       {:fx         [[:dispatch [:notification/notify true
+                                 "Username or Password did not meet requirements."]]]}))))
 
 (re-frame/reg-event-db
  :new-account/set-new-account
@@ -451,4 +457,4 @@
  :new-account/generate-password
  global-interceptors
  (fn [_ _]
-   {:dispatch [:new-account/set-password (fns/pass-gen 12)]}))
+   {:dispatch [:new-account/set-password (pass/pass-gen 12)]}))
