@@ -1,6 +1,5 @@
 (ns com.yetanalytics.lrs-admin-ui.functions
-  (:require [clojure.set :as cset]
-            [re-frame.core                    :refer [subscribe dispatch-sync]]
+  (:require [re-frame.core                    :refer [subscribe dispatch-sync]]
             [com.yetanalytics.lrs-admin-ui.db :as db]
             [clojure.pprint :refer [pprint]]))
 
