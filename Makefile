@@ -4,7 +4,7 @@ clean:
 	rm -rf target *.log node_modules resources/public/css/style.css resources/public/css/style.css.map
 
 node_modules:
-	npm install
+	npm audit && npm install
 
 dev: 	node_modules
 	clojure -A:fig:build
