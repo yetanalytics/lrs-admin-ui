@@ -6,6 +6,9 @@
    [clojure.string :refer [blank?]]
    [clojure.pprint :refer [pprint]]))
 
+;; Credential scopes to allow the browser to use (those which can read)
+(def read-scopes #{"all" "all/read" "statements/read"})
+
 (defn process-click
   "Extract the pertinent parts of an element from an event and instrument links
   with appropriate dispatch. ignore non-links and external links"
@@ -21,11 +24,9 @@
 
 (defn browser []
   (let [content @(subscribe [:browser/get-content])
-        credentials @(subscribe [:db/get-credentials])
         ;;filter out credentials that can't read the LRS
-        read-credentials (filter #(some #{"all" "all/read" "statements/read"}
-                                        (:scopes %))
-                                 credentials)]
+        read-credentials (filter #(some read-scopes (:scopes %))
+                                 @(subscribe [:db/get-credentials]))]
     [:div {:class "left-content-wrapper"}
      [:h2 {:class "content-title"}
       "Data Browser"]
