@@ -1,5 +1,6 @@
 (ns com.yetanalytics.lrs-admin-ui.functions
-  (:require [re-frame.core                    :refer [subscribe dispatch-sync]]
+  (:require [clojure.set :as cset]
+            [re-frame.core                    :refer [subscribe dispatch-sync]]
             [com.yetanalytics.lrs-admin-ui.db :as db]
             [clojure.pprint :refer [pprint]]))
 
@@ -29,11 +30,7 @@
 (def digit-chars (map char (range 48 58)))  ; 0-9
 (def upper-chars (map char (range 65 91)))  ; A-Z
 (def lower-chars (map char (range 97 123))) ; a-z
-(def special-chars (concat (map char (range 33 48))   ; !"#$%&'()*+,-./
-                           (map char (range 58 65))   ; :;<=>?@
-                           (map char (range 91 97))   ; [\]^_`
-                           (map char (range 123 127)) ; {|}~
-                           ))
+(def special-chars [\! \? \#])
 
 (defn pass-gen
   "Given length `n`, generate a password with random uppercase and lowercase
