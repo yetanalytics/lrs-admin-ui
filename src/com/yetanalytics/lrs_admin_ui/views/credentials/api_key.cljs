@@ -21,8 +21,14 @@
         show-secret (r/atom false)
         edit (r/atom false)]
     (fn []
-      (let [credential @(subscribe [:credentials/get-credential idx])
-            scopes     (:scopes credential)]
+      (let [credential    @(subscribe [:credentials/get-credential idx])
+            scopes        (:scopes credential)
+            scope-display (map-indexed (fn [idx scope]
+                                         [:span {:key (str "scope-display-" idx)}
+                                          (str (when (> idx 0)
+                                                 ", ")
+                                               scope)])
+                                       scopes)]
         [:li {:class "mb-2"}
          [:div {:class "accordion-container"}
           [:div {:class "api-key-row"
@@ -39,13 +45,7 @@
                :on-copy #(dispatch [:notification/notify false "Copied API Key!"])}
               [:a {:class "icon-copy"
                    :on-click #(ps-event %)}]]]]
-           [:div {:class "api-key-col"} "Permissions: "
-            (map-indexed (fn [idx scope]
-                           [:span {:key (str "scope-display-" idx)}
-                            (str (when (> idx 0)
-                                   ", ")
-                                 scope)])
-                         scopes)]]
+           [:div {:class "api-key-col"} "Permissions: " scope-display]]
           (when @expanded
             [:div {:class "api-key-expand"}
              [:div {:class "api-key-col"}
@@ -107,7 +107,7 @@
                 :else
                 [:div {:class "action-row"}
                  [:div {:class "action-label"}
-                  "All"]
+                  scope-display]
                  [:ul {:class "action-icon-list"}
                   [:li
                    [:a {:href "#!",
