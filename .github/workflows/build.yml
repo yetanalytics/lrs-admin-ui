@@ -40,6 +40,12 @@ jobs:
         name: lrs-admin-ui-artifact-${{ github.sha }}
         path: target/bundle/**
 
+    - name: Compress Bundle
+      if: ${{ startsWith(github.ref, 'refs/tags') }}
+      run: | # Need to cd so that the zip file doesn't contain the parent dirs
+        cd target/bundle
+        zip -r ../../lrs-admin-ui.zip ./
+
     - name: Craft Draft Release (Tag Pushes)
       if: ${{ startsWith(github.ref, 'refs/tags') }}
       uses: softprops/action-gh-release@v1
@@ -49,4 +55,4 @@ jobs:
         # tag_name: github.ref
         body: "## Release Notes\nTODO: Create great release notes!"
         draft: true
-        files: target/bundle/**
+        files: lrs-admin-ui.zip
