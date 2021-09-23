@@ -66,7 +66,7 @@
                  :response-format (ajax/json-response-format {:keywords? true})
                  :params          (::db/login db)
                  :on-success      [:login/success-handler]
-                 :on-failure      [:server-error]}}))
+                 :on-failure      [:login/error-handler]}}))
 
 (re-frame/reg-event-fx
  :login/success-handler
@@ -77,6 +77,17 @@
            [:dispatch [:session/set-username username]]
            [:dispatch [:login/set-password nil]]
            [:dispatch [:login/set-username nil]]]})))
+
+(re-frame/reg-event-fx
+ :login/error-handler
+ global-interceptors
+ (fn [{:keys [db]} [_ {:keys [response status] :as error}]]
+   ;; For auth, if its badly formed or not authorized give a specific error,
+   ;; otherwise default to typical server error notice handling
+   (if (or (= status 401) (= status 400))
+     {:fx [[:dispatch [:notification/notify true
+                       "Please enter a valid username and password!"]]]}
+     {:fx [[:dispatch [:server-error error]]]})))
 
 (re-frame/reg-event-fx
  :session/set-username
@@ -393,7 +404,7 @@
                    :params          new-account
                    :format          (ajax/json-request-format)
                    :on-success      [:accounts/create-success username]
-                   :on-failure      [:server-error]
+                   :on-failure      [:accounts/create-error]
                    :interceptors    [httpfn/add-jwt-interceptor]}})))
 
 (re-frame/reg-event-db
@@ -412,6 +423,17 @@
                       :password nil}]]
          [:dispatch [:notification/notify false
                      (format "Created account with username: %s" username)]]]}))
+
+(re-frame/reg-event-fx
+ :accounts/create-error
+ global-interceptors
+ (fn [{:keys [db]} [_ {:keys [response status] :as error}]]
+   ;; For account creation, if its malformed give a specific error,
+   ;; otherwise default to typical server error notice handling
+   (if (or (= status 400))
+     {:fx [[:dispatch [:notification/notify true
+                       "Please enter a valid username and password!"]]]}
+     {:fx [[:dispatch [:server-error error]]]})))
 
 (re-frame/reg-event-db
  :new-account/set-username

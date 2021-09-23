@@ -2,7 +2,8 @@
   (:require
    [reagent.core :as r]
    [re-frame.core :as re-frame :refer [dispatch subscribe]]
-   [com.yetanalytics.lrs-admin-ui.functions.copy :refer [copy-text]]))
+   [com.yetanalytics.lrs-admin-ui.functions.copy :refer [copy-text]]
+   [com.yetanalytics.lrs-admin-ui.functions      :refer [ps-event]]))
 
 (defn has-scope
   [list scope]
@@ -18,10 +19,17 @@
   [{:keys [idx]}]
   (let [expanded (r/atom false)
         show-secret (r/atom false)
-        edit (r/atom false)]
+        edit (r/atom false)
+        delete-confirm (r/atom false)]
     (fn []
-      (let [credential @(subscribe [:credentials/get-credential idx])
-            scopes     (:scopes credential)]
+      (let [credential    @(subscribe [:credentials/get-credential idx])
+            scopes        (:scopes credential)
+            scope-display (map-indexed (fn [idx scope]
+                                         [:span {:key (str "scope-display-" idx)}
+                                          (str (when (> idx 0)
+                                                 ", ")
+                                               scope)])
+                                       scopes)]
         [:li {:class "mb-2"}
          [:div {:class "accordion-container"}
           [:div {:class "api-key-row"
@@ -34,15 +42,11 @@
                       :class "key-display"
                       :read-only true}]
              [copy-text
-              {:text (:api-key credential)}
-              [:a {:class "icon-copy"}]]]]
-           [:div {:class "api-key-col"} "Permissions: "
-            (map-indexed (fn [idx scope]
-                           [:span {:key (str "scope-display-" idx)}
-                            (str (when (> idx 0)
-                                   ", ")
-                                 scope)])
-                         scopes)]]
+              {:text (:api-key credential)
+               :on-copy #(dispatch [:notification/notify false "Copied API Key!"])}
+              [:a {:class "icon-copy"
+                   :on-click #(ps-event %)}]]]]
+           [:div {:class "api-key-col"} "Permissions: " scope-display]]
           (when @expanded
             [:div {:class "api-key-expand"}
              [:div {:class "api-key-col"}
@@ -56,8 +60,9 @@
                             :class "key-display"
                             :read-only true}]
                    [copy-text
-                    {:text (:secret-key credential)}
-                    [:a {:class "icon-copy"}]]]])
+                    {:text (:secret-key credential)
+                     :on-copy #(dispatch [:notification/notify false "Copied Secret Key!"])}
+                    [:a {:class "icon-copy pointer"}]]]])
                [:ul {:class "action-icon-list"}
                 [:li
                  [:a {:href "#!",
@@ -103,13 +108,26 @@
                 :else
                 [:div {:class "action-row"}
                  [:div {:class "action-label"}
-                  "All"]
+                  scope-display]
                  [:ul {:class "action-icon-list"}
                   [:li
                    [:a {:href "#!",
                         :on-click #(swap! edit not)
                         :class "icon-edit"} "Edit"]]
-                  [:li
-                   [:a {:href "#!",
-                        :on-click #(dispatch [:credentials/delete-credential credential])
-                        :class "icon-delete"} "Delete"]]]])]])]]))))
+                  (if @delete-confirm
+                    [:li
+                     [:span "Are you sure?"]
+                     [:a {:href "#!",
+                          :on-click #(do (dispatch [:credentials/delete-credential credential])
+                                         (swap! delete-confirm not))
+                          :class "confirm-delete"}
+                      "Yes"]
+                     [:a {:href "#!"
+                          :on-click #(swap! delete-confirm not)
+                          :class "confirm-delete"}
+                      "No"]]
+                    [:li
+                     [:a {:href "#!"
+                          :on-click #(swap! delete-confirm not)
+                          :class "icon-delete"}
+                      "Delete"]])]])]])]]))))

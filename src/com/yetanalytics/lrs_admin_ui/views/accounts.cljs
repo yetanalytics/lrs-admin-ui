@@ -6,17 +6,32 @@
    [com.yetanalytics.lrs-admin-ui.functions.copy :refer [copy-text]]))
 
 (defn account [{{:keys [account-id username] :as account} :account}]
-  [:li {:class "mb-2"}
-   [:div {:class "accordion-container"}
-    [:div {:class "account-row"}
-     [:div {:class "account-col"}
-      [:p username]]
-     [:div {:class "account-col"}
-      [:ul {:class "action-icon-list"}
-       [:li
-        [:a {:href "#!",
-             :on-click #(dispatch [:accounts/delete-account account])
-             :class "icon-delete"} "Delete"]]]]]]])
+  (let [delete-confirm (r/atom false)]
+    (fn []
+      [:li {:class "mb-2"}
+       [:div {:class "accordion-container"}
+        [:div {:class "account-row"}
+         [:div {:class "account-col"}
+          [:p username]]
+         [:div {:class "account-col"}
+          [:ul {:class "action-icon-list"}
+           (if @delete-confirm
+             [:li
+              [:span "Are you sure?"]
+              [:a {:href "#!",
+                   :on-click #(do (dispatch [:accounts/delete-account account])
+                                  (swap! delete-confirm not))
+                   :class "confirm-delete"}
+               "Yes"]
+              [:a {:href "#!"
+                   :on-click #(swap! delete-confirm not)
+                   :class "confirm-delete"}
+               "No"]]
+             [:li
+              [:a {:href "#!"
+                   :on-click #(swap! delete-confirm not)
+                   :class "icon-delete"}
+               "Delete"]])]]]]])))
 
 (defn new-account []
   (let [hide-pass (r/atom true)]
@@ -47,14 +62,18 @@
                     :else "Hide"))]]
            [:li
             [copy-text
-             {:text (:password new-account)}
+             {:text (:password new-account)
+              :on-copy #(dispatch [:notification/notify false
+                                   "Copied New Password!"])}
              [:a {:class "icon-copy pointer"} "Copy"]]]]]
          [:div {:class "row"}
           [:ul {:class "action-icon-list"}
            [:li
             [:a {:href "#!",
                  :on-click #(dispatch [:new-account/generate-password])
-                 :class "icon-gen"} [:i "Generate Password"]]]]]]))))
+                 :class "icon-gen"} [:i "Generate Password"]]]
+           [:li {:class "password-note"}
+            "Be sure to note or copy the new password as it will not be accessible after creation."]]]]))))
 
 (defn accounts []
   (dispatch [:accounts/load-accounts])

@@ -5,6 +5,9 @@
    [com.yetanalytics.lrs-admin-ui.functions.http :as httpfn]
    [clojure.string :refer [blank?]]))
 
+;; Credential scopes to allow the browser to use (those which can read)
+(def read-scopes #{"all" "all/read" "statements/read"})
+
 (defn process-click
   "Extract the pertinent parts of an element from an event and instrument links
   with appropriate dispatch. ignore non-links and external links"
@@ -20,7 +23,9 @@
 
 (defn browser []
   (let [content @(subscribe [:browser/get-content])
-        credentials @(subscribe [:db/get-credentials])]
+        ;;filter out credentials that can't read the LRS
+        read-credentials (filter #(some read-scopes (:scopes %))
+                                 @(subscribe [:db/get-credentials]))]
     [:div {:class "left-content-wrapper"}
      [:h2 {:class "content-title"}
       "Data Browser"]
@@ -36,7 +41,7 @@
            [:option {:value (:api-key credential)
                      :key (str "browser-credential-" idx)}
             (fns/elide (:api-key credential) 20)])
-         credentials)]
+         read-credentials)]
        ]]
      (let [address @(subscribe [:browser/get-address])]
        (when (some? address)
