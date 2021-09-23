@@ -1,5 +1,4 @@
-(ns com.yetanalytics.lrs-admin-ui.functions
-  (:require [re-frame.core :refer [subscribe dispatch-sync]]))
+(ns com.yetanalytics.lrs-admin-ui.functions)
 
 (defn ps-event
   "Helper function that will prevent default action

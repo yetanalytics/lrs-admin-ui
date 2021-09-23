@@ -1,7 +1,6 @@
 (ns com.yetanalytics.lrs-admin-ui.input
   (:require [cljs.spec.alpha :as s :include-macros true]
-            [com.yetanalytics.lrs-admin-ui.functions.password :as pass]
-            [clojure.set :refer [intersection]]))
+            [com.yetanalytics.lrs-admin-ui.functions.password :as pass]))
 
 ;; Minimum lengths
 (def p-min-len 10)
