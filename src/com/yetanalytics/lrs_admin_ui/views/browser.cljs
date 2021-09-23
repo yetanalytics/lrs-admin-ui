@@ -3,8 +3,7 @@
    [re-frame.core :refer [subscribe dispatch]]
    [com.yetanalytics.lrs-admin-ui.functions :as fns]
    [com.yetanalytics.lrs-admin-ui.functions.http :as httpfn]
-   [clojure.string :refer [blank?]]
-   [clojure.pprint :refer [pprint]]))
+   [clojure.string :refer [blank?]]))
 
 ;; Credential scopes to allow the browser to use (those which can read)
 (def read-scopes #{"all" "all/read" "statements/read"})
