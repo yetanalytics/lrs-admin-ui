@@ -899,18 +899,6 @@ span.close-alert img {
   width: 200px;
 }
 
-.separator-after {
-  content: '|';
-  display: inline-block;
-  vertical-align: top;
-  color: #A5A5A7;
-  margin-left: 24px;
-}
-
-.action-label:after, .action-label-wide:after {
-  @extend .separator-after;
-}
-
 .action-icon-list {
   display: table-cell;
   margin: 0;
@@ -1154,7 +1142,6 @@ ul.role-select li.role-checkbox {
 
 .role-checkbox label {
   padding-left: 4px;
-  font-size: .8em;
 }
 
 
