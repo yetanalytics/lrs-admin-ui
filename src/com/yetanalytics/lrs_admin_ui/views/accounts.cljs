@@ -9,7 +9,7 @@
    [goog.string                                      :refer [format]]
    goog.string.format))
 
-(defn account [{{:keys [account-id username] :as account} :account}]
+(defn account [{{:keys [_account-id username] :as account} :account}]
   (let [delete-confirm (r/atom false)]
     (fn []
       [:li {:class "mb-2"}
@@ -89,11 +89,11 @@
     [:div {:class "left-content-wrapper"}
      [:h2 {:class "content-title"}
       "Account Management"]
-     ;;this will be looped for all tenants if tenant mode is enabled (third)
+     ;; this will be looped for all tenants if tenant mode is enabled (third)
      [:div {:class "tenant-wrapper"}
       [:div {:class "accounts-table-header"} "Account"]
       [:ol {:class "accounts-list accordion"}
-       ;;will repeat for each key
+       ;; will repeat for each key
        (map-indexed
         (fn [idx acct]
           [account {:account acct
