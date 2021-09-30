@@ -1,6 +1,7 @@
 (ns com.yetanalytics.lrs-admin-ui.subs
   (:require [re-frame.core :refer [reg-sub subscribe]]
-            [com.yetanalytics.lrs-admin-ui.db :as db]))
+            [com.yetanalytics.lrs-admin-ui.db :as db]
+            [com.yetanalytics.lrs-admin-ui.functions.http :refer [extract-params]]))
 
 (reg-sub
  :db/get-db

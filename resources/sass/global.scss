@@ -1139,6 +1139,63 @@ a.confirm-delete {
 }
 
 /**************************************************
+# Browser
+**************************************************/
+
+div.browser-filters {
+  margin-top: 10px;
+}
+
+.filters-wrapper {
+  margin-top: 8px;
+}
+
+.filters-wrapper .collapse-sign:before {
+  margin: 1px 8px 0 0;
+}
+
+.filter-table
+{
+  display: table;
+  width: auto;
+  /* background-color: #eee; */
+  border: 1px solid #666666;
+  /* border-spacing: 5px; */
+  /* border-collapse: separate; */
+  font-size: .8em;
+}
+
+.filter-row
+{
+  display:table-row;
+  width:auto;
+}
+
+.filter-column
+{
+  float: left;
+  display: table-column;
+  /* width: auto; */
+  padding: .5em;
+  /*border: 1px solid black;*/
+  /* background-color: #ccc;*/
+}
+
+.filter-column.key {
+  background-color: #11375C;
+  color: white;
+  width: 150px;
+  border: 1px solid black;
+}
+
+.xapi-address {
+  width: 100%;
+  overflow-x: auto;
+  font-size: .9em;
+  white-space: nowrap;
+}
+
+/**************************************************
 # Roles
 **************************************************/
 
