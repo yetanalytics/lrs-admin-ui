@@ -1115,8 +1115,13 @@ input.new-account {
 
 .password-note {
   display: block;
-  font-size: .9em;
+  font-size: .85em;
   font-style: italic;
+}
+
+.username-note {
+  @extend .password-note;
+  margin: 7px 0 7px 0;
 }
 
 a.confirm-delete {
@@ -1125,6 +1130,13 @@ a.confirm-delete {
   border: 1px solid;
 }
 
+.create-account-inputs .row {
+  margin-left: 0px;
+}
+
+.create-account-inputs label {
+  margin-top: 4px;
+}
 
 /**************************************************
 # Roles
