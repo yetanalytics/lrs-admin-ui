@@ -749,7 +749,7 @@ table i {
 
 @media only screen and (max-width: 991px) {
   .pb-80 {
-    padding-bottom: 70px !important;
+    padding-bottom: 120px !important;
   }
 }
 
@@ -1219,6 +1219,11 @@ ul.role-select li.role-checkbox {
 /**************************************************
 # Footer
 **************************************************/
+.footer-menu-box {
+  @extend .w-100, .d-block, .d-md-none, .container-fluid, .bg-primary, .fg-primary, .position-fixed;
+  padding-top: 15px !important;
+}
+
 @media only screen and (max-width: 767px) {
   .footer-menu-box .footer-icon:hover span {
     color: white;
@@ -1226,8 +1231,9 @@ ul.role-select li.role-checkbox {
   }
 }
 
-@media only screen and (max-width: 575px) {
-}
+
+/*@media only screen and (max-width: 575px) {
+}*/
 
 .i-logout img {
   margin-left: 5px;
@@ -1325,4 +1331,11 @@ span.support-note {
     height: 12px;
     margin-top: 6px;
   }
+}
+
+div.mobile-footer-links {
+  font-size: .7em;
+  text-align: center;
+  margin-top: 10px;
+  margin-bottom: 15px;
 }
