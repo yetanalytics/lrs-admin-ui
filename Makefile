@@ -1,7 +1,10 @@
-.PHONY: clean dev build-sass bundle
+.PHONY: clean clean-css dev build-sass bundle
 
 clean:
 	rm -rf target *.log node_modules resources/public/css/style.css resources/public/css/style.css.map
+
+clean-css:
+	rm resources/public/css/style.css
 
 node_modules:
 	npm audit && npm install

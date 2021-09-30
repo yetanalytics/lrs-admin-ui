@@ -974,7 +974,8 @@ span.close-alert img {
 a.icon-copy {
   background: url('../images/icons/icon-copy-blue.svg') no-repeat left center;
   display: inline-block;
-  padding: 4px 0 4px 24px;
+  padding: 4px 4px 4px 24px;
+  margin: 2px 0 0 4px;
   color: #137bce;
   width:24px;
   height:24px;
@@ -1064,7 +1065,7 @@ a.icon-copy:hover {
   height: 20px;
   background-size: contain;
   text-align: left;
-  margin: 2px 8px 0 0;
+  margin: 4px 8px 0 0;
 }
 
 .collapse-sign.expanded:before {
@@ -1074,6 +1075,7 @@ a.icon-copy:hover {
 input.key-display {
   font-size: .8em;
   background-color: #E8E8E8;
+  vertical-align: top;
 }
 
 /**************************************************
@@ -1113,8 +1115,13 @@ input.new-account {
 
 .password-note {
   display: block;
-  font-size: .9em;
+  font-size: .85em;
   font-style: italic;
+}
+
+.username-note {
+  @extend .password-note;
+  margin: 7px 0 7px 0;
 }
 
 a.confirm-delete {
@@ -1123,6 +1130,70 @@ a.confirm-delete {
   border: 1px solid;
 }
 
+.create-account-inputs .row {
+  margin-left: 0px;
+}
+
+.create-account-inputs label {
+  margin-top: 4px;
+}
+
+/**************************************************
+# Browser
+**************************************************/
+
+div.browser-filters {
+  margin-top: 10px;
+}
+
+.filters-wrapper {
+  margin-top: 8px;
+}
+
+.filters-wrapper .collapse-sign:before {
+  margin: 1px 8px 0 0;
+}
+
+.filter-table
+{
+  display: table;
+  width: auto;
+  /* background-color: #eee; */
+  border: 1px solid #666666;
+  /* border-spacing: 5px; */
+  /* border-collapse: separate; */
+  font-size: .8em;
+}
+
+.filter-row
+{
+  display:table-row;
+  width:auto;
+}
+
+.filter-column
+{
+  float: left;
+  display: table-column;
+  /* width: auto; */
+  padding: .5em;
+  /*border: 1px solid black;*/
+  /* background-color: #ccc;*/
+}
+
+.filter-column.key {
+  background-color: #11375C;
+  color: white;
+  width: 150px;
+  border: 1px solid black;
+}
+
+.xapi-address {
+  width: 100%;
+  overflow-x: auto;
+  font-size: .9em;
+  white-space: nowrap;
+}
 
 /**************************************************
 # Roles

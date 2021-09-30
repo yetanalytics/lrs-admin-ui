@@ -20,6 +20,13 @@
         params' (uri/map->query-string param-map)]
     (format "%s%s?%s" server-host path' params')))
 
+(defn extract-params
+  "return a map of parameters, unencoded and cleaned, from an xapi url,
+  excluding unwrap"
+  [address]
+  (-> (uri/query-map (uri/uri address) {:keywordize? false})
+      (dissoc "unwrap_html")))
+
 (defn is-rel?
   [url]
   (= (:host (uri/uri url))
