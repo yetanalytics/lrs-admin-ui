@@ -974,7 +974,8 @@ span.close-alert img {
 a.icon-copy {
   background: url('../images/icons/icon-copy-blue.svg') no-repeat left center;
   display: inline-block;
-  padding: 4px 0 4px 24px;
+  padding: 4px 4px 4px 24px;
+  margin: 2px 0 0 4px;
   color: #137bce;
   width:24px;
   height:24px;
@@ -1074,6 +1075,7 @@ a.icon-copy:hover {
 input.key-display {
   font-size: .8em;
   background-color: #E8E8E8;
+  vertical-align: top;
 }
 
 /**************************************************
