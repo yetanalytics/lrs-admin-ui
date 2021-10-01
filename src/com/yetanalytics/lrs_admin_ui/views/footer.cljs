@@ -23,20 +23,20 @@
         [:a {:href "#"
              :on-click #(dispatch-sync [:session/set-page :credentials])}
          [:i
-          [:img {:src "images/icons/icon-mobile-credentials.svg" :alt "" :width "16"}]]]
-        [:span {:class "font-condensed font-10 fg-primary"} "CREDENTIALS"]]
+          [:img {:src "images/icons/icon-mobile-credentials.svg" :alt "" :width "16"}]]
+         [:span {:class "font-condensed font-10 fg-primary"} "CREDENTIALS"]]]
        [:div {:class "col-3 text-center footer-icon pointer"}
         [:a {:href "#"
              :on-click #(dispatch-sync [:session/set-page :accounts])}
          [:i
-          [:img {:src "images/icons/icon-mobile-profle.svg" :alt "" :width "10"}]]]
-        [:span {:class "font-condensed font-10 fg-primary"} "ACCOUNTS"]]
+          [:img {:src "images/icons/icon-mobile-profle.svg" :alt "" :width "10"}]]
+         [:span {:class "font-condensed font-10 fg-primary"} "ACCOUNTS"]]]
        [:div {:class "col-3 text-center footer-icon pointer"}
         [:a {:href "#"
              :on-click #(dispatch-sync [:session/set-page :browser])}
          [:i
-          [:img {:src "images/icons/icon-mobile-search.svg" :alt "" :width "16"}]]]
-        [:span {:class "font-condensed font-10 fg-primary"} "BROWSER"]]
+          [:img {:src "images/icons/icon-mobile-search.svg" :alt "" :width "16"}]]
+         [:span {:class "font-condensed font-10 fg-primary"} "BROWSER"]]]
        [:div {:class "col-3 text-center footer-icon pointer"}
         [:a {:href "#"
              :on-click #(do (ps-event %)
