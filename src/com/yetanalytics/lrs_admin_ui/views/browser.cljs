@@ -53,7 +53,7 @@
               [:p "Current Query:"]
               [:div {:class "xapi-address"}
                address]
-              (when (not (empty? params))
+              (when (not-empty params)
                 [:div {:class "filters-wrapper"}
                  [:span {:class (str "pointer collapse-sign"
                                      (when @filter-expand " expanded"))
@@ -72,7 +72,7 @@
                       (seq params))]
                     [:ul {:class "action-icon-list"}
                      [:li
-                      [:a {:href "#!",
+                      [:a {:href "#!"
                            :on-click #(dispatch [:browser/load-xapi])
                            :class "icon-clear-filters"} "Clear Filters"]]]])])]))
          (if (blank? content)

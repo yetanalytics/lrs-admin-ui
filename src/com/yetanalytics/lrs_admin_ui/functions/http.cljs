@@ -1,5 +1,5 @@
 (ns com.yetanalytics.lrs-admin-ui.functions.http
-  (:require [re-frame.core     :refer [subscribe dispatch]]
+  (:require [re-frame.core     :refer [subscribe]]
             [ajax.interceptors :refer [to-interceptor]]
             [lambdaisland.uri  :as uri]
             [goog.string       :refer [format]]
@@ -48,7 +48,7 @@
   (js/btoa (format "%s:%s" (:api-key credential) (:secret-key credential))))
 
 ;;Basic Auth and html format for xAPI
-(defn format-html [{:keys [headers] :as request}]
+(defn format-html [request]
   (assoc request :headers
          {"Accept" "text/html"
           "Authorization" (format "Basic %s" (make-basic-auth

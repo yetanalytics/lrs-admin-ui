@@ -1,7 +1,6 @@
 (ns com.yetanalytics.lrs-admin-ui.views.login
   (:require
    [re-frame.core :refer [subscribe dispatch]]
-   [clojure.pprint :refer [pprint]]
    [com.yetanalytics.lrs-admin-ui.functions :as fns]))
 
 (defn login []

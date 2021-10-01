@@ -1,7 +1,6 @@
 (ns ^:figwheel-hooks com.yetanalytics.lrs-admin-ui.core
   (:require
    [goog.dom :as gdom]
-   [reagent.core :as reagent :refer [atom]]
    [reagent.dom :as rdom]
    [com.yetanalytics.lrs-admin-ui.subs]
    [com.yetanalytics.lrs-admin-ui.handlers]
@@ -19,9 +18,8 @@
     (mount el)))
 
 (defn ^:export init [& args]
-  (do
-    (dispatch-sync (into [:db/init] args))
-    (mount-app-element)))
+  (dispatch-sync (into [:db/init] args))
+  (mount-app-element))
 
 (defn ^:after-load on-reload []
   (mount-app-element))
