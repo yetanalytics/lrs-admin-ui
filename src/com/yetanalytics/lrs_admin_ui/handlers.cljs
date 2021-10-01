@@ -125,7 +125,7 @@
 
 (re-frame/reg-event-fx
  :server-error
- (fn [{:keys [_db]} [_ {:keys [response status] :as _error}]]
+ (fn [{:keys [_db]} [_ {:keys [response status]}]]
    ;;extract the error and present it in a notification. If 401 or 0, log out.
    (let [message (if (= status 0)
                    "Could not connect to LRS!"
@@ -286,7 +286,7 @@
 (re-frame/reg-event-fx
  :credentials/save-success
  global-interceptors
- (fn [{:keys [_db]} [_ {:keys [api-key]}]]
+ (fn [_ [_ {:keys [api-key]}]]
    {:fx [[:dispatch [:credentials/load-credentials]]
          [:dispatch [:notification/notify false
                      (format "Updated credential with key: %s"
@@ -310,7 +310,7 @@
 (re-frame/reg-event-fx
  :credentials/create-success
  global-interceptors
- (fn [{:keys [_db]} [_ {:keys [api-key]}]]
+ (fn [_ [_ {:keys [api-key]}]]
    {:fx [[:dispatch [:credentials/load-credentials]]
          [:dispatch [:notification/notify false
                      (format "Created credential with key: %s"
@@ -334,7 +334,7 @@
 (re-frame/reg-event-fx
  :credentials/delete-success
  global-interceptors
- (fn [{:keys [_db]} [_ {:keys [api-key]}]]
+ (fn [_ [_ {:keys [api-key]}]]
    {:fx [[:dispatch [:credentials/load-credentials]]
          [:dispatch [:notification/notify false
                      (format "Deleted credential with key: %s"
@@ -377,7 +377,7 @@
 (re-frame/reg-event-fx
  :accounts/delete-success
  global-interceptors
- (fn [{:keys [_db]} [_ username {:keys [_account-id]}]]
+ (fn [_ [_ username _]]
    {:fx [[:dispatch [:accounts/load-accounts]]
          [:dispatch [:notification/notify false
                      (format "Deleted account with username: %s" username)]]]}))
@@ -418,7 +418,7 @@
 (re-frame/reg-event-fx
  :accounts/create-success
  global-interceptors
- (fn [_ [_ username _response]]
+ (fn [_ [_ username _]]
    {:fx [[:dispatch [:accounts/load-accounts]]
          [:dispatch [:new-account/set-new-account
                      {:username nil
@@ -429,7 +429,7 @@
 (re-frame/reg-event-fx
  :accounts/create-error
  global-interceptors
- (fn [{:keys [_db]} [_ {:keys [status] :as error}]]
+ (fn [_ [_ {:keys [status] :as error}]]
    ;; For account creation, if its malformed give a specific error,
    ;; otherwise default to typical server error notice handling
    (if (= status 400)

@@ -9,7 +9,7 @@
    [goog.string                                      :refer [format]]
    goog.string.format))
 
-(defn account [{{:keys [_account-id username] :as account} :account}]
+(defn account [{{:keys [_ username] :as account} :account}]
   (let [delete-confirm (r/atom false)]
     (fn []
       [:li {:class "mb-2"}

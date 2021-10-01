@@ -19,7 +19,7 @@
      [:ol {:class "api-keys-list accordion"}
       ;;will repeat for each key
       (map-indexed
-       (fn [idx _credential]
+       (fn [idx _]
          [api-key {:idx idx :key (str "api-key-" idx)}])
        credentials)]
      [:div {:class "api-keys-table-actions"}
