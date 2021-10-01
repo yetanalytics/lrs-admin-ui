@@ -12,9 +12,6 @@
                :on-click #(dispatch [:credentials/create-credential {:scopes ["all"]}])
                :value "ADD NEW CREDENTIALS"}]]
      [:div {:class "credential-details"}
-      #_[:div {:class "tenant-title-wrapper"}
-       [:span {:class "fg-secondary"} "Tenant: "]
-       [:span "Demo"]]
       [:div {:class "tenant-count-wrapper"}
        [:span {:class "fg-secondary"} "Number of Credentials: "]
        [:span (count credentials)]]]
