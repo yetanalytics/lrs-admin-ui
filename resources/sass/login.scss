@@ -26,7 +26,17 @@
   z-index: 1;
 }
 
+@media only screen and (max-width: 767px) {
+  .page-login {
+    height: calc(100vh - 60px);
+  }
+  .page-login .opacity-wrapper {
+    height: calc(100vh - 60px)
+  }
+}
+
 @media only screen and (max-width: 576px) {
+
   .page-login .font-rem-80 {
     font-size: .62rem;
   }

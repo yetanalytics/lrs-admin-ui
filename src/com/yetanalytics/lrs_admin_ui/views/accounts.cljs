@@ -48,7 +48,7 @@
                    :class "new-account round"
                    :id "new-username-input"
                    :on-change #(dispatch [:new-account/set-username (fns/ps-event-val %)])}]]
-         [:span {:class "password-note"}
+         [:span {:class "username-note"}
           (format "Username must be %d or more alphanumeric characters" u-min-len)]
          [:div {:class "row pt-2"}
           [:label {:for "new-password-input"} "Password:"]
