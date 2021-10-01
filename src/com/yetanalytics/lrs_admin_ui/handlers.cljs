@@ -83,7 +83,7 @@
 (re-frame/reg-event-fx
  :login/error-handler
  global-interceptors
- (fn [{:keys [_db]} [_ {:keys [status] :as error}]]
+ (fn [_ [_ {:keys [status] :as error}]]
    ;; For auth, if its badly formed or not authorized give a specific error,
    ;; otherwise default to typical server error notice handling
    (if (or (= status 401) (= status 400))
@@ -125,7 +125,7 @@
 
 (re-frame/reg-event-fx
  :server-error
- (fn [{:keys [_db]} [_ {:keys [response status]}]]
+ (fn [_ [_ {:keys [response status]}]]
    ;;extract the error and present it in a notification. If 401 or 0, log out.
    (let [message (if (= status 0)
                    "Could not connect to LRS!"
