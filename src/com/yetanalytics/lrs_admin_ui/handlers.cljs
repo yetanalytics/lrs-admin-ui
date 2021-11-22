@@ -16,28 +16,49 @@
 (def global-interceptors
   [db/check-spec-interceptor])
 
-(re-frame/reg-event-db
+(re-frame/reg-event-fx
  :db/init
  global-interceptors
- (fn [_ [_ & {server-host "serverHost"
-              xapi-prefix "xapiPrefix"
-              :or {server-host ""
-                   xapi-prefix "/xapi"}}]]
-   {::db/session {:page :credentials
-                  :token (stor/get-item "lrs-jwt")
-                  :username (stor/get-item "username")}
-    ::db/login {:username nil
-                :password nil}
-    ::db/credentials []
-    ::db/accounts []
-    ::db/new-account {:username nil
-                      :password nil}
-    ::db/browser {:content nil
-                  :address nil
-                  :credential nil}
-    ::db/server-host server-host
-    ::db/xapi-prefix xapi-prefix
-    ::db/notifications []}))
+ (fn [_  [_ server-host]]
+   {:db {::db/session {:page :credentials
+                       :token (stor/get-item "lrs-jwt")
+                       :username (stor/get-item "username")}
+         ::db/login {:username nil
+                     :password nil}
+         ::db/credentials []
+         ::db/accounts []
+         ::db/new-account {:username nil
+                           :password nil}
+         ::db/browser {:content nil
+                       :address nil
+                       :credential nil}
+         ::db/server-host (or server-host "")
+         ::db/xapi-prefix "/xapi"
+         ::db/enable-statement-html true
+         ::db/notifications []}
+    :fx [[:dispatch [:db/get-env]]]}))
+
+(re-frame/reg-event-fx
+ :db/get-env
+ global-interceptors
+ (fn [{{server-host ::db/server-host
+        :as db} :db} _]
+   {:http-xhrio {:method          :get
+                 :uri             (httpfn/serv-uri
+                                   server-host
+                                   "/admin/env")
+                 :format          (ajax/json-request-format)
+                 :response-format (ajax/json-response-format {:keywords? true})
+                 :on-success      [:db/set-env]
+                 :on-failure      [:server-error]}}))
+
+(re-frame/reg-event-db
+ :db/set-env
+ global-interceptors
+ (fn [db [_ {:keys [urlPrefix enableStmtHtml]}]]
+   (-> db
+       (assoc-in [::db/xapi-prefix] urlPrefix)
+       (assoc-in [::db/enable-statement-html] enableStmtHtml))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Login / Auth
