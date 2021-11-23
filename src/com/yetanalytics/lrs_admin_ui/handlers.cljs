@@ -55,10 +55,10 @@
 (re-frame/reg-event-db
  :db/set-env
  global-interceptors
- (fn [db [_ {:keys [urlPrefix enableStmtHtml]}]]
+ (fn [db [_ {:keys [url-prefix enable-stmt-html]}]]
    (-> db
-       (assoc-in [::db/xapi-prefix] urlPrefix)
-       (assoc-in [::db/enable-statement-html] enableStmtHtml))))
+       (assoc-in [::db/xapi-prefix] url-prefix)
+       (assoc-in [::db/enable-statement-html] enable-stmt-html))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Login / Auth
