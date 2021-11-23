@@ -17,8 +17,8 @@
   (when-let [el (gdom/getElement "app")]
     (mount el)))
 
-(defn ^:export init [& args]
-  (dispatch-sync (into [:db/init] args))
+(defn ^:export init [server-host]
+  (dispatch-sync [:db/init server-host])
   (mount-app-element))
 
 (defn ^:after-load on-reload []

@@ -105,3 +105,8 @@
    (subscribe [:db/get-browser]))
  (fn [browser _]
    (:credential browser)))
+
+(reg-sub
+ :db/get-stmt-html-enabled
+ (fn [db _]
+   (::db/enable-statement-html db)))
