@@ -42,7 +42,7 @@ body > main {
 .json-map-entry {
   display:grid;
   grid-template-columns: minmax(max-content, 9em) 1fr;
-  align-items: baseline;
+  align-items: center;
 }
 
 /* json-map-action shares layout styling with json-map-entry but contains actions */
@@ -202,7 +202,6 @@ div.json-array[data-path="statements"] > div.json-array-element > div.json-map >
 
 div.json-map-entry[data-entry-key-name="statements"] > div.json-map-entry-key {
   @extend .white-on-blue;
-  height: 40px;
 }
 
 div.json-map-entry[data-entry-key-name="more"] > div.json-map-entry-key {
@@ -214,8 +213,7 @@ div.browser > div.json-map > div.json-map-entry[data-entry-key-name="id"] > div.
 }
 
 div.json-map-entry-key {
-  padding: .5em .5em .5em .5em;
-  height: 18px;
+  padding: 1em;
 }
 
 div.browser a:hover {
