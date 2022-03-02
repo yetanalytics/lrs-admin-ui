@@ -1,11 +1,13 @@
-{:deps {org.clojure/clojure       {:mvn/version "1.10.0"}
-        org.clojure/clojurescript {:mvn/version "1.10.773"}
-        reagent                   {:mvn/version "1.1.0"
-                                   :exclusions [cljsjs/react cljsjs/react-dom
-                                                cljsjs/react-dom-server]}
-        re-frame                  {:mvn/version "1.2.0"}
-        day8.re-frame/http-fx     {:mvn/version "0.2.3"}
-        lambdaisland/uri          {:mvn/version "1.4.70"}}
+{:deps {org.clojure/clojure                 {:mvn/version "1.10.0"}
+        org.clojure/clojurescript           {:mvn/version "1.10.773"}
+        reagent/reagent                     {:mvn/version "1.1.0"
+                                             :exclusions
+                                             [cljsjs/react cljsjs/react-dom
+                                              cljsjs/react-dom-server]}
+        re-frame/re-frame                   {:mvn/version "1.2.0"}
+        day8.re-frame/http-fx               {:mvn/version "0.2.3"}
+        lambdaisland/uri                    {:mvn/version "1.4.70"}
+        camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.2"}}
  :paths ["src" "resources"]
  :aliases {:fig {:extra-deps
                   {com.bhauman/rebel-readline-cljs {:mvn/version "0.1.4"}
