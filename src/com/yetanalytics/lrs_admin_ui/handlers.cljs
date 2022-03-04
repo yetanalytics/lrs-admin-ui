@@ -8,6 +8,8 @@
             [com.yetanalytics.lrs-admin-ui.functions.http     :as httpfn]
             [com.yetanalytics.lrs-admin-ui.functions.storage  :as stor]
             [com.yetanalytics.lrs-admin-ui.functions.password :as pass]
+            [com.yetanalytics.lrs-admin-ui.functions.oidc     :as oidc]
+            [com.yetanalytics.re-oidc                         :as re-oidc]
             [ajax.core                                        :as ajax]
             [cljs.spec.alpha                                  :refer [valid?]]
             [goog.string                                      :refer [format]]
@@ -52,13 +54,16 @@
                  :on-success      [:db/set-env]
                  :on-failure      [:server-error]}}))
 
-(re-frame/reg-event-db
+(re-frame/reg-event-fx
  :db/set-env
  global-interceptors
- (fn [db [_ {:keys [url-prefix enable-stmt-html]}]]
-   (-> db
-       (assoc-in [::db/xapi-prefix] url-prefix)
-       (assoc-in [::db/enable-statement-html] enable-stmt-html))))
+ (fn [{:keys [db]} [_ {:keys [url-prefix enable-stmt-html]
+                       ?oidc :oidc}]]
+   (merge {:db (-> db
+                   (assoc-in [::db/xapi-prefix] url-prefix)
+                   (assoc-in [::db/enable-statement-html] enable-stmt-html))}
+          (when ?oidc
+            {:dispatch [::re-oidc/init (oidc/init-config ?oidc)]}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Login / Auth
