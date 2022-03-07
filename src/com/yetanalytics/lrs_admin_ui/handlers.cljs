@@ -63,7 +63,7 @@
                    (assoc-in [::db/xapi-prefix] url-prefix)
                    (assoc-in [::db/enable-statement-html] enable-stmt-html))}
           (when ?oidc
-            {:dispatch [::re-oidc/init (oidc/init-config ?oidc)]}))))
+            {:dispatch [:oidc/init ?oidc]}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Login / Auth
@@ -480,3 +480,46 @@
  global-interceptors
  (fn [_ _]
    {:dispatch [:new-account/set-password (pass/pass-gen 12)]}))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; OIDC Support
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(re-frame/reg-event-fx
+ :oidc/init
+ (fn [{:keys [db]} [_ remote-config]]
+   (let [?search (not-empty js/window.location.search)]
+     {:dispatch-n
+      (cond-> [[::re-oidc/init (oidc/init-config remote-config)]]
+        ?search (conj [::re-oidc/login-callback
+                       oidc/static-config
+                       ?search]))})))
+
+(re-frame/reg-fx
+ :oidc/clear-search-fx
+ (fn [_]
+   (oidc/push-state "/")))
+
+(re-frame/reg-event-fx
+ :oidc/login-success
+ global-interceptors
+ (fn [{:keys [db]} _]
+   {:fx [[:oidc/clear-search-fx {}]]}))
+
+(re-frame/reg-event-fx
+ :oidc/get-user-handler
+ global-interceptors
+ (fn [{:keys [db]} [_ ?user]]
+   (if ?user
+     (let [{:keys [access-token]
+            {:strs [nickname
+                    name
+                    sub]} :profile} (::re-oidc/user db)
+           username (or nickname
+                        name
+                        sub)]
+       {:fx [[:dispatch [:session/set-token access-token]]
+             [:dispatch [:session/set-username username]]
+             [:dispatch [:login/set-password nil]]
+             [:dispatch [:login/set-username nil]]]})
+     {})))

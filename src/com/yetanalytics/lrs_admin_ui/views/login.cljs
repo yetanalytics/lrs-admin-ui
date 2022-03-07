@@ -41,4 +41,11 @@
                   :on-click (fn [e]
                               (fns/ps-event e)
                               (dispatch [:session/authenticate]))} "LOGIN"]]
+       (when @(subscribe [:oidc/login-available?])
+         [:div
+          [:button {:class "login-button"
+                    :on-click (fn [e]
+                                (fns/ps-event e)
+                                (dispatch [:com.yetanalytics.re-oidc/login]))}
+           "OIDC LOGIN"]])
        [:p {:class "login-separator"} "Trouble logging in? See provided documentation about account management or contact your system administrator."]]]]]])

@@ -110,3 +110,11 @@
  :db/get-stmt-html-enabled
  (fn [db _]
    (::db/enable-statement-html db)))
+
+;; OIDC State
+(reg-sub
+ :oidc/login-available?
+ :<- [:com.yetanalytics.re-oidc/status]
+ (fn [?status _]
+   (and ?status
+        (not= ?status :loaded))))

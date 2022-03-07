@@ -1,6 +1,6 @@
 (ns com.yetanalytics.lrs-admin-ui.functions.oidc)
 
-(defn- push-state
+(defn push-state
   "Push history state to clean up on login/logout"
   [path]
   (.pushState js/window.history
@@ -10,7 +10,8 @@
 
 (def static-config
   {:auto-login false
-   :on-login-success #(push-state "/")
+   :on-login-success [:oidc/login-success]
+   :on-get-user-success [:oidc/get-user-handler]
    :user-store :local-storage})
 
 (defn init-config
