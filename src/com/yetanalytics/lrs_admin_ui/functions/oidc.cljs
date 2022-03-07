@@ -13,6 +13,7 @@
   {:auto-login false
    :on-login-success [:oidc/login-success]
    :on-get-user-success [:oidc/get-user-handler]
+   :on-logout-success [:notification/notify false "You have logged out."]
    :user-store :local-storage})
 
 (defn init-config

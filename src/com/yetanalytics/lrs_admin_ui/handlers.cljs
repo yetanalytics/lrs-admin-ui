@@ -167,8 +167,8 @@
    {:fx [[:dispatch [:session/set-token nil]]
          [:dispatch [:session/set-username nil]]
          [:dispatch
-          ;; For OIDC logouts, which contain a redirect, notification is not
-          ;; currently possible.
+          ;; For OIDC logouts, which contain a redirect, notification is
+          ;; triggered by logout success
           (if (oidc/logged-in? db)
             [::re-oidc/logout]
             [:notification/notify false "You have logged out."])]]}))
