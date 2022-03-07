@@ -163,10 +163,15 @@
 
 (re-frame/reg-event-fx
  :session/logout
- (fn [_ _]
+ (fn [{:keys [db]} _]
    {:fx [[:dispatch [:session/set-token nil]]
          [:dispatch [:session/set-username nil]]
-         [:dispatch [:notification/notify false "You have logged out."]]]}))
+         [:dispatch
+          ;; For OIDC logouts, which contain a redirect, notification is not
+          ;; currently possible.
+          (if (oidc/logged-in? db)
+            [::re-oidc/logout]
+            [:notification/notify false "You have logged out."])]]}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Notifications / Alert Bar
