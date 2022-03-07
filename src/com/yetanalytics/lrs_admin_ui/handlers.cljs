@@ -509,18 +509,19 @@
  :oidc/login-success
  global-interceptors
  (fn [{:keys [db]} _]
-   {:fx [[:oidc/clear-search-fx {}]]}))
+   {:fx [[:oidc/clear-search-fx {}]
+         [:dispatch
+          [:oidc/get-user-handler]]]}))
 
 (re-frame/reg-event-fx
  :oidc/get-user-handler
  global-interceptors
- (fn [{:keys [db]} [_ ?user]]
-   (if ?user
-     (let [{:keys [access-token]
-            {:strs [nickname
-                    name
-                    sub]} :profile} (::re-oidc/user db)
-           username (or nickname
+ (fn [{:keys [db]} _]
+   (if-let [{:keys [access-token]
+             {:strs [nickname
+                     name
+                     sub]} :profile} (::re-oidc/user db)]
+     (let [username (or nickname
                         name
                         sub)]
        {:fx [[:dispatch [:session/set-token access-token]]
