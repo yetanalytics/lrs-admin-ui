@@ -518,14 +518,9 @@
  global-interceptors
  (fn [{:keys [db]} _]
    (if-let [{:keys [access-token]
-             {:strs [nickname
-                     name
-                     sub]} :profile} (::re-oidc/user db)]
-     (let [username (or nickname
-                        name
-                        sub)]
-       {:fx [[:dispatch [:session/set-token access-token]]
-             [:dispatch [:session/set-username username]]
-             [:dispatch [:login/set-password nil]]
-             [:dispatch [:login/set-username nil]]]})
+             {:strs [sub]} :profile} (::re-oidc/user db)]
+     {:fx [[:dispatch [:session/set-token access-token]]
+           [:dispatch [:session/set-username sub]]
+           [:dispatch [:login/set-password nil]]
+           [:dispatch [:login/set-username nil]]]}
      {})))
