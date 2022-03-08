@@ -34,6 +34,21 @@
    (:username session)))
 
 (reg-sub
+ :session/get-display-name
+ :<- [:session/get-username]
+ :<- [:com.yetanalytics.re-oidc.user/profile]
+ (fn [[username
+       ?profile] _]
+   (println username)
+   (or (when-let [{:strs [name
+                          nickname
+                          preferred_username]} ?profile]
+         (or name
+             nickname
+             preferred_username))
+       username)))
+
+(reg-sub
  :notifications/get-notifications
  (fn [db _]
    (::db/notifications db)))

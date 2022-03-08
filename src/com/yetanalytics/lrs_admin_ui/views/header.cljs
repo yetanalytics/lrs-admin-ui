@@ -11,7 +11,8 @@
      [:i
       [:img {:src "images/logo.png", :alt "logo", :class "logo-img"}]]]
     [:div {:class "text-right"}
-     [:div {:class "user-name"} (format "Welcome, %s" @(subscribe [:session/get-username]))]
+     [:div {:class "user-name"} (format "Welcome, %s"
+                                        @(subscribe [:session/get-display-name]))]
      [:div {:class "header-actions-wrapper"}
       [:a {:class "fg-primary",
            :href "#"
