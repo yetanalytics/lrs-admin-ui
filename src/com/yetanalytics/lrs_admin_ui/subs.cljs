@@ -39,7 +39,6 @@
  :<- [:com.yetanalytics.re-oidc.user/profile]
  (fn [[username
        ?profile] _]
-   (println username)
    (or (when-let [{:strs [name
                           nickname
                           preferred_username]} ?profile]

@@ -120,10 +120,12 @@
 (re-frame/reg-event-fx
  :session/set-username
  global-interceptors
- (fn [{:keys [db]} [_ username]]
-   {:db (assoc-in db [::db/session :username]
-                  username)
-    :session/store ["username" username]}))
+ (fn [{:keys [db]} [_ username
+                    & {:keys [store?]
+                       :or {store? true}}]]
+   (cond-> {:db (assoc-in db [::db/session :username]
+                          username)}
+     store? (assoc :session/store ["username" username]))))
 
 (re-frame/reg-fx
  :session/store
@@ -135,9 +137,11 @@
 (re-frame/reg-event-fx
  :session/set-token
  global-interceptors
- (fn [{:keys [db]} [_ token]]
-   {:db (assoc-in db [::db/session :token] token)
-    :session/store ["lrs-jwt" token]}))
+ (fn [{:keys [db]} [_ token
+                    & {:keys [store?]
+                       :or {store? true}}]]
+   (cond-> {:db (assoc-in db [::db/session :token] token)}
+     store? (assoc :session/store ["lrs-jwt" token]))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; General
@@ -519,8 +523,10 @@
  (fn [{:keys [db]} _]
    (if-let [{:keys [access-token]
              {:strs [sub]} :profile} (::re-oidc/user db)]
-     {:fx [[:dispatch [:session/set-token access-token]]
-           [:dispatch [:session/set-username sub]]
+     {:fx [[:dispatch [:session/set-token access-token
+                       :store? false]]
+           [:dispatch [:session/set-username sub
+                       :store? false]]
            [:dispatch [:login/set-password nil]]
            [:dispatch [:login/set-username nil]]]}
      {})))
