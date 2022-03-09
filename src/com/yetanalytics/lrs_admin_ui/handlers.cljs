@@ -513,12 +513,10 @@
  :oidc/login-success
  global-interceptors
  (fn [{:keys [db]} _]
-   {:fx [[:oidc/clear-search-fx {}]
-         [:dispatch
-          [:oidc/get-user-handler]]]}))
+   {:fx [[:oidc/clear-search-fx {}]]}))
 
 (re-frame/reg-event-fx
- :oidc/get-user-handler
+ :oidc/user-loaded
  global-interceptors
  (fn [{:keys [db]} _]
    (if-let [{:keys [access-token]
@@ -530,3 +528,10 @@
            [:dispatch [:login/set-password nil]]
            [:dispatch [:login/set-username nil]]]}
      {})))
+
+(re-frame/reg-event-fx
+ :oidc/user-unloaded
+ global-interceptors
+ (fn [{:keys [db]} _]
+   {:fx [[:dispatch [:session/set-token nil]]
+         [:dispatch [:session/set-username nil]]]}))

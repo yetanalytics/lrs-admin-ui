@@ -12,7 +12,12 @@
 (def static-config
   {:auto-login false
    :on-login-success [:oidc/login-success]
-   :on-get-user-success [:oidc/get-user-handler]
+   ;; Get user
+   :on-get-user-success [:oidc/user-loaded]
+   ;; Keep the token up to date
+   :on-user-loaded [:oidc/user-loaded]
+   ;; remove OIDC creds if unloaded
+   :on-user-unloaded [:oidc/user-unloaded]
    :on-logout-success [:notification/notify false "You have logged out."]
    :user-store :local-storage})
 
