@@ -12,8 +12,6 @@
 (def static-config
   {:auto-login false
    :on-login-success [:oidc/login-success]
-   ;; Get user
-   :on-get-user-success [:oidc/user-loaded]
    ;; Keep the token up to date
    :on-user-loaded [:oidc/user-loaded]
    ;; remove OIDC creds if unloaded

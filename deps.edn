@@ -7,7 +7,9 @@
         re-frame/re-frame                   {:mvn/version "1.2.0"}
         day8.re-frame/http-fx               {:mvn/version "0.2.3"}
         lambdaisland/uri                    {:mvn/version "1.4.70"}
-        com.yetanalytics/re-oidc            {:mvn/version "0.0.5-SNAPSHOT"
+        com.yetanalytics/re-oidc            {:git/url "https://github.com/yetanalytics/re-oidc.git"
+                                             :git/sha "f54b22d8ed0639cf7f95bbb674e307a51ff7f64d"
+                                             #_#_:mvn/version "0.0.5-SNAPSHOT"
                                              :exclusions
                                              [reagent/reagent
                                               re-frame/re-frame]}}
