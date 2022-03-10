@@ -1,4 +1,4 @@
-.PHONY: clean clean-css dev build-sass bundle dev-min
+.PHONY: clean clean-css dev build-sass bundle
 
 clean:
 	rm -rf target *.log node_modules resources/public/css/style.css resources/public/css/style.css.map
@@ -11,9 +11,6 @@ node_modules:
 
 dev: 	node_modules
 	clojure -A:fig:dev:build
-
-dev-min: node_modules
-	clojure -M:fig:min
 
 resources/public/css/style.css: node_modules
 	clojure -A:build-sass
