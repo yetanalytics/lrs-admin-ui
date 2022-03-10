@@ -507,7 +507,7 @@
 (re-frame/reg-fx
  :oidc/clear-search-fx
  (fn [_]
-   (oidc/push-state "/")))
+   (oidc/push-state js/window.location.pathname)))
 
 (re-frame/reg-event-fx
  :oidc/login-success
