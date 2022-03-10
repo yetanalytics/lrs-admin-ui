@@ -9,7 +9,8 @@
         lambdaisland/uri                    {:mvn/version "1.4.70"}
         com.yetanalytics/re-oidc            {:mvn/version "0.0.5"
                                              :exclusions
-                                             [reagent/reagent
+                                             [cljsjs/oidc-client
+                                              reagent/reagent
                                               re-frame/re-frame]}}
  :paths ["src" "resources"]
  :aliases {:fig {:extra-deps
