@@ -23,11 +23,14 @@
   "Combine the OIDC client config from the server with static config.
   Set redirect uis based on SPA origin."
   [oidc-config]
-  (assoc static-config
-         :oidc-config
-         (merge oidc-config
-                {"redirect_uri"             js/window.location.origin
-                 "post_logout_redirect_uri" js/window.location.origin})))
+  (let [origin js/window.location.origin
+        pathname js/window.location.pathname
+        spa-uri (str origin pathname)]
+    (assoc static-config
+           :oidc-config
+           (merge oidc-config
+                  {"redirect_uri" spa-uri
+                   "post_logout_redirect_uri" spa-uri}))))
 
 (defn logged-in?
   "Is there an active OIDC login?"
