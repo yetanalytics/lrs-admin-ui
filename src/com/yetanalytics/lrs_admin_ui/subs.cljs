@@ -153,3 +153,10 @@
    (if oidc-enabled?
      local-admin-enabled?
      true)))
+
+;; Showing the account mgmt nav is just an alias
+(reg-sub
+ :oidc/show-account-nav?
+ :<- [:oidc/show-local-login?]
+ (fn [show-local-login? _]
+   show-local-login?))
