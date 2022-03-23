@@ -132,3 +132,24 @@
  (fn [?status _]
    (and ?status
         (not= ?status :loaded))))
+
+(reg-sub
+ :oidc/enabled?
+ (fn [db _]
+   (::db/oidc-auth db false)))
+
+(reg-sub
+ :oidc/local-admin-enabled?
+ (fn [db _]
+   (::db/oidc-enable-local-admin db false)))
+
+;; Hide/show local login based on oidc-enable-local-admin
+(reg-sub
+ :oidc/show-local-login?
+ :<- [:oidc/enabled?]
+ :<- [:oidc/local-admin-enabled?]
+ (fn [[oidc-enabled?
+       local-admin-enabled?] _]
+   (if oidc-enabled?
+     local-admin-enabled?
+     true)))

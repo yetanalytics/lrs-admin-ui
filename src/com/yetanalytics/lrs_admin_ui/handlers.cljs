@@ -37,7 +37,9 @@
          ::db/server-host (or server-host "")
          ::db/xapi-prefix "/xapi"
          ::db/enable-statement-html true
-         ::db/notifications []}
+         ::db/notifications []
+         ::db/oidc-auth false
+         ::db/oidc-enable-local-admin false}
     :fx [[:dispatch [:db/get-env]]]}))
 
 (re-frame/reg-event-fx
@@ -57,11 +59,14 @@
 (re-frame/reg-event-fx
  :db/set-env
  global-interceptors
- (fn [{:keys [db]} [_ {:keys [url-prefix enable-stmt-html]
-                       ?oidc :oidc}]]
-   (merge {:db (-> db
-                   (assoc-in [::db/xapi-prefix] url-prefix)
-                   (assoc-in [::db/enable-statement-html] enable-stmt-html))}
+ (fn [{:keys [db]} [_ {:keys             [url-prefix
+                                          enable-stmt-html]
+                       ?oidc             :oidc
+                       ?oidc-local-admin :oidc-enable-local-admin}]]
+   (merge {:db (assoc db
+                      ::db/xapi-prefix url-prefix
+                      ::db/enable-statement-html enable-stmt-html
+                      ::db/oidc-enable-local-admin (or ?oidc-local-admin false))}
           (when ?oidc
             {:dispatch [:oidc/init ?oidc]}))))
 
@@ -498,7 +503,8 @@
  :oidc/init
  (fn [{:keys [db]} [_ remote-config]]
    (let [?search (not-empty js/window.location.search)]
-     {:dispatch-n
+     {:db (assoc db ::db/oidc-auth true)
+      :dispatch-n
       (cond-> [[::re-oidc/init (oidc/init-config remote-config)]]
         ?search (conj [::re-oidc/login-callback
                        oidc/static-config
