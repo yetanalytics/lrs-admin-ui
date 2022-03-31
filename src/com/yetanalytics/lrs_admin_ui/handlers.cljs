@@ -8,6 +8,8 @@
             [com.yetanalytics.lrs-admin-ui.functions.http     :as httpfn]
             [com.yetanalytics.lrs-admin-ui.functions.storage  :as stor]
             [com.yetanalytics.lrs-admin-ui.functions.password :as pass]
+            [com.yetanalytics.lrs-admin-ui.functions.oidc     :as oidc]
+            [com.yetanalytics.re-oidc                         :as re-oidc]
             [ajax.core                                        :as ajax]
             [cljs.spec.alpha                                  :refer [valid?]]
             [goog.string                                      :refer [format]]
@@ -35,7 +37,9 @@
          ::db/server-host (or server-host "")
          ::db/xapi-prefix "/xapi"
          ::db/enable-statement-html true
-         ::db/notifications []}
+         ::db/notifications []
+         ::db/oidc-auth false
+         ::db/oidc-enable-local-admin false}
     :fx [[:dispatch [:db/get-env]]]}))
 
 (re-frame/reg-event-fx
@@ -52,13 +56,19 @@
                  :on-success      [:db/set-env]
                  :on-failure      [:server-error]}}))
 
-(re-frame/reg-event-db
+(re-frame/reg-event-fx
  :db/set-env
  global-interceptors
- (fn [db [_ {:keys [url-prefix enable-stmt-html]}]]
-   (-> db
-       (assoc-in [::db/xapi-prefix] url-prefix)
-       (assoc-in [::db/enable-statement-html] enable-stmt-html))))
+ (fn [{:keys [db]} [_ {:keys             [url-prefix
+                                          enable-stmt-html]
+                       ?oidc             :oidc
+                       ?oidc-local-admin :oidc-enable-local-admin}]]
+   (merge {:db (assoc db
+                      ::db/xapi-prefix url-prefix
+                      ::db/enable-statement-html enable-stmt-html
+                      ::db/oidc-enable-local-admin (or ?oidc-local-admin false))}
+          (when ?oidc
+            {:dispatch [:oidc/init ?oidc]}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Login / Auth
@@ -115,10 +125,12 @@
 (re-frame/reg-event-fx
  :session/set-username
  global-interceptors
- (fn [{:keys [db]} [_ username]]
-   {:db (assoc-in db [::db/session :username]
-                  username)
-    :session/store ["username" username]}))
+ (fn [{:keys [db]} [_ username
+                    & {:keys [store?]
+                       :or {store? true}}]]
+   (cond-> {:db (assoc-in db [::db/session :username]
+                          username)}
+     store? (assoc :session/store ["username" username]))))
 
 (re-frame/reg-fx
  :session/store
@@ -130,9 +142,11 @@
 (re-frame/reg-event-fx
  :session/set-token
  global-interceptors
- (fn [{:keys [db]} [_ token]]
-   {:db (assoc-in db [::db/session :token] token)
-    :session/store ["lrs-jwt" token]}))
+ (fn [{:keys [db]} [_ token
+                    & {:keys [store?]
+                       :or {store? true}}]]
+   (cond-> {:db (assoc-in db [::db/session :token] token)}
+     store? (assoc :session/store ["lrs-jwt" token]))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; General
@@ -158,10 +172,15 @@
 
 (re-frame/reg-event-fx
  :session/logout
- (fn [_ _]
+ (fn [{:keys [db]} _]
    {:fx [[:dispatch [:session/set-token nil]]
          [:dispatch [:session/set-username nil]]
-         [:dispatch [:notification/notify false "You have logged out."]]]}))
+         [:dispatch
+          ;; For OIDC logouts, which contain a redirect, notification is
+          ;; triggered by logout success
+          (if (oidc/logged-in? db)
+            [::re-oidc/logout]
+            [:notification/notify false "You have logged out."])]]}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Notifications / Alert Bar
@@ -475,3 +494,50 @@
  global-interceptors
  (fn [_ _]
    {:dispatch [:new-account/set-password (pass/pass-gen 12)]}))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; OIDC Support
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(re-frame/reg-event-fx
+ :oidc/init
+ (fn [{:keys [db]} [_ remote-config]]
+   (let [?search (not-empty js/window.location.search)]
+     {:db (assoc db ::db/oidc-auth true)
+      :dispatch-n
+      (cond-> [[::re-oidc/init (oidc/init-config remote-config)]]
+        ?search (conj [::re-oidc/login-callback
+                       oidc/static-config
+                       ?search]))})))
+
+(re-frame/reg-fx
+ :oidc/clear-search-fx
+ (fn [_]
+   (oidc/push-state js/window.location.pathname)))
+
+(re-frame/reg-event-fx
+ :oidc/login-success
+ global-interceptors
+ (fn [{:keys [db]} _]
+   {:fx [[:oidc/clear-search-fx {}]]}))
+
+(re-frame/reg-event-fx
+ :oidc/user-loaded
+ global-interceptors
+ (fn [{:keys [db]} _]
+   (if-let [{:keys [access-token]
+             {:strs [sub]} :profile} (::re-oidc/user db)]
+     {:fx [[:dispatch [:session/set-token access-token
+                       :store? false]]
+           [:dispatch [:session/set-username sub
+                       :store? false]]
+           [:dispatch [:login/set-password nil]]
+           [:dispatch [:login/set-username nil]]]}
+     {})))
+
+(re-frame/reg-event-fx
+ :oidc/user-unloaded
+ global-interceptors
+ (fn [{:keys [db]} _]
+   {:fx [[:dispatch [:session/set-token nil]]
+         [:dispatch [:session/set-username nil]]]}))

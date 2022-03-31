@@ -10,7 +10,7 @@ node_modules:
 	npm audit && npm install
 
 dev: 	node_modules
-	clojure -A:fig:build
+	clojure -A:fig:dev:build
 
 resources/public/css/style.css: node_modules
 	clojure -A:build-sass

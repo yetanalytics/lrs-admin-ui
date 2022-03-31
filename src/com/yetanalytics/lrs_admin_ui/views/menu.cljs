@@ -14,6 +14,7 @@
   [:div {:class "banner-link-box"}
    [:ul
     [menu-item {:name "Credentials Management" :page :credentials}]
-    [menu-item {:name "Account Management" :page :accounts}]
+    (when @(subscribe [:oidc/show-account-nav?])
+      [menu-item {:name "Account Management" :page :accounts}])
     (when @(subscribe [:db/get-stmt-html-enabled])
       [menu-item {:name "Statement Browser" :page :browser}])]])

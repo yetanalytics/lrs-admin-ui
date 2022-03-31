@@ -34,6 +34,20 @@
    (:username session)))
 
 (reg-sub
+ :session/get-display-name
+ :<- [:session/get-username]
+ :<- [:com.yetanalytics.re-oidc.user/profile]
+ (fn [[username
+       ?profile] _]
+   (or (when-let [{:strs [name
+                          nickname
+                          preferred_username]} ?profile]
+         (or name
+             nickname
+             preferred_username))
+       username)))
+
+(reg-sub
  :notifications/get-notifications
  (fn [db _]
    (::db/notifications db)))
@@ -110,3 +124,39 @@
  :db/get-stmt-html-enabled
  (fn [db _]
    (::db/enable-statement-html db)))
+
+;; OIDC State
+(reg-sub
+ :oidc/login-available?
+ :<- [:com.yetanalytics.re-oidc/status]
+ (fn [?status _]
+   (and ?status
+        (not= ?status :loaded))))
+
+(reg-sub
+ :oidc/enabled?
+ (fn [db _]
+   (::db/oidc-auth db false)))
+
+(reg-sub
+ :oidc/local-admin-enabled?
+ (fn [db _]
+   (::db/oidc-enable-local-admin db false)))
+
+;; Hide/show local login based on oidc-enable-local-admin
+(reg-sub
+ :oidc/show-local-login?
+ :<- [:oidc/enabled?]
+ :<- [:oidc/local-admin-enabled?]
+ (fn [[oidc-enabled?
+       local-admin-enabled?] _]
+   (if oidc-enabled?
+     local-admin-enabled?
+     true)))
+
+;; Showing the account mgmt nav is just an alias
+(reg-sub
+ :oidc/show-account-nav?
+ :<- [:oidc/show-local-login?]
+ (fn [show-local-login? _]
+   show-local-login?))

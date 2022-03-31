@@ -75,6 +75,11 @@
 
 (s/def ::notifications (s/every ::notification))
 
+(s/def ::enable-statement-html boolean?)
+
+(s/def ::oidc-auth boolean?)
+(s/def ::oidc-enable-local-admin boolean?)
+
 (s/def ::db (s/keys :req [::session
                           ::credentials
                           ::login
@@ -82,7 +87,10 @@
                           ::accounts
                           ::server-host
                           ::xapi-prefix
-                          ::notifications]))
+                          ::notifications
+                          ::enable-statement-html
+                          ::oidc-auth
+                          ::oidc-enable-local-admin]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Continuous DB Validation
