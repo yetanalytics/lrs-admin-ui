@@ -7,7 +7,10 @@
    [clojure.string :refer [blank?]]))
 
 ;; Credential scopes to allow the browser to use (those which can read)
-(def read-scopes #{"all" "all/read" "statements/read"})
+(def read-scopes #{"all"
+                   "all/read"
+                   "statements/read"
+                   "statements/read/mine"})
 
 (defn process-click
   "Extract the pertinent parts of an element from an event and instrument links
