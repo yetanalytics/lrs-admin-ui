@@ -1,0 +1,14 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - '*'
+    tags:
+      - 'v*.*.*' # Enforce Semantic Versioning
+
+jobs:
+  lint:
+    uses: yetanalytics/workflow-linter/.github/workflows/linter.yml@v2023.01.20
+    with:
+      lint-directories: 'src'
