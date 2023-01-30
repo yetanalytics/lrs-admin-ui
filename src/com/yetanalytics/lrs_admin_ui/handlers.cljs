@@ -45,8 +45,7 @@
 (re-frame/reg-event-fx
  :db/get-env
  global-interceptors
- (fn [{{server-host ::db/server-host
-        :as db} :db} _]
+ (fn [{{server-host ::db/server-host} :db} _]
    {:http-xhrio {:method          :get
                  :uri             (httpfn/serv-uri
                                    server-host
@@ -518,7 +517,7 @@
 (re-frame/reg-event-fx
  :oidc/login-success
  global-interceptors
- (fn [{:keys [db]} _]
+ (fn [_ _]
    {:fx [[:oidc/clear-search-fx {}]]}))
 
 (re-frame/reg-event-fx
@@ -538,6 +537,6 @@
 (re-frame/reg-event-fx
  :oidc/user-unloaded
  global-interceptors
- (fn [{:keys [db]} _]
+ (fn [_ _]
    {:fx [[:dispatch [:session/set-token nil]]
          [:dispatch [:session/set-username nil]]]}))
