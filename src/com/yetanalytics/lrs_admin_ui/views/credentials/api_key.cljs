@@ -9,6 +9,7 @@
 (def scope-list
   ["all"
    "all/read"
+   "state"
    "statements/read"
    "statements/read/mine"
    "statements/write"])
