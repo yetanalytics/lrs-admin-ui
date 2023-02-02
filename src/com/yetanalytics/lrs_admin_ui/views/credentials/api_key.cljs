@@ -5,6 +5,14 @@
    [com.yetanalytics.lrs-admin-ui.functions.copy :refer [copy-text]]
    [com.yetanalytics.lrs-admin-ui.functions      :refer [ps-event]]))
 
+;; XXX: This is one of the UI features not yet supported in third/cloud lrs
+(def scope-list
+  ["all"
+   "all/read"
+   "statements/read"
+   "statements/read/mine"
+   "statements/write"])
+
 (defn has-scope
   [list scope]
   (some? (some #{scope} list)))
@@ -91,7 +99,7 @@
                                                           (assoc credential :scopes
                                                                  (toggle-scope scope scopes))])}]
                           [:label {:for "scopes"} (str " " scope)]])
-                       ["statements/write" "statements/read" "all/read" "all"])]
+                       scope-list)]
                  [:ul {:class "action-icon-list"}
                   [:li
                    [:a {:href "#!",

@@ -14,3 +14,11 @@ pom.xml
 node_modules/
 .DS_Store
 resources/public/css/style.css
+
+# VSCode
+.calva/
+.clj-kondo/
+.cljs_node_repl/
+.lsp/
+.vscode/
+
