@@ -4,11 +4,15 @@
 
 (defn big-number
   [label sub-qvec]
-  [:div.big-number
+  (let [value @(subscribe sub-qvec)]
+    [:div.big-number
    [:div.big-number-value
-    @(subscribe sub-qvec)]
+    {:class (if value
+              ""
+              "spinner")}
+    (or value " ")]
    [:div.big-number-label
-    label]])
+    label]]))
 
 (defn refresh-button
   []
