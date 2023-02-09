@@ -16,10 +16,11 @@
 
 (defn refresh-button
   []
-  [:input.btn-blue-bold
-   {:type "button"
-    :value "REFRESH"
-    :on-click #(dispatch [:status/get-data])}])
+  [:div.status-refresh-button
+   [:input.btn-blue-bold
+    {:type "button"
+     :value "REFRESH"
+     :on-click #(dispatch [:status/get-data])}]])
 
 (defn status
   []
@@ -27,6 +28,6 @@
    [:h2 {:class "content-title"}
     "LRS Status"]
    [refresh-button]
-
-   [big-number "STATEMENTS" [:status.data/statement-count]]
-   [big-number "ACTORS" [:status.data/actor-count]]])
+   [:div.status-vis-row
+    [big-number "STATEMENTS" [:status.data/statement-count]]
+    [big-number "ACTORS" [:status.data/actor-count]]]])

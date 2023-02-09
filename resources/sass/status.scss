@@ -1,5 +1,17 @@
 /* Status Dashboard Styles */
 
+.status-refresh-button {
+  text-align: right;
+}
+
+.status-vis-row {
+  display: flex;
+}
+
+.status-vis-row > div {
+  flex-grow: 1;
+}
+
 .big-number {
   text-align: center;
 }
