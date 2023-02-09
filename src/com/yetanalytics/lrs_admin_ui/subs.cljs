@@ -166,3 +166,20 @@
  :status/enabled?
  (fn [db _]
    (::db/enable-admin-status db false)))
+
+(reg-sub
+ :db/status
+ (fn [db _]
+   (::db/status db)))
+
+(reg-sub
+ :status/data
+ :<- [:db/status]
+ (fn [status _]
+   (:data status)))
+
+(reg-sub
+ :status.data/statement-count
+ :<- [:status/data]
+ (fn [data _]
+   (:statement-count data)))

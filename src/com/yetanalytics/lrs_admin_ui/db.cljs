@@ -82,6 +82,14 @@
 
 (s/def ::enable-admin-status boolean?)
 
+(s/def :status.data/statement-count nat-int?)
+
+(s/def :status/data
+  (s/keys :req-un [:status.data/statement-count]))
+
+(s/def ::status
+  (s/keys :opt-un [:status/data]))
+
 (s/def ::db (s/keys :req [::session
                           ::credentials
                           ::login
@@ -93,7 +101,8 @@
                           ::enable-statement-html
                           ::oidc-auth
                           ::oidc-enable-local-admin
-                          ::enable-admin-status]))
+                          ::enable-admin-status
+                          ::status]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Continuous DB Validation

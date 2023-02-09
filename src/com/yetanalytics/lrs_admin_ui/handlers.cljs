@@ -40,7 +40,8 @@
          ::db/notifications []
          ::db/oidc-auth false
          ::db/oidc-enable-local-admin false
-         ::db/enable-admin-status false}
+         ::db/enable-admin-status false
+         ::db/status {}}
     :fx [[:dispatch [:db/get-env]]]}))
 
 (re-frame/reg-event-fx
@@ -154,11 +155,20 @@
 ;; General
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defmulti page-fx
+  "Given a set-page event query vector, adds any effects of moving to that page.
+  Note that you can use overloads beyond just the page keyword in your methods."
+  (fn [[_ page]]
+    page))
+
+(defmethod page-fx :default [_] [])
+
 (re-frame/reg-event-fx
  :session/set-page
  global-interceptors
- (fn [{:keys [db]} [_ page]]
-   {:db (assoc-in db [::db/session :page] page)}))
+ (fn [{:keys [db]} [_ page :as qvec]]
+   {:db (assoc-in db [::db/session :page] page)
+    :fx (page-fx qvec)}))
 
 (re-frame/reg-event-fx
  :server-error
@@ -543,3 +553,29 @@
  (fn [_ _]
    {:fx [[:dispatch [:session/set-token nil]]
          [:dispatch [:session/set-username nil]]]}))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Status Dashboard
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(re-frame/reg-event-fx
+ :status/get-data
+ global-interceptors
+ (fn [{{server-host ::db/server-host} :db} _]
+   {:http-xhrio {:method          :get
+                 :uri             (httpfn/serv-uri
+                                   server-host
+                                   "/admin/status")
+                 :format          (ajax/json-request-format)
+                 :response-format (ajax/json-response-format {:keywords? true})
+                 :on-success      [:status/set-data]
+                 :on-failure      [:server-error]
+                 :interceptors    [httpfn/add-jwt-interceptor]}}))
+
+(defmethod page-fx :status [_] [[:dispatch [:status/get-data]]])
+
+(re-frame/reg-event-fx
+ :status/set-data
+ global-interceptors
+ (fn [{:keys [db]} [_ status-data]]
+   {:db (assoc-in db [::db/status :data] status-data)}))
