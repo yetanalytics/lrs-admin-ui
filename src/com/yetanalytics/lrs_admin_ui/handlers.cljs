@@ -39,7 +39,8 @@
          ::db/enable-statement-html true
          ::db/notifications []
          ::db/oidc-auth false
-         ::db/oidc-enable-local-admin false}
+         ::db/oidc-enable-local-admin false
+         ::db/enable-admin-status false}
     :fx [[:dispatch [:db/get-env]]]}))
 
 (re-frame/reg-event-fx
@@ -59,13 +60,15 @@
  :db/set-env
  global-interceptors
  (fn [{:keys [db]} [_ {:keys             [url-prefix
-                                          enable-stmt-html]
+                                          enable-stmt-html
+                                          enable-admin-status]
                        ?oidc             :oidc
                        ?oidc-local-admin :oidc-enable-local-admin}]]
    (merge {:db (assoc db
                       ::db/xapi-prefix url-prefix
                       ::db/enable-statement-html enable-stmt-html
-                      ::db/oidc-enable-local-admin (or ?oidc-local-admin false))}
+                      ::db/oidc-enable-local-admin (or ?oidc-local-admin false)
+                      ::db/enable-admin-status enable-admin-status)}
           (when ?oidc
             {:dispatch [:oidc/init ?oidc]}))))
 

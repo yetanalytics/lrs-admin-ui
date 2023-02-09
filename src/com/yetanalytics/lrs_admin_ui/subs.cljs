@@ -160,3 +160,9 @@
  :<- [:oidc/show-local-login?]
  (fn [show-local-login? _]
    show-local-login?))
+
+;; Status Dashboard
+(reg-sub
+ :status/enabled?
+ (fn [db _]
+   (::db/enable-admin-status db false)))

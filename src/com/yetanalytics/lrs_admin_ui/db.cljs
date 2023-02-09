@@ -80,6 +80,8 @@
 (s/def ::oidc-auth boolean?)
 (s/def ::oidc-enable-local-admin boolean?)
 
+(s/def ::enable-admin-status boolean?)
+
 (s/def ::db (s/keys :req [::session
                           ::credentials
                           ::login
@@ -90,7 +92,8 @@
                           ::notifications
                           ::enable-statement-html
                           ::oidc-auth
-                          ::oidc-enable-local-admin]))
+                          ::oidc-enable-local-admin
+                          ::enable-admin-status]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Continuous DB Validation

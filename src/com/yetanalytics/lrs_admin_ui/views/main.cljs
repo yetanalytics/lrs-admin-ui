@@ -4,7 +4,8 @@
    [com.yetanalytics.lrs-admin-ui.views.credentials :refer [credentials]]
    [com.yetanalytics.lrs-admin-ui.views.browser :refer [browser]]
    [com.yetanalytics.lrs-admin-ui.views.menu :refer [menu]]
-   [com.yetanalytics.lrs-admin-ui.views.accounts :refer [accounts]]))
+   [com.yetanalytics.lrs-admin-ui.views.accounts :refer [accounts]]
+   [com.yetanalytics.lrs-admin-ui.views.status :refer [status]]))
 
 (defn main []
   [:main {:class "lrs-main"}
@@ -15,5 +16,6 @@
      (case @(subscribe [:session/get-page])
        :credentials [credentials]
        :browser [browser]
-       :accounts [accounts])]
+       :accounts [accounts]
+       :status [status])]
     [:div {:class "content-right-wrapper"} ]]])

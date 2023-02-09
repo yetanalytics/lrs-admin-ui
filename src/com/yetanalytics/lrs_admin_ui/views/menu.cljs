@@ -17,4 +17,6 @@
     (when @(subscribe [:oidc/show-account-nav?])
       [menu-item {:name "Account Management" :page :accounts}])
     (when @(subscribe [:db/get-stmt-html-enabled])
-      [menu-item {:name "Statement Browser" :page :browser}])]])
+      [menu-item {:name "Statement Browser" :page :browser}])
+    (when @(subscribe [:status/enabled?])
+      [menu-item {:name "LRS Status" :page :status}])]])
