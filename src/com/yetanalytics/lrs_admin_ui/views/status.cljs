@@ -2,12 +2,12 @@
   (:require
    [re-frame.core :refer [subscribe dispatch]]))
 
-(defn bignum
+(defn big-number
   [label sub-qvec]
-  [:div.bignum
-   [:div.bignum-label
+  [:div.big-number
+   [:div.big-number-label
     label]
-   [:div.bignum-number
+   [:div.big-number-value
     @(subscribe sub-qvec)]])
 
 (defn refresh-button
@@ -23,4 +23,4 @@
    [:h2 {:class "content-title"}
     "LRS Status"]
    [refresh-button]
-   [bignum "Statement Count" [:status.data/statement-count]]])
+   [big-number "Statement Count" [:status.data/statement-count]]])
