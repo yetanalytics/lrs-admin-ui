@@ -28,4 +28,5 @@
     "LRS Status"]
    [refresh-button]
 
-   [big-number "STATEMENTS" [:status.data/statement-count]]])
+   [big-number "STATEMENTS" [:status.data/statement-count]]
+   [big-number "ACTORS" [:status.data/actor-count]]])

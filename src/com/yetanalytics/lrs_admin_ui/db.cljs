@@ -83,9 +83,11 @@
 (s/def ::enable-admin-status boolean?)
 
 (s/def :status.data/statement-count nat-int?)
+(s/def :status.data/actor-count nat-int?)
 
 (s/def :status/data
-  (s/keys :req-un [:status.data/statement-count]))
+  (s/keys :req-un [:status.data/statement-count
+                   :status.data/actor-count]))
 
 (s/def ::status
   (s/keys :opt-un [:status/data]))
