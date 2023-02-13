@@ -14,6 +14,18 @@
    [:div.big-number-label
     label]]))
 
+(defn timestamp
+  [label sub-qvec]
+  (let [value @(subscribe sub-qvec)]
+    [:div.timestamp
+     [:div.timestamp-value
+      {:class (if value
+                ""
+                "spinner")}
+      (or value " ")]
+     [:div.timestamp-label
+      label]]))
+
 (defn refresh-button
   []
   [:div.status-refresh-button
@@ -28,6 +40,8 @@
    [:h2 {:class "content-title"}
     "LRS Status"]
    [refresh-button]
+   [:div.status-vis-row
+    [timestamp "LAST STATEMENT AT" [:status.data/last-statement-stored]]]
    [:div.status-vis-row
     [big-number "STATEMENTS" [:status.data/statement-count]]
     [big-number "ACTORS" [:status.data/actor-count]]]])

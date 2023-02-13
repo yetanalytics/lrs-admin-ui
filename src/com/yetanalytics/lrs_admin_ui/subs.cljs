@@ -189,3 +189,9 @@
  :<- [:status/data]
  (fn [data _]
    (:actor-count data)))
+
+(reg-sub
+ :status.data/last-statement-stored
+ :<- [:status/data]
+ (fn [data _]
+   (:last-statement-stored data)))
