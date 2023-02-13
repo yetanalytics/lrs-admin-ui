@@ -84,10 +84,12 @@
 
 (s/def :status.data/statement-count nat-int?)
 (s/def :status.data/actor-count nat-int?)
+(s/def :status.data/last-statement-stored (s/nilable string?))
 
 (s/def :status/data
   (s/keys :req-un [:status.data/statement-count
-                   :status.data/actor-count]))
+                   :status.data/actor-count
+                   :status.data/last-statement-stored]))
 
 (s/def ::status
   (s/keys :opt-un [:status/data]))
