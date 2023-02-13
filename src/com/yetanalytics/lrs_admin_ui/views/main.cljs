@@ -5,7 +5,8 @@
    [com.yetanalytics.lrs-admin-ui.views.browser :refer [browser]]
    [com.yetanalytics.lrs-admin-ui.views.menu :refer [menu]]
    [com.yetanalytics.lrs-admin-ui.views.accounts :refer [accounts]]
-   [com.yetanalytics.lrs-admin-ui.views.status :refer [status]]))
+   [com.yetanalytics.lrs-admin-ui.views.status :refer [status]]
+   [cljsjs.victory]))
 
 (defn main []
   [:main {:class "lrs-main"}

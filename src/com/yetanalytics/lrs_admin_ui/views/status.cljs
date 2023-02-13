@@ -1,6 +1,7 @@
 (ns com.yetanalytics.lrs-admin-ui.views.status
   (:require
-   [re-frame.core :refer [subscribe dispatch]]))
+   [re-frame.core :refer [subscribe dispatch]]
+   [com.yetanalytics.lrs-admin-ui.views.status.vis :as vis]))
 
 (defn big-number
   [label sub-qvec]
@@ -44,4 +45,9 @@
     [timestamp "LAST STATEMENT AT" [:status.data/last-statement-stored]]]
    [:div.status-vis-row
     [big-number "STATEMENTS" [:status.data/statement-count]]
-    [big-number "ACTORS" [:status.data/actor-count]]]])
+    [big-number "ACTORS" [:status.data/actor-count]]]
+   [:div.status-vis-row
+    [:div.vis-pie
+     [:h4 "PLATFORMS"]
+     [vis/pie
+      {:data @(subscribe [:status.data/platform-frequency])}]]]])

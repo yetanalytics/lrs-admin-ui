@@ -195,3 +195,13 @@
  :<- [:status/data]
  (fn [data _]
    (:last-statement-stored data)))
+
+(reg-sub
+ :status.data/platform-frequency
+ :<- [:status/data]
+ (fn [data _]
+   (mapv
+    (fn [[platform count]]
+      {:x platform
+       :y count})
+    (:platform-frequency data))))

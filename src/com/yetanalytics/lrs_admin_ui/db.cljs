@@ -85,11 +85,13 @@
 (s/def :status.data/statement-count nat-int?)
 (s/def :status.data/actor-count nat-int?)
 (s/def :status.data/last-statement-stored (s/nilable string?))
+(s/def :status.data/platform-frequency (s/map-of string? nat-int?))
 
 (s/def :status/data
   (s/keys :req-un [:status.data/statement-count
                    :status.data/actor-count
-                   :status.data/last-statement-stored]))
+                   :status.data/last-statement-stored
+                   :status.data/platform-frequency]))
 
 (s/def ::status
   (s/keys :opt-un [:status/data]))

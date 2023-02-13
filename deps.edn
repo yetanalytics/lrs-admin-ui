@@ -11,7 +11,9 @@
                                              :exclusions
                                              [cljsjs/oidc-client
                                               reagent/reagent
-                                              re-frame/re-frame]}}
+                                              re-frame/re-frame]}
+        ;; TODO: remove and get from NPM, maybe need shim
+        cljsjs/victory                      {:mvn/version "0.24.2-0"}}
  :paths ["src" "resources"]
  :aliases {:fig {:extra-deps
                   {com.bhauman/rebel-readline-cljs {:mvn/version "0.1.4"}
