@@ -85,7 +85,9 @@
 (s/def :status.data/statement-count nat-int?)
 (s/def :status.data/actor-count nat-int?)
 (s/def :status.data/last-statement-stored (s/nilable string?))
-(s/def :status.data/platform-frequency (s/map-of string? nat-int?))
+;; The JSON->edn conversion makes the platform a keyword, so we handle that in
+;; the sub.
+(s/def :status.data/platform-frequency (s/map-of keyword? nat-int?))
 
 (s/def :status/data
   (s/keys :req-un [:status.data/statement-count

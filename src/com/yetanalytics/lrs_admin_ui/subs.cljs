@@ -202,6 +202,6 @@
  (fn [data _]
    (mapv
     (fn [[platform count]]
-      {:x platform
+      {:x (name platform)
        :y count})
     (:platform-frequency data))))
