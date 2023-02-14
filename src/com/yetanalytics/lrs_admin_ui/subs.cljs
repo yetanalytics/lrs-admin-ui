@@ -205,3 +205,13 @@
       {:x (name platform)
        :y count})
     (:platform-frequency data))))
+
+(reg-sub
+ :status.data/timeline
+ :<- [:status/data]
+ (fn [data _]
+   (mapv
+    (fn [{:keys [stored count]}]
+      {:x (js/Date. stored)
+       :y count})
+    (:timeline data))))

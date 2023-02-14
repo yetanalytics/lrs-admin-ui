@@ -50,4 +50,10 @@
     [:div.vis-pie
      [:h4 "PLATFORMS"]
      [vis/pie
-      {:data @(subscribe [:status.data/platform-frequency])}]]]])
+      {:data @(subscribe [:status.data/platform-frequency])}]]]
+   [:div.status-vis-row
+    [:div.vis-timeline
+     [:h4 "TIMELINE"]
+     [vis/line
+      {:scale {:x "time" :y "linear"}
+       :data @(subscribe [:status.data/timeline])}]]]])

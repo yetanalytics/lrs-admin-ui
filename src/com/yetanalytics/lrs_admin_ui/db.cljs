@@ -89,11 +89,20 @@
 ;; the sub.
 (s/def :status.data/platform-frequency (s/map-of keyword? nat-int?))
 
+(s/def :status.data.timeline/stored string?)
+(s/def :status.data.timeline/count nat-int?)
+
+(s/def :status.data/timeline
+  (s/every
+   (s/keys :req-un [:status.data.timeline/stored
+                    :status.data.timeline/count])))
+
 (s/def :status/data
   (s/keys :req-un [:status.data/statement-count
                    :status.data/actor-count
                    :status.data/last-statement-stored
-                   :status.data/platform-frequency]))
+                   :status.data/platform-frequency
+                   :status.data/timeline]))
 
 (s/def ::status
   (s/keys :opt-un [:status/data]))
