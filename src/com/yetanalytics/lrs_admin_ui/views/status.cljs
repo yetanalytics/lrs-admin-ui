@@ -35,6 +35,13 @@
      :value "REFRESH"
      :on-click #(dispatch [:status/get-data])}]])
 
+(defn platform-pie
+  []
+  [:div.vis-pie
+   [:h4 "PLATFORMS"]
+   [vis/pie
+    {:data @(subscribe [:status.data/platform-frequency])}]])
+
 (defn status
   []
   [:div {:class "left-content-wrapper"}
@@ -47,13 +54,8 @@
     [big-number "STATEMENTS" [:status.data/statement-count]]
     [big-number "ACTORS" [:status.data/actor-count]]]
    [:div.status-vis-row
-    [:div.vis-pie
-     [:h4 "PLATFORMS"]
-     [vis/pie
-      {:data @(subscribe [:status.data/platform-frequency])}]]]
+    [platform-pie]]
    [:div.status-vis-row
-    [:div.vis-timeline
-     [:h4 "TIMELINE"]
-     [vis/line
-      {:scale {:x "time" :y "linear"}
-       :data @(subscribe [:status.data/timeline])}]]]])
+    [vis/timeline
+     "TIMELINE"
+     [:status.data.timeline/data]]]])

@@ -207,7 +207,7 @@
     (:platform-frequency data))))
 
 (reg-sub
- :status.data/timeline
+ :status.data.timeline/data
  :<- [:status/data]
  (fn [data _]
    (mapv
@@ -215,3 +215,4 @@
       {:x (js/Date. stored)
        :y count})
     (:timeline data))))
+
