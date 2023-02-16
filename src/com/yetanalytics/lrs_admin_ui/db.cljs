@@ -104,8 +104,27 @@
                    :status.data/platform-frequency
                    :status.data/timeline]))
 
+(s/def :status.params/timeline-unit
+  #{"year"
+    "month"
+    "day"
+    "hour"
+    "minute"
+    "second"})
+(s/def :status.params/timeline-since
+  string?)
+(s/def :status.params/timeline-until
+  string?)
+
+(s/def :status/params
+  (s/keys :opt-un [:status.params/timeline-unit
+                   :status.params/timeline-since
+                   :status.params/timeline-until]))
+
 (s/def ::status
-  (s/keys :opt-un [:status/data]))
+  (s/keys
+   :opt-un [:status/data
+            :status/params]))
 
 (s/def ::db (s/keys :req [::session
                           ::credentials

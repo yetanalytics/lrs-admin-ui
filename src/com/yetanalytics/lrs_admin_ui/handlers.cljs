@@ -561,16 +561,22 @@
 (re-frame/reg-event-fx
  :status/get-data
  global-interceptors
- (fn [{{server-host ::db/server-host} :db} _]
-   {:http-xhrio {:method          :get
-                 :uri             (httpfn/serv-uri
-                                   server-host
-                                   "/admin/status")
-                 :format          (ajax/json-request-format)
-                 :response-format (ajax/json-response-format {:keywords? true})
-                 :on-success      [:status/set-data]
-                 :on-failure      [:server-error]
-                 :interceptors    [httpfn/add-jwt-interceptor]}}))
+ (fn [{{server-host      ::db/server-host
+        {:keys [params]} ::db/status} :db} _]
+   {:http-xhrio (cond-> {:method          :get
+                         :uri             (httpfn/serv-uri
+                                           server-host
+                                           "/admin/status")
+                         :format          (ajax/json-request-format)
+                         :response-format (ajax/json-response-format {:keywords? true})
+                         :on-success      [:status/set-data]
+                         :on-failure      [:server-error]
+                         :interceptors    [httpfn/add-jwt-interceptor]}
+                  (not-empty params) (assoc :params (reduce-kv
+                                                     (fn [m k v]
+                                                       (assoc m (name k) v))
+                                                     {}
+                                                     params)))}))
 
 (defmethod page-fx :status [_] [[:dispatch [:status/get-data]]])
 

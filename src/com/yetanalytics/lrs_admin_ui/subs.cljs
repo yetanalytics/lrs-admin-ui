@@ -173,6 +173,35 @@
    (::db/status db)))
 
 (reg-sub
+ :status/params
+ :<- [:db/status]
+ (fn [status _]
+   (:params status)))
+
+(reg-sub
+ :status.params/timeline-unit
+ :<- [:db/status]
+ (fn [params _]
+   (:timeline-unit params "day")))
+
+(reg-sub
+ :status.params/timeline-since
+ :<- [:db/status]
+ (fn [params _]
+   (:timeline-since params (-> js/Date
+                               .now
+                               ;; two weeks ago
+                               (- 12096e5)
+                               (js/Date.)
+                               .toISOString))))
+
+(reg-sub
+ :status.params/timeline-until
+ :<- [:db/status]
+ (fn [params _]
+   (:timeline-until params (.toISOString (js/Date.)))))
+
+(reg-sub
  :status/data
  :<- [:db/status]
  (fn [status _]
@@ -216,3 +245,10 @@
        :y count})
     (:timeline data))))
 
+(reg-sub
+ :status.data.timeline/domain
+ :<- [:status.params/timeline-since]
+ :<- [:status.params/timeline-until]
+ (fn [[since until] _]
+   {:x [(js/Date. since)
+        (js/Date. until)]}))
