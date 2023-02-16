@@ -2,6 +2,7 @@
   (:require
    [reagent.core :as r]
    [re-frame.core :refer [subscribe dispatch]]
+   [clojure.string :as cs]
    [com.yetanalytics.lrs-admin-ui.functions :as fns]
    [com.yetanalytics.lrs-admin-ui.views.status.vis :as vis]
    [goog.string :refer [format]]
@@ -74,7 +75,7 @@
              [:option
               {:value unit
                :key (str "unit-" unit)}
-              unit]))]))
+              (cs/capitalize unit)]))]))
 
 (defn- pick-datetime
   [input-id
