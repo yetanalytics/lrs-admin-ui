@@ -23,13 +23,13 @@
   [label sub-qvec]
   (let [value @(subscribe sub-qvec)]
     [:div.timestamp
+     [:div.timestamp-label
+      label]
      [:div.timestamp-value
       {:class (if value
                 ""
                 "spinner")}
-      (or value " ")]
-     [:div.timestamp-label
-      label]]))
+      (or value " ")]]))
 
 (defn refresh-button
   []
@@ -191,11 +191,11 @@
     "LRS Status"]
    [refresh-button]
    [:div.status-vis-row
-    [timestamp "LAST STATEMENT AT" [:status.data/last-statement-stored]]]
-   [:div.status-vis-row
     [big-number "STATEMENTS" [:status.data/statement-count]]
     [big-number "ACTORS" [:status.data/actor-count]]]
    [:div.status-vis-row
-    [platform-pie]]
+    [timestamp "LAST STATEMENT AT" [:status.data/last-statement-stored-locale]]]
    [:div.status-vis-row
-    [timeline]]])
+    [timeline]]
+   [:div.status-vis-row
+    [platform-pie]]])

@@ -239,6 +239,12 @@
    (:last-statement-stored data)))
 
 (reg-sub
+ :status.data/last-statement-stored-locale
+ :<- [:status.data/last-statement-stored]
+ (fn [last-stored _]
+   (.toLocaleString (js/Date. last-stored))))
+
+(reg-sub
  :status.data/platform-frequency
  :<- [:status/data]
  (fn [data _]
