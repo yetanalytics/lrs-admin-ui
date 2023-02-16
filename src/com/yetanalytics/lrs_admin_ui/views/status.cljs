@@ -135,19 +135,18 @@
   [unit js-date]
   (subs (.toISOString js-date) 0 (get unit-for unit)))
 
-(defn timeline
+(defn timeline-chart
   []
   (let [x-unit @(subscribe [:status.params/timeline-unit])]
-    [:div.vis-timeline
-     [:h4 "TIMELINE"]
-     [timeline-controls]
+    [:div.vis-timeline-chart
      [vis/chart
       {:domain @(subscribe [:status.data.timeline/domain])
        :min-domain {:y 0}
        :container-component (r/as-element [vis/zoom
                                            {:zoom-dimension "x"}])
        :domain-padding 10
-       :theme (.-material vis/theme)}
+       :theme (.-material vis/theme)
+       :padding {:top 20 :left 30 :right 30 :bottom 80}}
       [vis/scatter
        {:standalone false
         :label-component (r/as-element
@@ -183,6 +182,12 @@
                        :angle 60
                        :text-anchor "start"}}}]]]))
 
+(defn timeline
+  []
+  [:div.vis-timeline
+   [:h4 "TIMELINE"]
+   [timeline-controls]
+   [timeline-chart]])
 
 (defn status
   []
