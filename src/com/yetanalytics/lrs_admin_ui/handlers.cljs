@@ -585,3 +585,11 @@
  global-interceptors
  (fn [{:keys [db]} [_ status-data]]
    {:db (assoc-in db [::db/status :data] status-data)}))
+
+(re-frame/reg-event-fx
+ :status/set-timeline-unit
+ global-interceptors
+ (fn [{:keys [db]} [_ unit]]
+   {:db (assoc-in db [::db/status :params :timeline-unit] unit)
+    :fx [[:dispatch
+          [:status/get-data]]]}))

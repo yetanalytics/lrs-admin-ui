@@ -2,6 +2,7 @@
   (:require
    [reagent.core :as r]
    [re-frame.core :refer [subscribe dispatch]]
+   [com.yetanalytics.lrs-admin-ui.functions :as fns]
    [com.yetanalytics.lrs-admin-ui.views.status.vis :as vis]
    [goog.string :refer [format]]
    [goog.string.format]))
@@ -52,6 +53,30 @@
                  (format "%s: %s"
                          x y)))}]])
 
+(defn timeline-select-unit
+  []
+  (let [current-unit @(subscribe [:status.params/timeline-unit])]
+    #_(println 'sub current-unit)
+    (into [:select
+           {:value current-unit
+            :on-change #(dispatch [:status/set-timeline-unit
+                                   (fns/ps-event-val %)])}]
+          (for [unit ["year"
+                      "month"
+                      "day"
+                      "hour"
+                      "minute"
+                      "second"]]
+            [:option
+             {:value unit
+              :key (str "unit-" unit)}
+             unit]))))
+
+(defn timeline-controls
+  []
+  [:div.vis-timeline-controls
+   [timeline-select-unit]])
+
 (def unit-for
   "Mapping of timeline bucket time unit to suitable FOR sql substring arg."
   {"year"   4
@@ -70,6 +95,7 @@
   (let [x-unit @(subscribe [:status.params/timeline-unit])]
     [:div.vis-timeline
      [:h4 "TIMELINE"]
+     [timeline-controls]
      [vis/chart
       {:domain @(subscribe [:status.data.timeline/domain])
        :min-domain {:y 0}

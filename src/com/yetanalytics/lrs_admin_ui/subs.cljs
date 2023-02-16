@@ -180,13 +180,13 @@
 
 (reg-sub
  :status.params/timeline-unit
- :<- [:db/status]
+ :<- [:status/params]
  (fn [params _]
    (:timeline-unit params "day")))
 
 (reg-sub
  :status.params/timeline-since
- :<- [:db/status]
+ :<- [:status/params]
  (fn [params _]
    (:timeline-since params (-> js/Date
                                .now
@@ -197,7 +197,7 @@
 
 (reg-sub
  :status.params/timeline-until
- :<- [:db/status]
+ :<- [:status/params]
  (fn [params _]
    (:timeline-until params (.toISOString (js/Date.)))))
 
