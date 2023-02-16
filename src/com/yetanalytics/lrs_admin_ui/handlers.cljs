@@ -9,6 +9,7 @@
             [com.yetanalytics.lrs-admin-ui.functions.storage  :as stor]
             [com.yetanalytics.lrs-admin-ui.functions.password :as pass]
             [com.yetanalytics.lrs-admin-ui.functions.oidc     :as oidc]
+            [com.yetanalytics.lrs-admin-ui.util               :as u]
             [com.yetanalytics.re-oidc                         :as re-oidc]
             [ajax.core                                        :as ajax]
             [cljs.spec.alpha                                  :refer [valid?]]
@@ -591,5 +592,27 @@
  global-interceptors
  (fn [{:keys [db]} [_ unit]]
    {:db (assoc-in db [::db/status :params :timeline-unit] unit)
+    :fx [[:dispatch
+          [:status/get-data]]]}))
+
+(re-frame/reg-event-fx
+ :status/set-timeline-since
+ global-interceptors
+ (fn [{:keys [db]} [_ since-datetime-str]]
+   {:db (assoc-in db
+                  [::db/status :params :timeline-since]
+                  (u/local-datetime->utc
+                   since-datetime-str))
+    :fx [[:dispatch
+          [:status/get-data]]]}))
+
+(re-frame/reg-event-fx
+ :status/set-timeline-until
+ global-interceptors
+ (fn [{:keys [db]} [_ until-datetime-str]]
+   {:db (assoc-in db
+                  [::db/status :params :timeline-until]
+                  (u/local-datetime->utc
+                   until-datetime-str))
     :fx [[:dispatch
           [:status/get-data]]]}))

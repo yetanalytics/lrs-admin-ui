@@ -56,26 +56,71 @@
 (defn timeline-select-unit
   []
   (let [current-unit @(subscribe [:status.params/timeline-unit])]
-    #_(println 'sub current-unit)
-    (into [:select
-           {:value current-unit
-            :on-change #(dispatch [:status/set-timeline-unit
-                                   (fns/ps-event-val %)])}]
-          (for [unit ["year"
-                      "month"
-                      "day"
-                      "hour"
-                      "minute"
-                      "second"]]
-            [:option
-             {:value unit
-              :key (str "unit-" unit)}
-             unit]))))
+    [:div.vis-timeline-controls-select-unit
+     [:label
+      {:for "timeline-select-unit"}
+      "Time Unit"]
+     (into [:select
+            {:id "timeline-select-unit"
+             :value current-unit
+             :on-change #(dispatch [:status/set-timeline-unit
+                                    (fns/ps-event-val %)])}]
+           (for [unit ["year"
+                       "month"
+                       "day"
+                       "hour"
+                       "minute"
+                       "second"]]
+             [:option
+              {:value unit
+               :key (str "unit-" unit)}
+              unit]))]))
+
+(defn- pick-datetime
+  [input-id
+   label
+   sub-qvec
+   on-change
+   & {:keys [min-sub-qvec
+             max-sub-qvec]}]
+  [:div.vis-timeline-controls-pick-datetime
+   [:label
+    {:for input-id}
+    label]
+   [:input
+    (cond-> {:id input-id
+             :type "datetime-local"
+             :value @(subscribe sub-qvec)
+             :on-change on-change}
+      min-sub-qvec (assoc :min @(subscribe min-sub-qvec))
+      max-sub-qvec (assoc :max @(subscribe max-sub-qvec)))]])
+
+(defn timeline-pick-since
+  []
+  [pick-datetime
+   "timeline-pick-since"
+   "Since"
+   [:status.params/timeline-since-local]
+   #(dispatch [:status/set-timeline-since
+               (fns/ps-event-val %)])
+   :max-sub-qvec [:status.params/timeline-until-local]])
+
+(defn timeline-pick-until
+  []
+  [pick-datetime
+   "timeline-pick-until"
+   "Until"
+   [:status.params/timeline-until-local]
+   #(dispatch [:status/set-timeline-until
+               (fns/ps-event-val %)])
+   :min-sub-qvec [:status.params/timeline-since-local]])
 
 (defn timeline-controls
   []
   [:div.vis-timeline-controls
-   [timeline-select-unit]])
+   [timeline-select-unit]
+   [timeline-pick-since]
+   [timeline-pick-until]])
 
 (def unit-for
   "Mapping of timeline bucket time unit to suitable FOR sql substring arg."
