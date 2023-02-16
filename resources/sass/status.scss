@@ -6,6 +6,8 @@
 
 .status-vis-row {
   display: flex;
+  padding-top: 1em;
+  padding-bottom: 1em;
 }
 
 .status-vis-row > div {
@@ -32,6 +34,10 @@
 
 .vis-pie {
   height: 500px;
+}
+
+.vis-timeline-controls {
+  padding: 1em;
 }
 
 .vis-timeline-controls label {
