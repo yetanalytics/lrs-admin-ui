@@ -146,7 +146,8 @@
                                            {:zoom-dimension "x"}])
        :domain-padding 10
        :theme (.-material vis/theme)
-       :padding {:top 20 :left 30 :right 30 :bottom 80}}
+       :height 200
+       :padding {:top 10 :left 30 :right 30 :bottom 70}}
       [vis/scatter
        {:standalone false
         :label-component (r/as-element
