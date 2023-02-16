@@ -43,7 +43,14 @@
   [:div.vis-pie
    [:h4 "PLATFORMS"]
    [vis/pie
-    {:data @(subscribe [:status.data/platform-frequency])}]])
+    {:theme (.-material vis/theme)
+     :data @(subscribe [:status.data/platform-frequency])
+     :labels (fn [c]
+               (let [datum (.-datum c)
+                     x (.-x datum)
+                     y (.-y datum)]
+                 (format "%s: %s"
+                         x y)))}]])
 
 (def unit-for
   "Mapping of timeline bucket time unit to suitable FOR sql substring arg."
