@@ -66,7 +66,8 @@
      [vis/chart
       {:domain @(subscribe [:status.data.timeline/domain])
        :min-domain {:y 0}
-       :container-component (r/as-element [vis/zoom])
+       :container-component (r/as-element [vis/zoom
+                                           {:zoom-dimension "x"}])
        :domain-padding 10
        :theme (.-material vis/theme)}
       [vis/scatter
