@@ -158,7 +158,7 @@
                   (let [datum (aget c "datum")
                         x (aget datum "x")
                         y (aget datum "y")]
-                    (format "%s: %s"
+                    (format "%s: %s Statements"
                             (x-tick-format x-unit x) y)))
         :data @(subscribe [:status.data.timeline/data])}]
       [vis/axis
