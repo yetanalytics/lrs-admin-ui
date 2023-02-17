@@ -628,9 +628,13 @@
  :status/set-timeline-until
  global-interceptors
  (fn [{:keys [db]} [_ until-datetime-str]]
-   {:db (assoc-in db
-                  [::db/status :params :timeline-until]
-                  (u/local-datetime->utc
-                   until-datetime-str))
-    :fx [[:dispatch
-          [:status/get-data ["timeline"]]]]}))
+   (try
+     {:db (assoc-in db
+                    [::db/status :params :timeline-until]
+                    (u/local-datetime->utc
+                     until-datetime-str))
+      :fx [[:dispatch
+            [:status/get-data ["timeline"]]]]}
+     (catch js/Error _
+       (.log js/console
+             (str "Invalid timestamp " until-datetime-str " was ignored"))))))

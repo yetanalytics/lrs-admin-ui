@@ -80,10 +80,10 @@
 (defn- pick-datetime
   [input-id
    label
-   sub-qvec
+   value
    on-change
-   & {:keys [min-sub-qvec
-             max-sub-qvec]}]
+   min-datetime
+   & [max-datetime]]
   [:div.vis-timeline-controls-pick-datetime
    [:label
     {:for input-id}
@@ -91,30 +91,31 @@
    [:input
     (cond-> {:id input-id
              :type "datetime-local"
-             :value @(subscribe sub-qvec)
-             :on-change on-change}
-      min-sub-qvec (assoc :min @(subscribe min-sub-qvec))
-      max-sub-qvec (assoc :max @(subscribe max-sub-qvec)))]])
+             :value value
+             :on-change on-change
+             :min min-datetime}
+      max-datetime (assoc :max max-datetime))]])
 
 (defn timeline-pick-since
   []
   [pick-datetime
    "timeline-pick-since"
    "Since"
-   [:status.params/timeline-since-local]
+   @(subscribe [:status.params/timeline-since-local])
    #(dispatch [:status/set-timeline-since
                (fns/ps-event-val %)])
-   :max-sub-qvec [:status.params/timeline-until-local]])
+   "1970-01-01T00:00:00"
+   @(subscribe [:status.params/timeline-until-local])])
 
 (defn timeline-pick-until
   []
   [pick-datetime
    "timeline-pick-until"
    "Until"
-   [:status.params/timeline-until-local]
+   @(subscribe [:status.params/timeline-until-local])
    #(dispatch [:status/set-timeline-until
                (fns/ps-event-val %)])
-   :min-sub-qvec [:status.params/timeline-since-local]])
+   @(subscribe [:status.params/timeline-since-local])])
 
 (defn timeline-controls
   []
