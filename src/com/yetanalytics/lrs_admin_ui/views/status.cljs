@@ -45,12 +45,12 @@
   [:div.vis-pie
    [:h4 "PLATFORMS"]
    [vis/pie
-    {:theme (.-material vis/theme)
+    {:theme (aget vis/theme "material")
      :data @(subscribe [:status.data/platform-frequency])
      :labels (fn [c]
-               (let [datum (.-datum c)
-                     x (.-x datum)
-                     y (.-y datum)]
+               (let [datum (aget c "datum")
+                     x (aget datum "x")
+                     y (aget datum "y")]
                  (format "%s: %s"
                          x y)))}]])
 
@@ -146,7 +146,7 @@
        :container-component (r/as-element [vis/zoom
                                            {:zoom-dimension "x"}])
        :domain-padding 10
-       :theme (.-material vis/theme)
+       :theme (aget vis/theme "material")
        :height 200
        :padding {:top 10 :left 30 :right 30 :bottom 70}}
       [vis/scatter
@@ -155,9 +155,9 @@
                           [vis/tooltip
                            {:style {:font-size 8}}])
         :labels (fn [c]
-                  (let [datum (.-datum c)
-                        x (.-x datum)
-                        y (.-y datum)]
+                  (let [datum (aget c "datum")
+                        x (aget datum "x")
+                        y (aget datum "y")]
                     (format "%s: %s"
                             (x-tick-format x-unit x) y)))
         :data @(subscribe [:status.data.timeline/data])}]
