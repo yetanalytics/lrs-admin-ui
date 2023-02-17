@@ -38,7 +38,7 @@
    [:input.btn-blue-bold
     {:type "button"
      :value "REFRESH"
-     :on-click #(dispatch [:status/get-data])}]])
+     :on-click #(dispatch [:status/get-all-data])}]])
 
 (defn platform-pie
   []

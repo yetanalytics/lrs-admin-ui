@@ -98,7 +98,7 @@
                     :status.data.timeline/count])))
 
 (s/def :status/data
-  (s/keys :req-un [:status.data/statement-count
+  (s/keys :opt-un [:status.data/statement-count
                    :status.data/actor-count
                    :status.data/last-statement-stored
                    :status.data/platform-frequency

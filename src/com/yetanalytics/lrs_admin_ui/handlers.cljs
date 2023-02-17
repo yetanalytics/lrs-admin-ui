@@ -563,29 +563,47 @@
  :status/get-data
  global-interceptors
  (fn [{{server-host      ::db/server-host
-        {:keys [params]} ::db/status} :db} _]
-   {:http-xhrio (cond-> {:method          :get
-                         :uri             (httpfn/serv-uri
-                                           server-host
-                                           "/admin/status")
-                         :format          (ajax/json-request-format)
-                         :response-format (ajax/json-response-format {:keywords? true})
-                         :on-success      [:status/set-data]
-                         :on-failure      [:server-error]
-                         :interceptors    [httpfn/add-jwt-interceptor]}
-                  (not-empty params) (assoc :params (reduce-kv
-                                                     (fn [m k v]
-                                                       (assoc m (name k) v))
-                                                     {}
-                                                     params)))}))
+        {:keys [params]} ::db/status} :db}
+      [_ include]]
+   {:fx [[:http-xhrio
+          {:method          :get
+           :uri             (httpfn/serv-uri
+                             server-host
+                             "/admin/status")
+           :params          (reduce-kv
+                             (fn [m k v]
+                               (assoc m (name k) v))
+                             {"include" include}
+                             params)
+           :format          (ajax/json-request-format)
+           :response-format (ajax/json-response-format {:keywords? true})
+           :on-success      [:status/set-data]
+           :on-failure      [:server-error]
+           :interceptors    [httpfn/add-jwt-interceptor]}]]}))
 
-(defmethod page-fx :status [_] [[:dispatch [:status/get-data]]])
+(def status-dispatch-all
+  (into []
+        (for [status-query ["statement-count"
+                            "actor-count"
+                            "last-statement-stored"
+                            "timeline"
+                            "platform-frequency"]]
+          [:dispatch [:status/get-data [status-query]]])))
+
+(defmethod page-fx :status [_]
+  status-dispatch-all)
+
+(re-frame/reg-event-fx
+ :status/get-all-data
+ global-interceptors
+ (fn [_ _]
+   {:fx status-dispatch-all}))
 
 (re-frame/reg-event-fx
  :status/set-data
  global-interceptors
  (fn [{:keys [db]} [_ status-data]]
-   {:db (assoc-in db [::db/status :data] status-data)}))
+   {:db (update-in db [::db/status :data] merge status-data)}))
 
 (re-frame/reg-event-fx
  :status/set-timeline-unit
@@ -593,7 +611,7 @@
  (fn [{:keys [db]} [_ unit]]
    {:db (assoc-in db [::db/status :params :timeline-unit] unit)
     :fx [[:dispatch
-          [:status/get-data]]]}))
+          [:status/get-data ["timeline"]]]]}))
 
 (re-frame/reg-event-fx
  :status/set-timeline-since
@@ -604,7 +622,7 @@
                   (u/local-datetime->utc
                    since-datetime-str))
     :fx [[:dispatch
-          [:status/get-data]]]}))
+          [:status/get-data ["timeline"]]]]}))
 
 (re-frame/reg-event-fx
  :status/set-timeline-until
@@ -615,4 +633,4 @@
                   (u/local-datetime->utc
                    until-datetime-str))
     :fx [[:dispatch
-          [:status/get-data]]]}))
+          [:status/get-data ["timeline"]]]]}))
