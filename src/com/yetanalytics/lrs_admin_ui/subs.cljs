@@ -268,6 +268,14 @@
  :status.data.timeline/domain
  :<- [:status.params/timeline-since]
  :<- [:status.params/timeline-until]
- (fn [[since until] _]
-   {:x [(js/Date. since)
+ :<- [:status.data.timeline/data]
+ (fn [[since until data] _]
+   {:x [;; Make sure the domain min includes all data present
+        ;; this prevents a blank timeline in some cases
+        (js/Date.
+         (if (not-empty data)
+           (min
+            (-> data first :x .getTime)
+            (.parse js/Date since))
+           since))
         (js/Date. until)]}))
