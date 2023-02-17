@@ -148,7 +148,7 @@
        :domain-padding 10
        :theme (aget vis/theme "material")
        :height 200
-       :padding {:top 10 :left 30 :right 30 :bottom 70}}
+       :padding {:top 10 :left 40 :right 30 :bottom 70}}
       [vis/scatter
        {:standalone false
         :label-component (r/as-element
@@ -170,7 +170,7 @@
           (when (int? y)
             (str y)))
         :style
-        {:tick-labels {:font-size 8}}}]
+        {:tick-labels {:font-size 6}}}]
       [vis/axis
        {:standalone false
         :dependent-axis false
