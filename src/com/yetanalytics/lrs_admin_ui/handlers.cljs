@@ -605,24 +605,33 @@
  (fn [{:keys [db]} [_ status-data]]
    {:db (update-in db [::db/status :data] merge status-data)}))
 
+(def timeline-control-fx
+  "Fx call that will refesh the timeline for a control change, debounced."
+  [:debounce-dispatch-later
+   {:key :status/timeline-control
+    :dispatch [:status/get-data ["timeline"]]
+    :ms 1000}])
+
 (re-frame/reg-event-fx
  :status/set-timeline-unit
  global-interceptors
  (fn [{:keys [db]} [_ unit]]
    {:db (assoc-in db [::db/status :params :timeline-unit] unit)
-    :fx [[:dispatch
-          [:status/get-data ["timeline"]]]]}))
+    :fx [timeline-control-fx]}))
 
 (re-frame/reg-event-fx
  :status/set-timeline-since
  global-interceptors
  (fn [{:keys [db]} [_ since-datetime-str]]
-   {:db (assoc-in db
-                  [::db/status :params :timeline-since]
-                  (u/local-datetime->utc
-                   since-datetime-str))
-    :fx [[:dispatch
-          [:status/get-data ["timeline"]]]]}))
+   (try
+     {:db (assoc-in db
+                    [::db/status :params :timeline-since]
+                    (u/local-datetime->utc
+                     since-datetime-str))
+      :fx [timeline-control-fx]}
+     (catch js/Error _
+       (.log js/console
+             (str "Invalid timestamp " since-datetime-str " was ignored"))))))
 
 (re-frame/reg-event-fx
  :status/set-timeline-until
@@ -633,8 +642,7 @@
                     [::db/status :params :timeline-until]
                     (u/local-datetime->utc
                      until-datetime-str))
-      :fx [[:dispatch
-            [:status/get-data ["timeline"]]]]}
+      :fx [timeline-control-fx]}
      (catch js/Error _
        (.log js/console
              (str "Invalid timestamp " until-datetime-str " was ignored"))))))
