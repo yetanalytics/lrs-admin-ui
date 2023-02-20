@@ -9,27 +9,27 @@
    [goog.string.format]))
 
 (defn big-number
-  [label sub-qvec]
+  [vis-key label sub-qvec]
   (let [value @(subscribe sub-qvec)]
     [:div.big-number
    [:div.big-number-value
-    {:class (if value
-              ""
-              "spinner")}
+    {:class (if @(subscribe [:status/loading? vis-key])
+              "spinner"
+              "")}
     (or value " ")]
    [:div.big-number-label
     label]]))
 
 (defn timestamp
-  [label sub-qvec]
+  [vis-key label sub-qvec]
   (let [value @(subscribe sub-qvec)]
     [:div.timestamp
      [:div.timestamp-label
       label]
      [:div.timestamp-value
-      {:class (if value
-                ""
-                "spinner")}
+      {:class (if @(subscribe [:status/loading? vis-key])
+                "spinner"
+                "")}
       (or value " ")]]))
 
 (defn refresh-button
@@ -40,10 +40,18 @@
      :value "REFRESH"
      :on-click #(dispatch [:status/get-all-data])}]])
 
+(defn title-loading-spinner
+  [vis-key]
+  [:span.vis-title-loading-spinner
+   {:class (if @(subscribe [:status/loading? vis-key])
+             "spinner"
+             "")}])
+
 (defn platform-pie
   []
   [:div.vis-pie
-   [:h4 "PLATFORMS"]
+   [:h4 "PLATFORMS"
+    [title-loading-spinner "platform-frequency"]]
    [vis/pie
     {:theme (aget vis/theme "material")
      :data @(subscribe [:status.data/platform-frequency])
@@ -188,7 +196,8 @@
 (defn timeline
   []
   [:div.vis-timeline
-   [:h4 "TIMELINE"]
+   [:h4 "TIMELINE"
+    [title-loading-spinner "timeline"]]
    [timeline-controls]
    [timeline-chart]])
 
@@ -199,10 +208,19 @@
     "LRS Status"]
    [refresh-button]
    [:div.status-vis-row
-    [big-number "STATEMENTS" [:status.data/statement-count]]
-    [big-number "ACTORS" [:status.data/actor-count]]]
+    [big-number
+     "statement-count"
+     "STATEMENTS"
+     [:status.data/statement-count]]
+    [big-number
+     "actor-count"
+     "ACTORS"
+     [:status.data/actor-count]]]
    [:div.status-vis-row
-    [timestamp "LAST STATEMENT AT" [:status.data/last-statement-stored-locale]]]
+    [timestamp
+     "last-statement-stored"
+     "LAST STATEMENT AT"
+     [:status.data/last-statement-stored-locale]]]
    [:div.status-vis-row
     [timeline]]
    [:div.status-vis-row

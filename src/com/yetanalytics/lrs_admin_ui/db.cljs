@@ -121,10 +121,15 @@
                    :status.params/timeline-since
                    :status.params/timeline-until]))
 
+;; map of vis type to loading state
+(s/def :status/loading
+  (s/map-of string? boolean?))
+
 (s/def ::status
   (s/keys
    :opt-un [:status/data
-            :status/params]))
+            :status/params
+            :status/loading]))
 
 (s/def ::db (s/keys :req [::session
                           ::credentials

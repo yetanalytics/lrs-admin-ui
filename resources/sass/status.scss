@@ -14,6 +14,11 @@
   flex-grow: 1;
 }
 
+span.vis-title-loading-spinner {
+  margin-left: 0.6em;
+  position: relative;
+}
+
 .big-number {
   text-align: center;
 }
@@ -21,6 +26,7 @@
 .big-number-value {
   font-size: 72px;
   height: 1.2em;
+  position: relative;
 }
 
 .timestamp {
@@ -30,6 +36,7 @@
 .timestamp-value {
   font-size: 42px;
   height: 1.2em;
+  position: relative;
 }
 
 .vis-pie {

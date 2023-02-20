@@ -279,3 +279,15 @@
             (.parse js/Date since))
            since))
         (js/Date. until)]}))
+
+(reg-sub
+ :status/loading-map
+ :<- [:db/status]
+ (fn [status _]
+   (:loading status {})))
+
+(reg-sub
+ :status/loading?
+ :<- [:status/loading-map]
+ (fn [loading-map [_ loading-k]]
+   (true? (get loading-map loading-k))))

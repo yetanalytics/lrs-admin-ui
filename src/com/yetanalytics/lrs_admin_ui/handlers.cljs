@@ -563,9 +563,18 @@
  :status/get-data
  global-interceptors
  (fn [{{server-host      ::db/server-host
-        {:keys [params]} ::db/status} :db}
+        {:keys [params]} ::db/status
+        :as              db}
+       :db}
       [_ include]]
-   {:fx [[:http-xhrio
+   {;; Set loading state
+    :db (reduce
+         (fn [db' vis-k]
+           (assoc-in db' [::db/status :loading vis-k] true))
+         db
+         include)
+    ;; make request
+    :fx [[:http-xhrio
           {:method          :get
            :uri             (httpfn/serv-uri
                              server-host
@@ -603,7 +612,14 @@
  :status/set-data
  global-interceptors
  (fn [{:keys [db]} [_ status-data]]
-   {:db (update-in db [::db/status :data] merge status-data)}))
+   {:db (reduce
+         (fn [db' k]
+           (update-in db'
+                      [::db/status :loading]
+                      dissoc
+                      (name k)))
+         (update-in db [::db/status :data] merge status-data)
+         (keys status-data))}))
 
 (def timeline-control-fx
   "Fx call that will refesh the timeline for a control change, debounced."
