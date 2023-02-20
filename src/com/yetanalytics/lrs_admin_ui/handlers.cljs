@@ -586,9 +586,21 @@
                              params)
            :format          (ajax/json-request-format)
            :response-format (ajax/json-response-format {:keywords? true})
-           :on-success      [:status/set-data]
-           :on-failure      [:server-error]
+           :on-success      [:status/set-data include]
+           :on-failure      [:status/server-error include]
            :interceptors    [httpfn/add-jwt-interceptor]}]]}))
+
+(re-frame/reg-event-fx
+ :status/server-error
+ global-interceptors
+ (fn [{:keys [db]} [_ include error]]
+   {:db (reduce
+         (fn [db' k]
+           (update-in db' [::db/status :loading] dissoc k))
+         db
+         include)
+    :fx [[:dispatch
+          [:server-error error]]]}))
 
 (def status-dispatch-all
   (into []
@@ -611,15 +623,15 @@
 (re-frame/reg-event-fx
  :status/set-data
  global-interceptors
- (fn [{:keys [db]} [_ status-data]]
+ (fn [{:keys [db]} [_ include status-data]]
    {:db (reduce
          (fn [db' k]
            (update-in db'
                       [::db/status :loading]
                       dissoc
-                      (name k)))
+                      k))
          (update-in db [::db/status :data] merge status-data)
-         (keys status-data))}))
+         include)}))
 
 (def timeline-control-fx
   "Fx call that will refesh the timeline for a control change, debounced."
