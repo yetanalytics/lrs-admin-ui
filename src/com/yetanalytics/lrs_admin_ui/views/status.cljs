@@ -21,7 +21,7 @@
     label]]))
 
 (defn timestamp
-  [vis-key label sub-qvec]
+  [vis-key label sub-qvec nil-text]
   (let [value @(subscribe sub-qvec)]
     [:div.timestamp
      [:div.timestamp-label
@@ -30,7 +30,7 @@
       {:class (if @(subscribe [:status/loading? vis-key])
                 "spinner"
                 "")}
-      (or value " ")]]))
+      (or value nil-text)]]))
 
 (defn refresh-button
   []
@@ -220,7 +220,8 @@
     [timestamp
      "last-statement-stored"
      "LAST STATEMENT AT"
-     [:status.data/last-statement-stored-locale]]]
+     [:status.data/last-statement-stored-locale]
+     "-"]]
    [:div.status-vis-row
     [timeline]]
    [:div.status-vis-row
