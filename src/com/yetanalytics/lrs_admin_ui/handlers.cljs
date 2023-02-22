@@ -14,7 +14,8 @@
             [ajax.core                                        :as ajax]
             [cljs.spec.alpha                                  :refer [valid?]]
             [goog.string                                      :refer [format]]
-            goog.string.format))
+            goog.string.format
+            [clojure.walk                                     :as w]))
 
 (def global-interceptors
   [db/check-spec-interceptor])
@@ -585,7 +586,7 @@
                              {"include" include}
                              params)
            :format          (ajax/json-request-format)
-           :response-format (ajax/json-response-format {:keywords? true})
+           :response-format (ajax/json-response-format {:keywords? false})
            :on-success      [:status/set-data include]
            :on-failure      [:status/server-error include]
            :interceptors    [httpfn/add-jwt-interceptor]}]]}))
@@ -620,6 +621,19 @@
  (fn [_ _]
    {:fx status-dispatch-all}))
 
+(defn- coerce-status-data
+  "Convert string keys in status data to keyword where appropriate."
+  [status-data]
+  (reduce-kv
+   (fn [m k v]
+     (assoc m
+            (keyword k)
+            (if (= k "timeline")
+              (w/keywordize-keys v)
+              v)))
+   {}
+   status-data))
+
 (re-frame/reg-event-fx
  :status/set-data
  global-interceptors
@@ -630,7 +644,7 @@
                       [::db/status :loading]
                       dissoc
                       k))
-         (update-in db [::db/status :data] merge status-data)
+         (update-in db [::db/status :data] merge (coerce-status-data status-data))
          include)}))
 
 (def timeline-control-fx

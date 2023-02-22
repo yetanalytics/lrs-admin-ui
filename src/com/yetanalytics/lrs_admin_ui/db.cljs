@@ -88,7 +88,7 @@
 (s/def :status.data/last-statement-stored (s/nilable ::xs/timestamp))
 ;; The JSON->edn conversion makes the platform a keyword, so we handle that in
 ;; the sub.
-(s/def :status.data/platform-frequency (s/map-of keyword? nat-int?))
+(s/def :status.data/platform-frequency (s/map-of string? nat-int?))
 
 (s/def :status.data.timeline/stored ::xs/timestamp)
 (s/def :status.data.timeline/count nat-int?)
