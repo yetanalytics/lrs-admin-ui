@@ -1,7 +1,7 @@
 (ns com.yetanalytics.lrs-admin-ui.subs
   (:require [re-frame.core :refer [reg-sub subscribe]]
             [com.yetanalytics.lrs-admin-ui.db :as db]
-            [com.yetanalytics.lrs-admin-ui.util :as u]))
+            [com.yetanalytics.lrs-admin-ui.functions.time :as t]))
 
 (reg-sub
  :db/get-db
@@ -189,13 +189,13 @@
  :status.params/timeline-since
  :<- [:status/params]
  (fn [params _]
-   (:timeline-since params (u/two-weeks-ago))))
+   (:timeline-since params (t/two-weeks-ago))))
 
 (reg-sub
  :status.params/timeline-since-local
  :<- [:status.params/timeline-since]
  (fn [since _]
-   (u/utc->local-datetime since)))
+   (t/utc->local-datetime since)))
 
 (reg-sub
  :status.params/timeline-until
@@ -207,7 +207,7 @@
  :status.params/timeline-until-local
  :<- [:status.params/timeline-until]
  (fn [until _]
-   (u/utc->local-datetime until)))
+   (t/utc->local-datetime until)))
 
 (reg-sub
  :status/data

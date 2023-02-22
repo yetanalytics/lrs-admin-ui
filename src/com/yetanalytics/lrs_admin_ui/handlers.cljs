@@ -9,7 +9,7 @@
             [com.yetanalytics.lrs-admin-ui.functions.storage  :as stor]
             [com.yetanalytics.lrs-admin-ui.functions.password :as pass]
             [com.yetanalytics.lrs-admin-ui.functions.oidc     :as oidc]
-            [com.yetanalytics.lrs-admin-ui.util               :as u]
+            [com.yetanalytics.lrs-admin-ui.functions.time     :as t]
             [com.yetanalytics.re-oidc                         :as re-oidc]
             [ajax.core                                        :as ajax]
             [cljs.spec.alpha                                  :refer [valid?]]
@@ -654,7 +654,7 @@
    (try
      {:db (assoc-in db
                     [::db/status :params :timeline-since]
-                    (u/local-datetime->utc
+                    (t/local-datetime->utc
                      since-datetime-str))
       :fx [timeline-control-fx]}
      (catch js/Error _
@@ -668,7 +668,7 @@
    (try
      {:db (assoc-in db
                     [::db/status :params :timeline-until]
-                    (u/local-datetime->utc
+                    (t/local-datetime->utc
                      until-datetime-str))
       :fx [timeline-control-fx]}
      (catch js/Error _
