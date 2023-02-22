@@ -2,7 +2,6 @@
   (:require [reagent.core :as r]
             [victory :refer [VictoryChart
                              VictoryAxis
-                             VictoryZoomContainer
                              VictoryPie
                              VictoryScatter
                              VictoryTheme
@@ -13,9 +12,6 @@
 
 (def axis
   (r/adapt-react-class VictoryAxis))
-
-(def zoom
-  (r/adapt-react-class VictoryZoomContainer))
 
 (def pie
   (r/adapt-react-class VictoryPie))
