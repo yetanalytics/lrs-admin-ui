@@ -123,7 +123,12 @@
 
 ;; map of vis type to loading state
 (s/def :status/loading
-  (s/map-of string? boolean?))
+  (s/map-of #{"statement-count"
+              "actor-count"
+              "last-statement-stored"
+              "platform-frequency"
+              "timeline"}
+            boolean?))
 
 (s/def ::status
   (s/keys
