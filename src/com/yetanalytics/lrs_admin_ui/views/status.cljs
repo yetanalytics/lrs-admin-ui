@@ -47,6 +47,14 @@
              "spinner"
              "")}])
 
+(defn- get-datum-x-y
+  [c]
+  (let [datum (aget c "datum")
+        x (aget datum "x")
+        y (aget datum "y")]
+    {:x x
+     :y y}))
+
 (defn platform-pie
   []
   (let [vis-key "platform-frequency"
@@ -61,9 +69,7 @@
         {:theme (aget vis/theme "material")
          :data data
          :labels (fn [c]
-                   (let [datum (aget c "datum")
-                         x (aget datum "x")
-                         y (aget datum "y")]
+                   (let [{:keys [x y]} (get-datum-x-y c)]
                      (format "%s: %s"
                              x y)))}]
        loading?
@@ -174,9 +180,7 @@
                           [vis/tooltip
                            {:style {:font-size 8}}])
         :labels (fn [c]
-                  (let [datum (aget c "datum")
-                        x (aget datum "x")
-                        y (aget datum "y")]
+                  (let [{:keys [x y]} (get-datum-x-y c)]
                     (format "%s: %s Statements"
                             (x-tick-format x-unit x) y)))
         :data @(subscribe [:status.data.timeline/data])}]
