@@ -1,6 +1,7 @@
 (ns com.yetanalytics.lrs-admin-ui.db
-  (:require [cljs.spec.alpha :as s :include-macros true]
-            [re-frame.core   :as re-frame]))
+  (:require [cljs.spec.alpha  :as s :include-macros true]
+            [re-frame.core    :as re-frame]
+            [xapi-schema.spec :as xs]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Spec to define the db
@@ -84,12 +85,12 @@
 
 (s/def :status.data/statement-count nat-int?)
 (s/def :status.data/actor-count nat-int?)
-(s/def :status.data/last-statement-stored (s/nilable string?))
+(s/def :status.data/last-statement-stored (s/nilable ::xs/timestamp))
 ;; The JSON->edn conversion makes the platform a keyword, so we handle that in
 ;; the sub.
 (s/def :status.data/platform-frequency (s/map-of keyword? nat-int?))
 
-(s/def :status.data.timeline/stored string?)
+(s/def :status.data.timeline/stored ::xs/timestamp)
 (s/def :status.data.timeline/count nat-int?)
 
 (s/def :status.data/timeline
@@ -112,9 +113,9 @@
     "minute"
     "second"})
 (s/def :status.params/timeline-since
-  string?)
+  ::xs/timestamp)
 (s/def :status.params/timeline-until
-  string?)
+  ::xs/timestamp)
 
 (s/def :status/params
   (s/keys :opt-un [:status.params/timeline-unit
