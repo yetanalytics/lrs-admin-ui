@@ -49,18 +49,28 @@
 
 (defn platform-pie
   []
-  [:div.vis-pie
-   [:h4 "PLATFORMS"
-    [title-loading-spinner "platform-frequency"]]
-   [vis/pie
-    {:theme (aget vis/theme "material")
-     :data @(subscribe [:status.data/platform-frequency])
-     :labels (fn [c]
-               (let [datum (aget c "datum")
-                     x (aget datum "x")
-                     y (aget datum "y")]
-                 (format "%s: %s"
-                         x y)))}]])
+  (let [vis-key "platform-frequency"
+        data @(subscribe [:status.data/platform-frequency])
+        loading? @(subscribe [:status/loading? vis-key])]
+    [:div.vis-pie
+     [:h4 "PLATFORMS"
+      [title-loading-spinner vis-key]]
+     (cond
+       (not-empty data)
+       [vis/pie
+        {:theme (aget vis/theme "material")
+         :data data
+         :labels (fn [c]
+                   (let [datum (aget c "datum")
+                         x (aget datum "x")
+                         y (aget datum "y")]
+                     (format "%s: %s"
+                             x y)))}]
+       loading?
+       [:div]
+
+       :else
+       [:div "No Statement Data"])]))
 
 (defn timeline-select-unit
   []
