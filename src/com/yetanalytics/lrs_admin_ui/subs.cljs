@@ -189,7 +189,7 @@
  :status.params/timeline-since
  :<- [:status/params]
  (fn [params _]
-   (:timeline-since params (t/two-weeks-ago))))
+   (:timeline-since params (t/timeline-since-default))))
 
 (reg-sub
  :status.params/timeline-since-local
@@ -201,7 +201,7 @@
  :status.params/timeline-until
  :<- [:status/params]
  (fn [params _]
-   (:timeline-until params (.toISOString (js/Date.)))))
+   (:timeline-until params (t/timeline-until-default))))
 
 (reg-sub
  :status.params/timeline-until-local

@@ -664,13 +664,19 @@
 (re-frame/reg-event-fx
  :status/set-timeline-since
  global-interceptors
- (fn [{:keys [db]} [_ since-datetime-str]]
+ (fn [{{{{:keys [timeline-until]
+          :or   {timeline-until (t/timeline-until-default)}}
+         :params} ::db/status
+        :as       db} :db} [_ since-datetime-str]]
    (try
-     {:db (assoc-in db
-                    [::db/status :params :timeline-since]
-                    (t/local-datetime->utc
-                     since-datetime-str))
-      :fx [timeline-control-fx]}
+     (let [timeline-since (t/local-datetime->utc since-datetime-str)]
+       (if (< (js/Date. timeline-since) (js/Date. timeline-until))
+         {:db (assoc-in db
+                        [::db/status :params :timeline-since]
+                        timeline-since)
+          :fx [timeline-control-fx]}
+         (.log js/console
+               "New timeline-since ignored, must be before timeline-until.")))
      (catch js/Error _
        (.log js/console
              (str "Invalid timestamp " since-datetime-str " was ignored"))))))
@@ -678,13 +684,19 @@
 (re-frame/reg-event-fx
  :status/set-timeline-until
  global-interceptors
- (fn [{:keys [db]} [_ until-datetime-str]]
+ (fn [{{{{:keys [timeline-since]
+          :or   {timeline-since (t/timeline-since-default)}}
+         :params} ::db/status
+        :as       db} :db} [_ until-datetime-str]]
    (try
-     {:db (assoc-in db
-                    [::db/status :params :timeline-until]
-                    (t/local-datetime->utc
-                     until-datetime-str))
-      :fx [timeline-control-fx]}
+     (let [timeline-until (t/local-datetime->utc until-datetime-str)]
+       (if (< (js/Date. timeline-since) (js/Date. timeline-until))
+         {:db (assoc-in db
+                        [::db/status :params :timeline-until]
+                        timeline-until)
+          :fx [timeline-control-fx]}
+         (.log js/console
+               "New timeline-until ignored, must be after timeline-since.")))
      (catch js/Error _
        (.log js/console
              (str "Invalid timestamp " until-datetime-str " was ignored"))))))

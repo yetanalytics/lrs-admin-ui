@@ -27,7 +27,7 @@
         date (js/Date. local-date-ms)]
     (subs (.toISOString date) 0 19)))
 
-(defn two-weeks-ago
+(defn- two-weeks-ago
   "Return a timestamp two weeks before the current time."
   []
   (-> js/Date
@@ -36,3 +36,11 @@
       (- 12096e5)
       (js/Date.)
       .toISOString))
+
+(defn timeline-since-default
+  []
+  (two-weeks-ago))
+
+(defn timeline-until-default
+  []
+  (.toISOString (js/Date.)))
