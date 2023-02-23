@@ -215,7 +215,7 @@
         (fn [x]
           (x-tick-format x-unit (js/Date. x)))
         :style
-        {:tick-labels {:angle 60
+        {:tick-labels {:angle 30
                        :text-anchor "start"}}}]]]))
 
 (defn timeline
