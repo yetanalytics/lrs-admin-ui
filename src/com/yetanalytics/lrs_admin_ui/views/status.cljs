@@ -91,7 +91,7 @@
        [:div]
 
        :else
-       [:div "No Statement Data"])]))
+       [:div.no-data "No Statement Data"])]))
 
 (defn timeline-select-unit
   []
