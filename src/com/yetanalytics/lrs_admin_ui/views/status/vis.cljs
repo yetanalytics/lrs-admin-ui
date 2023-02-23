@@ -1,11 +1,11 @@
 (ns com.yetanalytics.lrs-admin-ui.views.status.vis
   (:require [reagent.core :as r]
-            [victory :refer [VictoryChart
-                             VictoryAxis
-                             VictoryPie
-                             VictoryScatter
-                             VictoryTheme
-                             VictoryTooltip]]))
+            [victory-core :refer [VictoryTheme]]
+            [victory-chart :refer [VictoryChart]]
+            [victory-axis :refer [VictoryAxis]]
+            [victory-pie :refer [VictoryPie]]
+            [victory-scatter :refer [VictoryScatter]]
+            [victory-tooltip :refer [VictoryTooltip]]))
 
 (def chart
   (r/adapt-react-class VictoryChart))
