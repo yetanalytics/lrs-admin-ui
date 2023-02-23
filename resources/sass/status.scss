@@ -7,12 +7,12 @@
 .status-vis-row {
   display: flex;
   flex-wrap: wrap;
-  padding-top: 1em;
-  padding-bottom: 1em;
 }
 
 .status-vis-row > div {
   flex-grow: 1;
+  padding-top: 2em;
+  padding-bottom: 2em;
 }
 
 span.vis-title-loading-spinner {
