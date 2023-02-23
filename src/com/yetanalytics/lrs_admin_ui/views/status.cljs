@@ -67,13 +67,17 @@
        (not-empty data)
        [vis/chart
         {:theme (aget vis/theme "material")
-         :padding {:top 10 :left 30 :bottom 30}
+         :padding {:top 10 :left 40 :bottom 30}
          :domain-padding {:x 40}}
         [vis/bar
          {:standalone false
           :data data
           :sort-key "y"
-          :sort-order "descending"}]
+          :sort-order "descending"
+          :style {:data {:fill (fn [c]
+                                 (-> c
+                                     (aget "datum")
+                                     (aget "fill")))}}}]
         [vis/axis
          {:standalone false
           :dependent-axis true
@@ -181,13 +185,13 @@
        :min-domain {:y 0}
        :domain-padding 10
        :theme (aget vis/theme "material")
-       :height 200
-       :padding {:top 10 :left 40 :right 30 :bottom 70}}
+       ;; :height 200
+       :width 500
+       :padding {:top 10 :left 60 :right 30 :bottom 80}}
       [vis/scatter
        {:standalone false
         :label-component (r/as-element
-                          [vis/tooltip
-                           {:style {:font-size 8}}])
+                          [vis/tooltip])
         :labels (fn [c]
                   (let [{:keys [x y]} (get-datum-x-y c)]
                     (format "%s: %s Statements"
@@ -200,9 +204,7 @@
         :tick-format
         (fn [y]
           (when (int? y)
-            (str y)))
-        :style
-        {:tick-labels {:font-size 6}}}]
+            (str y)))}]
       [vis/axis
        {:standalone false
         :dependent-axis false
@@ -212,8 +214,7 @@
         (fn [x]
           (x-tick-format x-unit (js/Date. x)))
         :style
-        {:tick-labels {:font-size 6
-                       :angle 60
+        {:tick-labels {:angle 60
                        :text-anchor "start"}}}]]]))
 
 (defn timeline

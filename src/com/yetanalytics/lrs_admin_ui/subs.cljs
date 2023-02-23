@@ -240,6 +240,14 @@
    (when last-stored
      (.toLocaleString (js/Date. last-stored)))))
 
+(def bar-colors
+  ["#137BCE"
+   "#BAD54C"
+   "#20956A"
+   "#405EA7"
+   "#D88638"
+   "#6D4B9B"])
+
 (reg-sub
  :status.data/platform-frequency
  :<- [:status/data]
@@ -247,13 +255,14 @@
    (let [freqs (:platform-frequency data {})
          total (reduce + 0 (vals freqs))]
      (mapv
-      (fn [[platform count]]
+      (fn [[[platform count] color]]
         {:x platform
          :y (-> count
                 (/ total)
                 (* 100)
-                int)})
-      freqs))))
+                int)
+         :fill color})
+      (map vector freqs (cycle bar-colors))))))
 
 (reg-sub
  :status.data.timeline/data

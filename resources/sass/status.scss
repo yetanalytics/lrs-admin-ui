@@ -50,6 +50,7 @@ span.vis-title-loading-spinner {
 
 .vis-timeline-controls {
   padding: 1em;
+  height: 30%;
 }
 
 .vis-timeline-controls label {
@@ -62,4 +63,8 @@ span.vis-title-loading-spinner {
 
 .vis-timeline-controls select {
   width: 20em;
+}
+
+.vis-timeline-chart {
+  height: 70%;
 }
