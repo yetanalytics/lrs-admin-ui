@@ -1,0 +1,74 @@
+/* Status Dashboard Styles */
+
+.status-refresh-button {
+  text-align: right;
+}
+
+.status-vis-row {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.status-vis-row > div {
+  flex-grow: 1;
+  padding-top: 2em;
+  padding-bottom: 2em;
+}
+
+span.vis-title-loading-spinner {
+  margin-left: 0.6em;
+  position: relative;
+}
+
+.big-number {
+  text-align: center;
+}
+
+.big-number-value {
+  font-size: 72px;
+  height: 1.2em;
+  position: relative;
+}
+
+.timestamp {
+  text-align: center;
+}
+
+.timestamp-value {
+  font-size: 42px;
+  height: 1.2em;
+  position: relative;
+}
+
+.vis-bar {
+  height: 500px;
+}
+
+.vis-bar .no-data {
+  font-size: 16pt;
+}
+
+.vis-timeline {
+  height: 500px;
+}
+
+.vis-timeline-controls {
+  padding: 1em;
+  height: 30%;
+}
+
+.vis-timeline-controls label {
+  width: 6em;
+}
+
+.vis-timeline-controls input {
+  width: 20em;
+}
+
+.vis-timeline-controls select {
+  width: 20em;
+}
+
+.vis-timeline-chart {
+  height: 70%;
+}
