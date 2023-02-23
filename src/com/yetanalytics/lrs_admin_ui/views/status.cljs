@@ -196,7 +196,8 @@
                   (let [{:keys [x y]} (get-datum-x-y c)]
                     (format "%s: %s Statements"
                             (x-tick-format x-unit x) y)))
-        :data @(subscribe [:status.data.timeline/data])}]
+        :data @(subscribe [:status.data.timeline/data])
+        :style {:data {:fill "#137BCE"}}}]
       [vis/axis
        {:standalone false
         :dependent-axis true
