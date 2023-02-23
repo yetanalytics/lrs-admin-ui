@@ -235,6 +235,5 @@
      [:status.data/last-statement-stored-locale]
      "-"]]
    [:div.status-vis-row
-    [timeline]]
-   [:div.status-vis-row
+    [timeline]
     [platform-pie]]])
