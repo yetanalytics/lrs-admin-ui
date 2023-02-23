@@ -19,4 +19,4 @@
     (when @(subscribe [:db/get-stmt-html-enabled])
       [menu-item {:name "Statement Browser" :page :browser}])
     (when @(subscribe [:status/enabled?])
-      [menu-item {:name "LRS Status" :page :status}])]])
+      [menu-item {:name "LRS Monitor" :page :status}])]])

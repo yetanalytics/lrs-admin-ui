@@ -230,7 +230,7 @@
   []
   [:div {:class "left-content-wrapper"}
    [:h2 {:class "content-title"}
-    "LRS Status"]
+    "LRS Monitor"]
    [refresh-button]
    [:div.status-vis-row
     [big-number
