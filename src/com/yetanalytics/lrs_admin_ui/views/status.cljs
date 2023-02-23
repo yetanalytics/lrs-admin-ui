@@ -55,23 +55,34 @@
     {:x x
      :y y}))
 
-(defn platform-pie
+(defn platform-bar
   []
   (let [vis-key "platform-frequency"
         data @(subscribe [:status.data/platform-frequency])
         loading? @(subscribe [:status/loading? vis-key])]
-    [:div.vis-pie
+    [:div.vis-bar
      [:h4 "PLATFORMS"
       [title-loading-spinner vis-key]]
      (cond
        (not-empty data)
-       [vis/pie
+       [vis/chart
         {:theme (aget vis/theme "material")
-         :data data
-         :labels (fn [c]
-                   (let [{:keys [x y]} (get-datum-x-y c)]
-                     (format "%s: %s"
-                             x y)))}]
+         :padding {:top 10 :left 30 :bottom 30}
+         :domain-padding {:x 40}}
+        [vis/bar
+         {:standalone false
+          :data data
+          :sort-key "y"
+          :sort-order "descending"}]
+        [vis/axis
+         {:standalone false
+          :dependent-axis true
+          :orientation "left"
+          :tick-format (fn [y] (format "%d%" y))}]
+        [vis/axis
+         {:standalone false
+          :dependent-axis false
+          :orientation "bottom"}]]
        loading?
        [:div]
 
@@ -236,4 +247,4 @@
      "-"]]
    [:div.status-vis-row
     [timeline]
-    [platform-pie]]])
+    [platform-bar]]])

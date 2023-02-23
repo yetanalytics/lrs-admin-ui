@@ -3,7 +3,7 @@
             [victory-core :refer [VictoryTheme]]
             [victory-chart :refer [VictoryChart]]
             [victory-axis :refer [VictoryAxis]]
-            [victory-pie :refer [VictoryPie]]
+            [victory-bar :refer [VictoryBar]]
             [victory-scatter :refer [VictoryScatter]]
             [victory-tooltip :refer [VictoryTooltip]]))
 
@@ -13,8 +13,8 @@
 (def axis
   (r/adapt-react-class VictoryAxis))
 
-(def pie
-  (r/adapt-react-class VictoryPie))
+(def bar
+  (r/adapt-react-class VictoryBar))
 
 (def scatter
   (r/adapt-react-class VictoryScatter))

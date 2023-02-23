@@ -244,11 +244,16 @@
  :status.data/platform-frequency
  :<- [:status/data]
  (fn [data _]
-   (mapv
-    (fn [[platform count]]
-      {:x platform
-       :y count})
-    (:platform-frequency data))))
+   (let [freqs (:platform-frequency data {})
+         total (reduce + 0 (vals freqs))]
+     (mapv
+      (fn [[platform count]]
+        {:x platform
+         :y (-> count
+                (/ total)
+                (* 100)
+                int)})
+      freqs))))
 
 (reg-sub
  :status.data.timeline/data
