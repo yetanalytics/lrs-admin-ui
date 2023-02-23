@@ -187,7 +187,7 @@
        :theme (aget vis/theme "material")
        ;; :height 200
        :width 500
-       :padding {:top 10 :left 60 :right 70 :bottom 80}}
+       :padding {:top 10 :left 60 :right 80 :bottom 80}}
       [vis/scatter
        {:standalone false
         :label-component (r/as-element
