@@ -1217,6 +1217,52 @@ ul.role-select li.role-checkbox {
 
 
 /**************************************************
+# Tooltip
+**************************************************/
+
+span.tooltip-info {
+  width: 15px;
+  height: 15px;
+  margin-left: 4px;
+  background: url('../images/icons/info_blue_48.svg') no-repeat top left;
+  display: inline-block;
+  background-size: 15px;
+  vertical-align: text-top;
+}
+
+span.tooltip-info.left {
+  @extend span.tooltip-info;
+  float: left;
+  background: url('../images/icons/info_white_48.svg') no-repeat top left;
+  background-size: 15px;
+}
+
+.tooltip-text {
+  text-transform: none;
+}
+
+div.tooltip-text {
+  max-width: 400px;
+  text-align: left !important;
+  color: black !important;
+  background-color: white !important;
+  border: 2px solid #337AB7;
+  border-radius: 4px;
+}
+
+div.tooltip-text.type-warning {
+  border: 2px solid #F0AD4E;
+}
+
+div.tooltip-text.show {
+  opacity: 1 !important;
+}
+
+div.tooltip-text span.multi-line {
+  text-align: left !important;
+}
+
+/**************************************************
 # Footer
 **************************************************/
 .footer-menu-box {

@@ -5,6 +5,7 @@
    [clojure.string :as cs]
    [com.yetanalytics.lrs-admin-ui.functions :as fns]
    [com.yetanalytics.lrs-admin-ui.views.status.vis :as vis]
+   [com.yetanalytics.lrs-admin-ui.functions.tooltip :refer [tooltip-info]]
    [goog.string :refer [format]]
    [goog.string.format]))
 
@@ -62,6 +63,7 @@
         loading? @(subscribe [:status/loading? vis-key])]
     [:div.vis-bar
      [:h4 "PLATFORMS"
+      [tooltip-info {:value "This metric requires proper use of the “context.platform” field in associated xAPI Statements. If you do not see your connected system represented here, it is possible that it is posting statements that are not using this field."}]
       [title-loading-spinner vis-key]]
      (cond
        (not-empty data)
