@@ -1,7 +1,6 @@
 (ns com.yetanalytics.lrs-admin-ui.functions.tooltip
   (:require [reagent.core    :as r]
-            ["react-tooltip" :as rtt]
-            [goog.object     :as gobject]))
+            [react-tooltip :as rtt]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Base Tooltip Component
@@ -17,7 +16,7 @@
   described here:
   https://github.com/ReactTooltip/react-tooltip#options"
   [opts]
-  [(r/adapt-react-class (gobject/get rtt "default"))
+  [(r/adapt-react-class rtt/default)
    opts])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
