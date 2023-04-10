@@ -1,7 +1,7 @@
 .PHONY: clean clean-css dev build-sass bundle
 
 clean:
-	rm -rf target *.log node_modules resources/public/css/style.css resources/public/css/style.css.map
+	rm -rf target *.log node_modules resources/public/css/style.css resources/public/css/style.css.map pom.xml
 
 clean-css:
 	rm resources/public/css/style.css
@@ -39,3 +39,9 @@ target/bundle/images:
 target/bundle: target/bundle/index.html target/bundle/main.js target/bundle/css target/bundle/images
 
 bundle: target/bundle
+
+## This pom.xml file is generated solely in an action to populate the GitHub
+## Dependency Graph. This allows generation of an accurate SBOM.
+
+pom.xml:
+	clojure -Spom
