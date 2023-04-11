@@ -58,4 +58,13 @@
   [:div {:class "left-content-wrapper"}
    [:h2 {:class "content-title"}
     "Update Password"]
-   [form]])
+   [form]
+   [:div {:class "accounts-table-actions"}
+    [:input {:type "button",
+             :class "btn-blue-bold",
+             :on-click #(dispatch [:session/set-page :credentials])
+             :value "CANCEL"}]
+    [:input {:type "button",
+             :class "btn-blue-bold",
+             :on-click #(dispatch [:update-password/update-password!])
+             :value "UPDATE"}]]])

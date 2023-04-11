@@ -30,3 +30,18 @@
 (s/def ::valid-new-account
   (s/keys :req-un [:valid-account/password
                    :valid-account/username]))
+
+(s/def :valid-update-password/old-password
+  string?) ;; Allow the default dev password for instance
+
+(s/def :valid-update-password/new-password
+  :valid-account/password)
+
+(s/def ::valid-update-password
+  (s/and
+   (s/keys :req-un [:valid-update-password/old-password
+                    :valid-update-password/new-password])
+   (fn neither-nil [{:keys [old-password new-password]}]
+     (and old-password new-password))
+   (fn not-the-same [{:keys [old-password new-password]}]
+     (not= old-password new-password))))
