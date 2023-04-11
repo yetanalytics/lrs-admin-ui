@@ -92,7 +92,7 @@
  :update-password/valid?
  :<- [:db/update-password]
  (fn [update-password _]
-   (s/valid? ::i/valid-update-password update-password )))
+   (s/valid? ::i/valid-update-password update-password)))
 
 (reg-sub
  :login/get-username
