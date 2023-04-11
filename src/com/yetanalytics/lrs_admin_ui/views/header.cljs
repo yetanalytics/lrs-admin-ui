@@ -1,8 +1,6 @@
 (ns com.yetanalytics.lrs-admin-ui.views.header
   (:require [com.yetanalytics.lrs-admin-ui.functions :as fns]
-            [re-frame.core :refer [subscribe dispatch dispatch-sync]]
-            [goog.string       :refer [format]]
-            goog.string.format))
+            [re-frame.core :refer [subscribe dispatch dispatch-sync]]))
 
 (defn username []
   (let [display-name @(subscribe [:session/get-display-name])]

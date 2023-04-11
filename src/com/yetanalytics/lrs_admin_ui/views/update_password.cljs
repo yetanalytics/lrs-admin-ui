@@ -4,7 +4,7 @@
             [com.yetanalytics.lrs-admin-ui.functions :as fns]
             [com.yetanalytics.lrs-admin-ui.functions.copy :refer [copy-text]]
             [com.yetanalytics.lrs-admin-ui.functions.password :as pass]
-            [com.yetanalytics.lrs-admin-ui.input :refer [p-min-len u-min-len]]
+            [com.yetanalytics.lrs-admin-ui.input :refer [p-min-len]]
             [goog.string :refer [format]]
             goog.string.format))
 
