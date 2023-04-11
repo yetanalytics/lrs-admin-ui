@@ -554,7 +554,7 @@
                      :on-failure      [:update-password/update-error]
                      :interceptors    [httpfn/add-jwt-interceptor]}}
        {:fx         [[:dispatch [:notification/notify true
-                                 "Old or new password did not meet requirements."]]]}))))
+                                 "New password did not meet requirements."]]]}))))
 
 (re-frame/reg-event-fx
  :update-password/update-success
