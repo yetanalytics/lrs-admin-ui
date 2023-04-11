@@ -33,6 +33,8 @@
          ::db/accounts []
          ::db/new-account {:username nil
                            :password nil}
+         ::db/update-password {:old-password nil
+                               :new-password nil}
          ::db/browser {:content nil
                        :address nil
                        :credential nil}
@@ -508,6 +510,31 @@
  global-interceptors
  (fn [_ _]
    {:dispatch [:new-account/set-password (pass/pass-gen 12)]}))
+
+(re-frame/reg-event-db
+ :update-password/set-old-password
+ global-interceptors
+ (fn [db [_ password]]
+   (assoc-in db [::db/update-password :old-password] password)))
+
+(re-frame/reg-event-db
+ :update-password/set-new-password
+ global-interceptors
+ (fn [db [_ password]]
+   (assoc-in db [::db/update-password :new-password] password)))
+
+(re-frame/reg-event-db
+ :update-password/clear
+ global-interceptors
+ (fn [db _]
+   (assoc db ::db/update-password {:old-password nil
+                                   :new-password nil})))
+
+(re-frame/reg-event-fx
+ :update-password/generate-password
+ global-interceptors
+ (fn [_ _]
+   {:dispatch [:update-password/set-new-password (pass/pass-gen 12)]}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; OIDC Support

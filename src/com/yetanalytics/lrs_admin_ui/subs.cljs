@@ -70,6 +70,23 @@
    (::db/new-account db)))
 
 (reg-sub
+ :db/update-password
+ (fn [db _]
+   (::db/update-password db)))
+
+(reg-sub
+ :update-password/old-password
+ :<- [:db/update-password]
+ (fn [update-password _]
+   (:old-password update-password)))
+
+(reg-sub
+ :update-password/new-password
+ :<- [:db/update-password]
+ (fn [update-password _]
+   (:new-password update-password)))
+
+(reg-sub
  :login/get-username
  (fn [_ _]
    (subscribe [:db/get-login]))

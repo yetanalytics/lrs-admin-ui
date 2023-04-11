@@ -5,7 +5,8 @@
    [com.yetanalytics.lrs-admin-ui.views.browser :refer [browser]]
    [com.yetanalytics.lrs-admin-ui.views.menu :refer [menu]]
    [com.yetanalytics.lrs-admin-ui.views.accounts :refer [accounts]]
-   [com.yetanalytics.lrs-admin-ui.views.status :refer [status]]))
+   [com.yetanalytics.lrs-admin-ui.views.status :refer [status]]
+   [com.yetanalytics.lrs-admin-ui.views.update-password :refer [update-password]]))
 
 (defn main []
   [:main {:class "lrs-main"}
@@ -17,5 +18,6 @@
        :credentials [credentials]
        :browser [browser]
        :accounts [accounts]
-       :status [status])]
+       :status [status]
+       :update-password [update-password])]
     [:div {:class "content-right-wrapper"} ]]])

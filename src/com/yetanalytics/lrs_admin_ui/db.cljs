@@ -52,6 +52,13 @@
 
 (s/def ::accounts (s/every ::account))
 
+(s/def :update-password/old-password (s/nilable string?))
+(s/def :update-password/new-password (s/nilable string?))
+
+(s/def ::update-password
+  (s/keys :req-un [:update-password/old-password
+                   :update-password/new-password]))
+
 (s/def :browser/content (s/nilable string?))
 (s/def :browser/address (s/nilable string?))
 (s/def :browser/credential (s/nilable
@@ -147,7 +154,8 @@
                           ::oidc-auth
                           ::oidc-enable-local-admin
                           ::enable-admin-status
-                          ::status]))
+                          ::status
+                          ::update-password]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Continuous DB Validation
