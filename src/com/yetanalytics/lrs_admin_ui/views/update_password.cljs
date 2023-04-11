@@ -44,7 +44,7 @@
                                    "Copied New Password!"])}
              [:a {:class "icon-copy pointer"} "Copy"]]]]]
          [:span {:class "password-note"}
-          (format "Password must be %d or more characters and contain uppercase, lowercase, numbers, and special characters (%s). Be sure to note or copy the new password as it will not be accessible after creation."
+          (format "New password must be different from old password and be %d or more characters and contain uppercase, lowercase, numbers, and special characters (%s). Be sure to note or copy the new password as it will not be accessible after creation."
                   p-min-len
                   (apply str pass/special-chars))]
          [:div {:class "row"}
