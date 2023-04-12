@@ -60,7 +60,7 @@
    [:h2 {:class "content-title"}
     "Update Password"]
    [form]
-   [:div {:class "accounts-table-actions"}
+   [:div {:class "update-password-actions"}
     [:input {:type "button",
              :class "btn-blue-bold",
              :on-click #(dispatch [:session/set-page :credentials])
