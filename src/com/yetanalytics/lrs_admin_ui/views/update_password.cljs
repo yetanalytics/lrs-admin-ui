@@ -13,11 +13,11 @@
   (let [hide-pass (r/atom true)]
     (fn []
       (let [new-password @(subscribe [:update-password/new-password])]
-        [:div {:class "create-account-inputs"}
+        [:div {:class "update-password-inputs"}
          [:div {:class "row"}
           [:label {:for "old-password-input"} "Old Password:"]
           [:input {:value @(subscribe [:update-password/old-password])
-                   :class "new-account round"
+                   :class "new-password round"
                    :id "old-password-input"
                    :type "password"
                    :on-change #(dispatch [:update-password/set-old-password
@@ -25,7 +25,7 @@
          [:div {:class "row pt-2"}
           [:label {:for "new-password-input"} "New Password:"]
           [:input (cond-> {:value new-password
-                           :class "new-account round"
+                           :class "new-password round"
                            :id "new-password-input"
                            :on-change #(dispatch [:update-password/set-new-password
                                                   (fns/ps-event-val %)])}
