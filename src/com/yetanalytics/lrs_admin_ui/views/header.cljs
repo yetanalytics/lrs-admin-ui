@@ -1,8 +1,19 @@
 (ns com.yetanalytics.lrs-admin-ui.views.header
   (:require [com.yetanalytics.lrs-admin-ui.functions :as fns]
-            [re-frame.core :refer [subscribe dispatch-sync]]
-            [goog.string       :refer [format]]
-            goog.string.format))
+            [re-frame.core :refer [subscribe dispatch dispatch-sync]]))
+
+(defn username []
+  (let [display-name @(subscribe [:session/get-display-name])]
+    [:div {:class "user-name"}
+     [:span "Welcome, "]
+     (if @(subscribe [:oidc/enabled?])
+       [:span display-name]
+       [:a {:class "fg-primary"
+            :href "#"
+            :on-click (fn [e]
+                        (fns/ps-event e)
+                        (dispatch [:session/set-page :update-password]))}
+        display-name])]))
 
 (defn header []
   [:header {:class "container-fluid"}
@@ -11,8 +22,7 @@
      [:i
       [:img {:src "images/logo.png", :alt "logo", :class "logo-img"}]]]
     [:div {:class "text-right"}
-     [:div {:class "user-name"} (format "Welcome, %s"
-                                        @(subscribe [:session/get-display-name]))]
+     [username]
      [:div {:class "header-actions-wrapper"}
       [:a {:class "fg-primary",
            :href "#"

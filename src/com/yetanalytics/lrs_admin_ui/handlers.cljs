@@ -33,6 +33,8 @@
          ::db/accounts []
          ::db/new-account {:username nil
                            :password nil}
+         ::db/update-password {:old-password nil
+                               :new-password nil}
          ::db/browser {:content nil
                        :address nil
                        :credential nil}
@@ -508,6 +510,67 @@
  global-interceptors
  (fn [_ _]
    {:dispatch [:new-account/set-password (pass/pass-gen 12)]}))
+
+(re-frame/reg-event-db
+ :update-password/set-old-password
+ global-interceptors
+ (fn [db [_ password]]
+   (assoc-in db [::db/update-password :old-password] password)))
+
+(re-frame/reg-event-db
+ :update-password/set-new-password
+ global-interceptors
+ (fn [db [_ password]]
+   (assoc-in db [::db/update-password :new-password] password)))
+
+(re-frame/reg-event-db
+ :update-password/clear
+ global-interceptors
+ (fn [db _]
+   (assoc db ::db/update-password {:old-password nil
+                                   :new-password nil})))
+
+(re-frame/reg-event-fx
+ :update-password/generate-password
+ global-interceptors
+ (fn [_ _]
+   {:dispatch [:update-password/set-new-password (pass/pass-gen 12)]}))
+
+(re-frame/reg-event-fx
+ :update-password/update-password!
+ global-interceptors
+ (fn [{{server-host ::db/server-host
+        :as db} :db} _]
+   (let [update-password (::db/update-password db)]
+     (if (valid? ::input/valid-update-password update-password)
+       {:http-xhrio {:method          :put
+                     :uri             (httpfn/serv-uri
+                                       server-host
+                                       "/admin/account/password")
+                     :response-format (ajax/json-response-format {:keywords? true})
+                     :params          update-password
+                     :format          (ajax/json-request-format)
+                     :on-success      [:update-password/update-success]
+                     :on-failure      [:update-password/update-error]
+                     :interceptors    [httpfn/add-jwt-interceptor]}}
+       {:fx         [[:dispatch [:notification/notify true
+                                 "New password did not meet requirements."]]]}))))
+
+(re-frame/reg-event-fx
+ :update-password/update-success
+ global-interceptors
+ (fn [_ _]
+   {:fx [[:dispatch [:update-password/clear]]
+         [:dispatch [:session/set-page :credentials]]
+         [:dispatch [:notification/notify false
+                     "Password updated."]]]}))
+
+(re-frame/reg-event-fx
+ :update-password/update-error
+ global-interceptors
+ (fn [_ _]
+   {:fx [[:dispatch [:notification/notify true
+                     "Password update failed. Please try again."]]]}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; OIDC Support

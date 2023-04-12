@@ -10,7 +10,8 @@
    goog.string.format))
 
 (defn account [{{:keys [_ username] :as account} :account}]
-  (let [delete-confirm (r/atom false)]
+  (let [delete-confirm (r/atom false)
+        current-username @(subscribe [:session/get-username])]
     (fn []
       [:li {:class "mb-2"}
        [:div {:class "accordion-container"}
@@ -35,7 +36,15 @@
               [:a {:href "#!"
                    :on-click #(swap! delete-confirm not)
                    :class "icon-delete"}
-               "Delete"]])]]]]])))
+               "Delete"]])
+           (when (= username current-username)
+             [:li
+              [:a {:href "#!"
+                   :on-click (fn [e]
+                               (fns/ps-event e)
+                               (dispatch [:session/set-page :update-password]))
+                   :class "icon-edit"}
+               "Update Password"]])]]]]])))
 
 (defn new-account []
   (let [hide-pass (r/atom true)]

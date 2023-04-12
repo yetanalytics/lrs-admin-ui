@@ -1139,6 +1139,32 @@ a.confirm-delete {
 }
 
 /**************************************************
+# Password Update
+***************************************************/
+
+.update-password-inputs .row {
+  margin-left: 0px;
+}
+
+.update-password-inputs label {
+  margin-top: 4px;
+  min-width: 8em;
+}
+
+input.new-password {
+  padding-left: 15px;
+  margin-left: 10px;
+}
+
+.update-password-actions {
+  @extend .api-keys-table-actions;
+}
+
+.update-password-actions input {
+  margin-left: 0.5em;
+}
+
+/**************************************************
 # Browser
 **************************************************/
 

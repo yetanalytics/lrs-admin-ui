@@ -1,7 +1,9 @@
 (ns com.yetanalytics.lrs-admin-ui.subs
   (:require [re-frame.core :refer [reg-sub subscribe]]
             [com.yetanalytics.lrs-admin-ui.db :as db]
-            [com.yetanalytics.lrs-admin-ui.functions.time :as t]))
+            [com.yetanalytics.lrs-admin-ui.functions.time :as t]
+            [com.yetanalytics.lrs-admin-ui.input :as i]
+            [clojure.spec.alpha :as s :include-macros true]))
 
 (reg-sub
  :db/get-db
@@ -68,6 +70,29 @@
  :db/get-new-account
  (fn [db _]
    (::db/new-account db)))
+
+(reg-sub
+ :db/update-password
+ (fn [db _]
+   (::db/update-password db)))
+
+(reg-sub
+ :update-password/old-password
+ :<- [:db/update-password]
+ (fn [update-password _]
+   (:old-password update-password)))
+
+(reg-sub
+ :update-password/new-password
+ :<- [:db/update-password]
+ (fn [update-password _]
+   (:new-password update-password)))
+
+(reg-sub
+ :update-password/valid?
+ :<- [:db/update-password]
+ (fn [update-password _]
+   (s/valid? ::i/valid-update-password update-password)))
 
 (reg-sub
  :login/get-username
