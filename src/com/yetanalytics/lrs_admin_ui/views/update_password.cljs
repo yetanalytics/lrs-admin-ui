@@ -63,7 +63,7 @@
    [:div {:class "update-password-actions"}
     [:input {:type "button",
              :class "btn-blue-bold",
-             :on-click #(dispatch [:session/set-page :credentials])
+             :on-click #(dispatch [:session/set-page :accounts])
              :value "CANCEL"}]
     [:input {:type "button",
              :class "btn-blue-bold",
