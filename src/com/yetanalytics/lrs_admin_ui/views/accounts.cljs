@@ -94,10 +94,10 @@
       [:div {:class "accounts-table-header"} "Account"]
       [:ol {:class "accounts-list accordion"}
        ;; will repeat for each key
-       (map-indexed
-        (fn [idx acct]
+       (map
+        (fn [{:keys [account-id] :as acct}]
           [account {:account acct
-                    :key (str "account-item-"idx)}])
+                    :key (format "account-item-%s" account-id)}])
         accounts)]
       [:div {:class "h-divider"}]
       [:h3 {:class "content-title"} "Create New Account"]
