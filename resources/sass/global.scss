@@ -1257,7 +1257,7 @@ span.tooltip-info {
 }
 
 span.tooltip-info.left {
-  @extend span.tooltip-info;
+  @extend span, .tooltip-info;
   float: left;
   background: url('../images/icons/info_white_48.svg') no-repeat top left;
   background-size: 15px;

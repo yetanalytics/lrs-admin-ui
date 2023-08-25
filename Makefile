@@ -1,4 +1,4 @@
-.PHONY: clean clean-css dev build-sass bundle
+.PHONY: clean clean-css dev build-sass build-sass-watch bundle
 
 clean:
 	rm -rf target *.log node_modules resources/public/css/style.css resources/public/css/style.css.map pom.xml
@@ -13,9 +13,12 @@ dev: 	node_modules
 	clojure -A:fig:dev:build
 
 resources/public/css/style.css: node_modules
-	clojure -A:build-sass
+	npx sass resources/sass/style.scss:resources/public/css/style.css -I ./node_modules
 
 build-sass: resources/public/css/style.css
+
+build-sass-watch: node_modules
+	npx sass resources/sass/style.scss:resources/public/css/style.css -I ./node_modules --watch
 
 target/public/cljs-out/prod/main_bundle.js: node_modules
 	clojure -Mfig -m figwheel.main -O advanced -bo prod
