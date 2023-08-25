@@ -129,6 +129,16 @@
          [:dispatch [:login/set-username nil]]]}))
 
 (re-frame/reg-event-fx
+ :session/set-token
+ global-interceptors
+ (fn [{:keys [db]} [_ token
+                    & {:keys [store?]
+                       :or {store? true}}]]
+   (cond-> {:db (assoc-in db [::db/session :token] token)
+            :fx [[:dispatch [:session/get-me]]]}
+     store? (assoc :session/store ["lrs-jwt" token]))))
+
+(re-frame/reg-event-fx
  :session/get-me
  global-interceptors
  (fn [{{server-host ::db/server-host} :db} _]
@@ -167,16 +177,6 @@
    (cond-> {:db (assoc-in db [::db/session :username]
                           username)}
      store? (assoc :session/store ["username" username]))))
-
-(re-frame/reg-event-fx
- :session/set-token
- global-interceptors
- (fn [{:keys [db]} [_ token
-                    & {:keys [store?]
-                       :or {store? true}}]]
-   (cond-> {:db (assoc-in db [::db/session :token] token)
-            :fx [[:dispatch [:session/get-me]]]}
-     store? (assoc :session/store ["lrs-jwt" token]))))
 
 (re-frame/reg-fx
  :session/store
