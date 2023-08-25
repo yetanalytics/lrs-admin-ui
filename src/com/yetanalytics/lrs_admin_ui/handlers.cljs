@@ -141,15 +141,16 @@
 (re-frame/reg-event-fx
  :session/get-me
  global-interceptors
- (fn [{{server-host ::db/server-host} :db} _]
-   {:http-xhrio {:method          :get
-                 :uri             (httpfn/serv-uri
-                                   server-host
-                                   "/admin/me")
-                 :response-format (ajax/json-response-format {:keywords? true})
-                 :on-success      [:session/me-success-handler]
-                 :on-failure      [:login/error-handler]
-                 :interceptors    [httpfn/add-jwt-interceptor]}}))
+ (fn [{{:keys [server-host] :as db} :db} _]
+   (when (not (get db ::db/oidc-auth))
+     {:http-xhrio {:method          :get
+                   :uri             (httpfn/serv-uri
+                                     server-host
+                                     "/admin/me")
+                   :response-format (ajax/json-response-format {:keywords? true})
+                   :on-success      [:session/me-success-handler]
+                   :on-failure      [:login/error-handler]
+                   :interceptors    [httpfn/add-jwt-interceptor]}})))
 
 (re-frame/reg-event-fx
  :session/me-success-handler
