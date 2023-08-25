@@ -66,7 +66,8 @@
  global-interceptors
  (fn [{:keys [db]} [_ {:keys             [url-prefix
                                           enable-stmt-html
-                                          enable-admin-status]
+                                          enable-admin-status
+                                          no-val?]
                        ?oidc             :oidc
                        ?oidc-local-admin :oidc-enable-local-admin}]]
    (merge {:db (assoc db
@@ -74,12 +75,23 @@
                       ::db/enable-statement-html enable-stmt-html
                       ::db/oidc-enable-local-admin (or ?oidc-local-admin false)
                       ::db/enable-admin-status enable-admin-status)}
-          (when ?oidc
-            {:dispatch [:oidc/init ?oidc]}))))
+          (when (or ?oidc no-val?)
+            {:fx [(when ?oidc [:dispatch [:oidc/init ?oidc]])
+                  (when no-val? [:dispatch [:session/proxy-token-init]])]}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Login / Auth
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(re-frame/reg-event-fx
+ :session/proxy-token-init
+ global-interceptors
+ (fn [_ _]
+   ;; In this mode the token will be overwritten, so just store something and 
+   ;; move on. For testing the feature, this placeholder token has "username", 
+   ;; "perms" array containing "ADMIN" perm, and "domain" as the issuer
+   (let [placeholder-token "eyJhbGciOiJIUzI1NiJ9.eyJkb21haW4iOiJodHRwczovL3Vuc2VjdXJlLnlldGFuYWx5dGljcy5jb20vcmVhbG0iLCJwZXJtcyI6WyJBRE1JTiJdLCJ1c2VybmFtZSI6IkNMSUZGLkNBU0VZLjEyMzQ1Njc4OTAifQ.2gRn_tDFBfJx2RE0pgvPM4wH__RnHf1E9kjsNlkLrnQ"]
+     {:fx [[:dispatch [:session/set-token placeholder-token]]]})))
 
 (re-frame/reg-event-db
  :login/set-username
@@ -111,12 +123,40 @@
 (re-frame/reg-event-fx
  :login/success-handler
  global-interceptors
- (fn [{:keys [db]} [_ {:keys [json-web-token]}]]
-   (let [{:keys [username]} (::db/login db)]
-     {:fx [[:dispatch [:session/set-token json-web-token]]
-           [:dispatch [:session/set-username username]]
-           [:dispatch [:login/set-password nil]]
-           [:dispatch [:login/set-username nil]]]})))
+ (fn [_ [_ {:keys [json-web-token]}]]
+   {:fx [[:dispatch [:session/set-token json-web-token]]
+         [:dispatch [:login/set-password nil]]
+         [:dispatch [:login/set-username nil]]]}))
+
+(re-frame/reg-event-fx
+ :session/set-token
+ global-interceptors
+ (fn [{:keys [db]} [_ token
+                    & {:keys [store?]
+                       :or {store? true}}]]
+   (cond-> {:db (assoc-in db [::db/session :token] token)
+            :fx [[:dispatch [:session/get-me]]]}
+     store? (assoc :session/store ["lrs-jwt" token]))))
+
+(re-frame/reg-event-fx
+ :session/get-me
+ global-interceptors
+ (fn [{{:keys [server-host] :as db} :db} _]
+   (when (not (get db ::db/oidc-auth))
+     {:http-xhrio {:method          :get
+                   :uri             (httpfn/serv-uri
+                                     server-host
+                                     "/admin/me")
+                   :response-format (ajax/json-response-format {:keywords? true})
+                   :on-success      [:session/me-success-handler]
+                   :on-failure      [:login/error-handler]
+                   :interceptors    [httpfn/add-jwt-interceptor]}})))
+
+(re-frame/reg-event-fx
+ :session/me-success-handler
+ global-interceptors
+ (fn [_ [_ {:keys [username]}]]
+   {:fx [[:dispatch [:session/set-username username]]]}))
 
 (re-frame/reg-event-fx
  :login/error-handler
@@ -145,15 +185,6 @@
    (if value
      (stor/set-item! key value)
      (stor/remove-item! key))))
-
-(re-frame/reg-event-fx
- :session/set-token
- global-interceptors
- (fn [{:keys [db]} [_ token
-                    & {:keys [store?]
-                       :or {store? true}}]]
-   (cond-> {:db (assoc-in db [::db/session :token] token)}
-     store? (assoc :session/store ["lrs-jwt" token]))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; General
