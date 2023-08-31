@@ -143,6 +143,9 @@
             :status/params
             :status/loading]))
 
+(s/def ::enable-reactions boolean?)
+(s/def ::reactions (s/every ::rs/reaction))
+
 (s/def ::db (s/keys :req [::session
                           ::credentials
                           ::login
@@ -156,7 +159,9 @@
                           ::oidc-enable-local-admin
                           ::enable-admin-status
                           ::status
-                          ::update-password]))
+                          ::update-password
+                          ::enable-reactions
+                          ::reactions]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Continuous DB Validation

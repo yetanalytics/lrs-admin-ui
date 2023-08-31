@@ -45,7 +45,9 @@
          ::db/oidc-auth false
          ::db/oidc-enable-local-admin false
          ::db/enable-admin-status false
-         ::db/status {}}
+         ::db/status {}
+         ::db/enable-reactions false
+         ::db/reactions []}
     :fx [[:dispatch [:db/get-env]]]}))
 
 (re-frame/reg-event-fx
