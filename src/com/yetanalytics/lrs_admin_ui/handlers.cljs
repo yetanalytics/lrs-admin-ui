@@ -141,7 +141,7 @@
 (re-frame/reg-event-fx
  :session/get-me
  global-interceptors
- (fn [{{:keys [server-host] :as db} :db} _]
+ (fn [{{server-host ::db/server-host :as db} :db} _]
    (when (not (get db ::db/oidc-auth))
      {:http-xhrio {:method          :get
                    :uri             (httpfn/serv-uri
