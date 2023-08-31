@@ -1,7 +1,8 @@
 (ns com.yetanalytics.lrs-admin-ui.db
-  (:require [cljs.spec.alpha  :as s :include-macros true]
-            [re-frame.core    :as re-frame]
-            [xapi-schema.spec :as xs]))
+  (:require [cljs.spec.alpha :as s :include-macros true]
+            [re-frame.core :as re-frame]
+            [xapi-schema.spec :as xs]
+            [com.yetanalytics.lrs-admin-ui.spec.reaction :as rs]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Spec to define the db
