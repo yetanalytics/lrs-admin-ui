@@ -89,8 +89,8 @@
  :session/proxy-token-init
  global-interceptors
  (fn [_ _]
-   ;; In this mode the token will be overwritten, so just store something and 
-   ;; move on. For testing the feature, this placeholder token has "username", 
+   ;; In this mode the token will be overwritten, so just store something and
+   ;; move on. For testing the feature, this placeholder token has "username",
    ;; "perms" array containing "ADMIN" perm, and "domain" as the issuer
    (let [placeholder-token "eyJhbGciOiJIUzI1NiJ9.eyJkb21haW4iOiJodHRwczovL3Vuc2VjdXJlLnlldGFuYWx5dGljcy5jb20vcmVhbG0iLCJwZXJtcyI6WyJBRE1JTiJdLCJ1c2VybmFtZSI6IkNMSUZGLkNBU0VZLjEyMzQ1Njc4OTAifQ.2gRn_tDFBfJx2RE0pgvPM4wH__RnHf1E9kjsNlkLrnQ"]
      {:fx [[:dispatch [:session/set-token placeholder-token]]]})))
@@ -796,3 +796,34 @@
      (catch js/Error _
        (.log js/console
              (str "Invalid timestamp " until-datetime-str " was ignored"))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Reaction Management
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defmethod page-fx :reactions [_]
+  [[:dispatch [:reaction/load-reactions]]])
+
+(re-frame/reg-event-fx
+ :reaction/load-reactions
+ global-interceptors
+ (fn [{{server-host ::db/server-host} :db} _]
+   {:http-xhrio {:method          :get
+                 :uri             (httpfn/serv-uri
+                                   server-host
+                                   "/admin/reaction")
+                 :response-format (ajax/json-response-format {:keywords? true})
+                 :on-success      [:reaction/set-reactions]
+                 :on-failure      [:server-error]
+                 :interceptors    [httpfn/add-jwt-interceptor]}}))
+
+(re-frame/reg-event-db
+ :reaction/set-reactions
+ global-interceptors
+ (fn [db [_ {:keys [reactions]}]]
+   (assoc db
+          ::db/reactions
+          (mapv
+           (fn [reaction]
+             (update reaction :template w/stringify-keys))
+           reactions))))

@@ -326,3 +326,9 @@
  :<- [:status/loading-map]
  (fn [loading-map [_ loading-k]]
    (true? (get loading-map loading-k))))
+
+;; Reactions
+(reg-sub
+ :reaction/enabled?
+ (fn [db _]
+   true #_(::db/enable-reactions db)))
