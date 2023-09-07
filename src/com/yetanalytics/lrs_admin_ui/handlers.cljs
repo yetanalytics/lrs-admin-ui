@@ -827,5 +827,5 @@
           ::db/reactions
           (mapv
            (fn [reaction]
-             (update reaction :template w/stringify-keys))
+             (update-in reaction [:ruleset :template] w/stringify-keys))
            reactions))))
