@@ -69,6 +69,7 @@
  (fn [{:keys [db]} [_ {:keys             [url-prefix
                                           enable-stmt-html
                                           enable-admin-status
+                                          enable-reactions
                                           no-val?]
                        ?oidc             :oidc
                        ?oidc-local-admin :oidc-enable-local-admin}]]
@@ -76,7 +77,8 @@
                       ::db/xapi-prefix url-prefix
                       ::db/enable-statement-html enable-stmt-html
                       ::db/oidc-enable-local-admin (or ?oidc-local-admin false)
-                      ::db/enable-admin-status enable-admin-status)}
+                      ::db/enable-admin-status enable-admin-status
+                      ::db/enable-reactions enable-reactions)}
           (when (or ?oidc no-val?)
             {:fx [(when ?oidc [:dispatch [:oidc/init ?oidc]])
                   (when no-val? [:dispatch [:session/proxy-token-init]])]}))))
