@@ -331,4 +331,9 @@
 (reg-sub
  :reaction/enabled?
  (fn [db _]
-   true #_(::db/enable-reactions db)))
+   (::db/enable-reactions db)))
+
+(reg-sub
+ :reaction/list
+ (fn [db _]
+   (::db/reactions db [])))
