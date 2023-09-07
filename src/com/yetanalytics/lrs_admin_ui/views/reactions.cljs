@@ -21,12 +21,13 @@
                        active
                        error]} @(subscribe [:reaction/list])]
            [:tr
-            [:td id]
-            [:td title]
-            [:td created]
-            [:td modified]
-            [:td (if (true? active) "Active" "Inactive")]
-            [:td (if error (:message error) "[None]")]]))])
+            [:td {:data-label "ID"} id]
+            [:td {:data-label "Title"} title]
+            [:td {:data-label "Created"} created]
+            [:td {:data-label "Modified"} modified]
+            [:td {:data-label "Status"} (if (true? active) "Active" "Inactive")]
+            [:td {:data-label "Error"}(if error (:message error) "[None]")]
+            [:td {:data-label "Action"}]]))])
 
 (defn reactions
   []
