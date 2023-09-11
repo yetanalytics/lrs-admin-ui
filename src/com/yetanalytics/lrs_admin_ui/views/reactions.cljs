@@ -137,20 +137,22 @@
     :as clause}]
   (cond
     and-clauses
-    (into [:div.clause-and "AND"]
+    (into [:div.clause.and
+           [:div.clause-label "AND"]]
           (for [clause and-clauses]
             [render-clause clause]))
     or-clauses
-    (into [:div.clause-or "OR"]
+    (into [:div.clause.or
+           [:div.clause-label "OR"]]
           (for [clause or-clauses]
             [render-clause clause]))
     not-clause
-    [:div.clause-not
-     "NOT"
+    [:div.clause.not
+     [:div.clause-label "NOT"]
      [render-clause not-clause]]
     :else
     (let [{:keys [path op val ref]} clause]
-      [:div.clause-op
+      [:div.clause.op
        (cond-> [:dl
                 [:dt "Path"]
                 [:dd [render-path path]]
@@ -170,7 +172,7 @@
   [conditions]
   (into [:div.reaction-conditions]
         (for [[condition-name condition] conditions]
-          [:div.condition
+          [:div.clause.condition
            condition-name
            [render-clause condition]])))
 
