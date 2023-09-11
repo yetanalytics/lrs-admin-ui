@@ -112,6 +112,50 @@
      [:dt "Error Message"]
      [:dd message]]))
 
+(defn- render-clause
+  [{and-clauses :and
+    or-clauses  :or
+    not-clause  :not
+    :as clause}]
+  (cond
+    and-clauses
+    (into [:div.clause-and "AND"]
+          (for [clause and-clauses]
+            [render-clause clause]))
+    or-clauses
+    (into [:div.clause-or "OR"]
+          (for [clause or-clauses]
+            [render-clause clause]))
+    not-clause
+    [:div.clause-not
+     "NOT"
+     [render-clause not-clause]]
+    :else
+    (let [{:keys [path op val ref]} clause]
+      [:div.clause-op
+       (cond-> [:dl
+                [:dt "Path"]
+                [:dd [render-path path]]
+                [:dt "Op"]
+                [:dd [:code op]]]
+         val (conj [:dt "Val"]
+                   [:dd [:code val]])
+         ref (conj [:dt "Ref"]
+                   [:dd
+                    [:dl
+                     [:dt "Condition"]
+                     [:dd (:condition ref)]
+                     [:dt "Path"]
+                     [:dd [render-path (:path ref)]]]]))])))
+
+(defn- render-conditions
+  [conditions]
+  (into [:div.reaction-conditions]
+        (for [[condition-name condition] conditions]
+          [:div.condition
+           condition-name
+           [render-clause condition]])))
+
 (defn- render-template
   [template]
   [:pre
@@ -127,6 +171,8 @@
     (into [:ul.identity-paths]
           (for [path identityPaths]
             [render-path path]))]
+   [:dt "Conditions"]
+   [:dd [render-conditions conditions]]
    [:dt "Template"]
    [:dd [render-template template]]])
 
