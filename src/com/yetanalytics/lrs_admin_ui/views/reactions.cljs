@@ -30,6 +30,24 @@
   [path]
   [:code (path->string path)])
 
+(defn- val-type
+  [val]
+  (cond
+    (string? val)
+    "string"
+    (number? val)
+    "number"
+    (boolean? val)
+    "boolean"
+    (nil? val)
+    "null"))
+
+(defn- render-val
+  [val]
+  [:div.val
+   (str (val-type val) ": ")
+   [:code (str val)]])
+
 (defn- short-error
   [{:keys [type message]}]
   (str (case type
@@ -139,7 +157,7 @@
                 [:dt "Op"]
                 [:dd [:code op]]]
          val (conj [:dt "Val"]
-                   [:dd [:code val]])
+                   [:dd [render-val val]])
          ref (conj [:dt "Ref"]
                    [:dd
                     [:dl
