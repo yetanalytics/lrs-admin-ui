@@ -145,6 +145,7 @@
 
 (s/def ::enable-reactions boolean?)
 (s/def ::reactions (s/every ::rs/reaction))
+(s/def ::reaction-focus ::rs/id)
 
 (s/def ::db (s/keys :req [::session
                           ::credentials
@@ -161,7 +162,8 @@
                           ::status
                           ::update-password
                           ::enable-reactions
-                          ::reactions]))
+                          ::reactions]
+                    :opt [::reaction-focus]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Continuous DB Validation

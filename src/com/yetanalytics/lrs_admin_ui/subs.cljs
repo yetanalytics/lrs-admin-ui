@@ -337,3 +337,19 @@
  :reaction/list
  (fn [db _]
    (::db/reactions db [])))
+
+(reg-sub
+ :reaction/focus-id
+ (fn [{focus-id ::db/reaction-focus} _]
+   focus-id))
+
+(reg-sub
+ :reaction/focus
+ :<- [:reaction/list]
+ :<- [:reaction/focus-id]
+ (fn [[reaction-list focus-id] _]
+   (some
+    (fn [{:keys [id] :as reaction}]
+      (when (= focus-id id)
+        reaction))
+    reaction-list)))

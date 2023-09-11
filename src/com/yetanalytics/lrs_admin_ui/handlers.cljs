@@ -804,7 +804,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defmethod page-fx :reactions [_]
-  [[:dispatch [:reaction/load-reactions]]])
+  [[:dispatch [:reaction/unset-focus]]
+   [:dispatch [:reaction/load-reactions]]])
 
 (re-frame/reg-event-fx
  :reaction/load-reactions
@@ -829,3 +830,15 @@
            (fn [reaction]
              (update-in reaction [:ruleset :template] w/stringify-keys))
            reactions))))
+
+(re-frame/reg-event-db
+ :reaction/set-focus
+ global-interceptors
+ (fn [db [_ reaction-id]]
+   (assoc db ::db/reaction-focus reaction-id)))
+
+(re-frame/reg-event-db
+ :reaction/unset-focus
+ global-interceptors
+ (fn [db _]
+   (dissoc db ::db/reaction-focus)))
