@@ -103,32 +103,29 @@
            title
            active
            created
-           modified]}]
-  [:dl.reaction-info
-   [:dt "ID"]
-   [:dd id]
+           modified
+           error]}]
+  (cond-> [:dl.reaction-info
+           [:dt "ID"]
+           [:dd id]
 
-   [:dt "Status"]
-   [:dd (if active "Active" "Inactive")]
+           [:dt "Status"]
+           [:dd (if active "Active" "Inactive")]
 
-   [:dt "Created"]
-   [:dd created]
+           [:dt "Created"]
+           [:dd created]
 
-   [:dt "Modified"]
-   [:dd modified]])
-
-(defn- reaction-error
-  [?error]
-  (when-let [{:keys [type message]} ?error]
-    [:dl.reaction-error
-     [:dt "Error Type"]
-     [:dd
-      (case type
-        "ReactionQueryError" "Query Error"
-        "ReactionTemplateError" "Template Error"
-        "ReactionInvalidStatementError" "Invalid Statement Error")]
-     [:dt "Error Message"]
-     [:dd message]]))
+           [:dt "Modified"]
+           [:dd modified]]
+    error
+    (conj [:dt "Error Type"]
+          [:dd
+           (case (:type error)
+             "ReactionQueryError" "Query Error"
+             "ReactionTemplateError" "Template Error"
+             "ReactionInvalidStatementError" "Invalid Statement Error")]
+          [:dt "Error Message"]
+          [:dd (:message error)])))
 
 (defn- render-clause
   [{and-clauses :and
@@ -211,7 +208,6 @@
       "< Back"]
      [:div {:class "tenant-wrapper"}
       [reaction-info reaction]
-      [reaction-error error]
       [ruleset-view ruleset]]]))
 
 (defn reactions
