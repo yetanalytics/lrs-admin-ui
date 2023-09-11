@@ -39,8 +39,6 @@
        ": "
        message))
 
-
-
 (defn- reactions-table
   []
   [:table {:class "reactions-table"}
@@ -114,6 +112,11 @@
      [:dt "Error Message"]
      [:dd message]]))
 
+(defn- render-template
+  [template]
+  [:pre
+   (.stringify js/JSON (clj->js template) nil 2)])
+
 (defn- ruleset-view
   [{:keys [identityPaths
            conditions
@@ -123,7 +126,9 @@
    [:dd
     (into [:ul.identity-paths]
           (for [path identityPaths]
-            [render-path path]))]])
+            [render-path path]))]
+   [:dt "Template"]
+   [:dd [render-template template]]])
 
 (defn- reaction-view
   []
