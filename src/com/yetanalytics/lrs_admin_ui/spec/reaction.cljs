@@ -12,7 +12,10 @@
          :index nat-int?)
    :gen-max 4))
 
-(s/def ::val ::xs/any-json)
+(s/def ::val (s/or :string string?
+                   :number number?
+                   :null nil?
+                   :boolean boolean?))
 
 (s/def :ref/condition ::condition-name)
 
