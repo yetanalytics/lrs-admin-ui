@@ -1,6 +1,34 @@
 (ns com.yetanalytics.lrs-admin-ui.views.reactions
   (:require [re-frame.core :refer [dispatch subscribe]]
-            [com.yetanalytics.lrs-admin-ui.functions :as fns]))
+            [com.yetanalytics.lrs-admin-ui.functions :as fns]
+            [goog.string :refer [format]]
+            [goog.string.format]))
+
+(defn- path->string
+  "Given a vector of keys and/or indices, return a JSONPath string suitable for
+  SQL JSON access."
+  ([path]
+   (path->string path "$"))
+  ([[seg & rpath] s]
+   (if seg
+     (recur rpath
+            (cond
+              (string? seg)
+              ;; Unlike on the backend, these don't need to be valid to parse
+              (format "%s.%s" s seg)
+
+              (nat-int? seg)
+              (format "%s[%d]" s seg)
+
+              :else
+              (throw (ex-info "Invalid path segement"
+                              {:type ::invalid-path-segment
+                               :segment seg}))))
+     s)))
+
+(defn- render-path
+  [path]
+  [:code (path->string path)])
 
 (defn- short-error
   [{:keys [type message]}]
@@ -10,6 +38,8 @@
          "ReactionInvalidStatementError" "Invalid Statement")
        ": "
        message))
+
+
 
 (defn- reactions-table
   []
@@ -84,6 +114,17 @@
      [:dt "Error Message"]
      [:dd message]]))
 
+(defn- ruleset-view
+  [{:keys [identityPaths
+           conditions
+           template]}]
+  [:dl.reaction-ruleset
+   [:dt "Identity Paths"]
+   [:dd
+    (into [:ul.identity-paths]
+          (for [path identityPaths]
+            [render-path path]))]])
+
 (defn- reaction-view
   []
   (let [{:keys [title
@@ -100,7 +141,7 @@
      [:div {:class "tenant-wrapper"}
       [reaction-info reaction]
       [reaction-error error]
-      ]]))
+      [ruleset-view ruleset]]]))
 
 (defn reactions
   []
