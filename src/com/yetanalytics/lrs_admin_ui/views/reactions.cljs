@@ -98,35 +98,6 @@
    [:div {:class "tenant-wrapper"}
     [reactions-table]]])
 
-(defn- reaction-info
-  [{:keys [id
-           title
-           active
-           created
-           modified
-           error]}]
-  (cond-> [:dl.reaction-info
-           [:dt "ID"]
-           [:dd id]
-
-           [:dt "Status"]
-           [:dd (if active "Active" "Inactive")]
-
-           [:dt "Created"]
-           [:dd created]
-
-           [:dt "Modified"]
-           [:dd modified]]
-    error
-    (conj [:dt "Error Type"]
-          [:dd
-           (case (:type error)
-             "ReactionQueryError" "Query Error"
-             "ReactionTemplateError" "Template Error"
-             "ReactionInvalidStatementError" "Invalid Statement Error")]
-          [:dt "Error Message"]
-          [:dd (:message error)])))
-
 (defn- render-clause
   [{and-clauses :and
     or-clauses  :or
@@ -134,23 +105,26 @@
     :as clause}]
   (cond
     and-clauses
-    (into [:div.clause.and
-           [:div.clause-label "AND"]]
-          (for [clause and-clauses]
-            [render-clause clause]))
+    [:div.boolean.and
+     [:div.boolean-label "AND"]
+     (into [:div.boolean-body]
+           (for [clause and-clauses]
+             [render-clause clause]))]
     or-clauses
-    (into [:div.clause.or
-           [:div.clause-label "OR"]]
-          (for [clause or-clauses]
-            [render-clause clause]))
+    [:div.boolean.or
+     [:div.boolean-label "OR"]
+     (into [:div.boolean-body]
+           (for [clause or-clauses]
+             [render-clause clause]))]
     not-clause
-    [:div.clause.not
-     [:div.clause-label "NOT"]
-     [render-clause not-clause]]
+    [:div.boolean.not
+     [:div.boolean-label "NOT"]
+     [:div.boolean-body
+      [render-clause not-clause]]]
     :else
     (let [{:keys [path op val ref]} clause]
       [:div.clause.op
-       (cond-> [:dl
+       (cond-> [:dl.op-list
                 [:dt "Path"]
                 [:dd [render-path path]]
                 [:dt "Op"]
@@ -169,13 +143,13 @@
   [conditions]
   (into [:div.reaction-conditions]
         (for [[condition-name condition] conditions]
-          [:div.clause.condition
-           condition-name
-           [render-clause condition]])))
+          [:div.condition
+           [:div.condition-name condition-name]
+           [:div.condition-body [render-clause condition]]])))
 
 (defn- render-template
   [template]
-  [:pre
+  [:pre.template
    (.stringify js/JSON (clj->js template) nil 2)])
 
 (defn- ruleset-view
@@ -193,9 +167,27 @@
    [:dt "Template"]
    [:dd [render-template template]]])
 
+(defn- render-error
+  [?error]
+  (if ?error
+    [:dl.reaction-error
+     [:dt "Error Type"]
+     [:dd
+      (case (:type ?error)
+        "ReactionQueryError" "Query Error"
+        "ReactionTemplateError" "Template Error"
+        "ReactionInvalidStatementError" "Invalid Statement Error")]
+     [:dt "Error Message"]
+     [:dd (:message ?error)]]
+    "None"))
+
 (defn- reaction-view
   []
-  (let [{:keys [title
+  (let [{:keys [id
+                title
+                active
+                created
+                modified
                 error
                 ruleset] :as reaction} @(subscribe [:reaction/focus])]
     [:div {:class "left-content-wrapper"}
@@ -207,8 +199,24 @@
                       (dispatch [:reaction/unset-focus]))}
       "< Back"]
      [:div {:class "tenant-wrapper"}
-      [reaction-info reaction]
-      [ruleset-view ruleset]]]))
+      [:dl.reaction-view
+       [:dt "ID"]
+       [:dd id]
+
+       [:dt "Status"]
+       [:dd (if active "Active" "Inactive")]
+
+       [:dt "Created"]
+       [:dd created]
+
+       [:dt "Modified"]
+       [:dd modified]
+
+       [:dt "Error"]
+       [:dd [render-error error]]
+
+       [:dt "Ruleset"]
+       [:dd [ruleset-view ruleset]]]]]))
 
 (defn reactions
   []

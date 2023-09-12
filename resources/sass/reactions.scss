@@ -2,7 +2,53 @@
 # Reactions
 *********************************************/
 
-dl.reaction-info {
+dl.reaction-error {
+  margin-left: 1em;
+  background-color: pink;
+  display: grid;
+  gap: 1em;
+  grid-template-columns: max-content auto;
+  dt {
+    grid-column-start: 1;
+  }
+  dd {
+    grid-column-start: 2;
+  }
+}
+
+dl.reaction-ruleset {
+  margin-left: 1em;
+}
+
+pre.template {
+  margin-left: 1em;
+}
+
+div.reaction-conditions {
+  margin-left: 1em;
+  > div.condition {
+    border-style: solid;
+  }
+}
+
+div.condition-body {
+  margin: 0.5em;
+}
+
+div.boolean {
+  border-style: solid;
+  > div.boolean-body {
+    margin: 0.5em;
+  }
+}
+
+div.clause {
+  border-style: solid;
+  padding: 0.5em;
+}
+
+dl.op-list {
+  margin: 0;
   display: grid;
   gap: 1em;
   grid-template-columns: max-content auto;
