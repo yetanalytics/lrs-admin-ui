@@ -59,3 +59,17 @@ dl.op-list {
     grid-column-start: 2;
   }
 }
+
+dl.ref {
+  border-style: solid;
+  margin: 0;
+  display: grid;
+  gap: 1em;
+  grid-template-columns: max-content auto;
+  dt {
+    grid-column-start: 1;
+  }
+  dd {
+    grid-column-start: 2;
+  }
+}

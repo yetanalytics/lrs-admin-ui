@@ -133,7 +133,7 @@
                    [:dd [render-val val]])
          ref (conj [:dt "Ref"]
                    [:dd
-                    [:dl
+                    [:dl.ref
                      [:dt "Condition"]
                      [:dd (:condition ref)]
                      [:dt "Path"]
