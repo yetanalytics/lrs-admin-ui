@@ -88,7 +88,12 @@
                   :on-click (fn [e]
                               (fns/ps-event e)
                               (dispatch [:reaction/set-focus id]))}
-              "View"]]]))])
+              "View"]
+             [:a {:href "#!"
+                  :on-click (fn [e]
+                              (fns/ps-event e)
+                              (dispatch [:reaction/edit id]))}
+              "Edit"]]]))])
 
 (defn- reactions-list
   []
@@ -182,22 +187,32 @@
     "None"))
 
 (defn- reaction-view
-  []
+  [mode]
   (let [{:keys [id
                 title
                 active
                 created
                 modified
                 error
-                ruleset] :as reaction} @(subscribe [:reaction/focus])]
+                ruleset] :as reaction} @(subscribe
+                                         (case mode
+                                           :focus [:reaction/focus]
+                                           :edit [:reaction/editing]))]
     [:div {:class "left-content-wrapper"}
      [:h2 {:class "content-title"}
+      (when (= :edit mode)
+        "Editing ")
       title]
      [:a {:href "#!"
           :on-click (fn [e]
                       (fns/ps-event e)
-                      (dispatch [:reaction/unset-focus]))}
+                      (dispatch [:reaction/back-to-list]))}
       "< Back"]
+     [:a {:href "#!"
+          :on-click (fn [e]
+                      (fns/ps-event e)
+                      (dispatch [:reaction/edit id]))}
+      "Edit"]
      [:div {:class "tenant-wrapper"}
       [:dl.reaction-view
        [:dt "ID"]
@@ -220,6 +235,7 @@
 
 (defn reactions
   []
-  (if @(subscribe [:reaction/focus-id])
-    [reaction-view]
-    [reactions-list]))
+  (let [mode @(subscribe [:reaction/mode])]
+    (if (= :list mode)
+      [reactions-list]
+      [reaction-view mode])))

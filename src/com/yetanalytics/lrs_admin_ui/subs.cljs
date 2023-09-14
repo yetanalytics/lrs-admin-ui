@@ -328,6 +328,20 @@
    (true? (get loading-map loading-k))))
 
 ;; Reactions
+
+;; Are we viewing the list, an individual activiy, editing or creating?
+(reg-sub
+ :reaction/mode
+ :<- [:reaction/editing]
+ :<- [:reaction/focus-id]
+ (fn [[editing
+       focus]]
+   (cond
+     ;; TODO: NEW
+     editing :edit
+     focus :focus
+     :else :list)))
+
 (reg-sub
  :reaction/enabled?
  (fn [db _]
@@ -353,3 +367,8 @@
       (when (= focus-id id)
         reaction))
     reaction-list)))
+
+(reg-sub
+ :reaction/editing
+ (fn [db _]
+   (::db/editing-reaction db)))

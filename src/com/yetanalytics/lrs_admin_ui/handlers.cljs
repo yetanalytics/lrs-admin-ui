@@ -804,7 +804,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defmethod page-fx :reactions [_]
-  [[:dispatch [:reaction/unset-focus]]
+  [[:dispatch [:reaction/back-to-list]]
    [:dispatch [:reaction/load-reactions]]])
 
 (re-frame/reg-event-fx
@@ -842,3 +842,32 @@
  global-interceptors
  (fn [db _]
    (dissoc db ::db/reaction-focus)))
+
+(re-frame/reg-event-fx
+ :reaction/edit
+ global-interceptors
+ (fn [{:keys [db]} [_ reaction-id]]
+   (if-let [reaction (some
+                      (fn [{:keys [id] :as reaction}]
+                        (when (= id reaction-id)
+                          reaction))
+                      (::db/reactions db))]
+     {:db (assoc db ::db/editing-reaction reaction)
+      ;; unset focus in case we're looking at one
+      :fx [[:dispatch [:reaction/unset-focus]]]}
+     {:fx [[:dispatch [:notification/notify true
+                       "Cannot edit, reaction not found!"]]]})))
+
+(re-frame/reg-event-db
+ :reaction/cancel-edit
+ global-interceptors
+ (fn [db _]
+   (dissoc db ::db/editing-reaction)))
+
+(re-frame/reg-event-fx
+ :reaction/back-to-list
+ global-interceptors
+ (fn [_ _]
+   ;; TODO: Whatever new needs to clear
+   {:fx [[:dispatch [:reaction/unset-focus]]
+         [:dispatch [:reaction/cancel-edit]]]}))
