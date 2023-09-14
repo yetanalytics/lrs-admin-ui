@@ -186,6 +186,54 @@
      [:dd (:message ?error)]]
     "None"))
 
+(defn- reaction-actions
+  [mode id]
+  [:div.reaction-actions
+   [:a {:href "#!"
+        :on-click (fn [e]
+                    (fns/ps-event e)
+                    (dispatch [:reaction/back-to-list]))}
+    "Back"]
+   (when (= :focus mode)
+     [:a {:href "#!"
+          :on-click (fn [e]
+                      (fns/ps-event e)
+                      (dispatch [:reaction/edit id]))}
+      "Edit"])
+   (when (and (= :edit mode)
+              @(subscribe [:reaction/edit-dirty?]))
+     [:a {:href "#!"
+          :on-click (fn [e]
+                      (fns/ps-event e)
+                      (dispatch [:reaction/edit id]))}
+      "Revert Changes"])])
+
+(defn- edit-title
+  [title]
+  [:input
+   {:type "text"
+    :value title
+    :on-change (fn [e]
+                 (dispatch
+                  [:reaction/edit-title
+                   (fns/ps-event-val e)]))}])
+
+(defn- edit-status
+  [active]
+  [:select
+   {:on-change (fn [e]
+                 (dispatch
+                  [:reaction/edit-status
+                   (fns/ps-event-val e)]))}
+   [:option
+    {:value "active"
+     :selected (if (true? active) "selected" "")}
+    "Active"]
+   [:option
+    {:value "inactive"
+     :selected (if (false? active) "selected" "")}
+    "Inactive"]])
+
 (defn- reaction-view
   [mode]
   (let [{:keys [id
@@ -200,26 +248,26 @@
                                            :edit [:reaction/editing]))]
     [:div {:class "left-content-wrapper"}
      [:h2 {:class "content-title"}
-      (when (= :edit mode)
-        "Editing ")
-      title]
-     [:a {:href "#!"
-          :on-click (fn [e]
-                      (fns/ps-event e)
-                      (dispatch [:reaction/back-to-list]))}
-      "< Back"]
-     [:a {:href "#!"
-          :on-click (fn [e]
-                      (fns/ps-event e)
-                      (dispatch [:reaction/edit id]))}
-      "Edit"]
+      (case mode
+        :focus "Reaction Details"
+        :edit "Edit Reaction")]
+     [reaction-actions mode id]
      [:div {:class "tenant-wrapper"}
       [:dl.reaction-view
+       [:dt "Title"]
+       [:dd
+        (case mode
+          :focus title
+          :edit [edit-title title])]
+
        [:dt "ID"]
        [:dd id]
 
        [:dt "Status"]
-       [:dd (if active "Active" "Inactive")]
+       [:dd
+        (case mode
+          :focus (if active "Active" "Inactive")
+          :edit [edit-status active])]
 
        [:dt "Created"]
        [:dd created]

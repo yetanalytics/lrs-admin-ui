@@ -871,3 +871,18 @@
    ;; TODO: Whatever new needs to clear
    {:fx [[:dispatch [:reaction/unset-focus]]
          [:dispatch [:reaction/cancel-edit]]]}))
+
+(re-frame/reg-event-db
+ :reaction/edit-title
+ global-interceptors
+ (fn [db [_ title]]
+   (assoc-in db [::db/editing-reaction :title] title)))
+
+(re-frame/reg-event-db
+ :reaction/edit-status
+ global-interceptors
+ (fn [db [_ select-result]]
+   (assoc-in db [::db/editing-reaction :active]
+             (case select-result
+               "active" true
+               "inactive" false))))

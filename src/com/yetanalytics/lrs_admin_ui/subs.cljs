@@ -372,3 +372,18 @@
  :reaction/editing
  (fn [db _]
    (::db/editing-reaction db)))
+
+(reg-sub
+ :reaction/edit-dirty?
+ :<- [:reaction/list]
+ :<- [:reaction/editing]
+ (fn [[reaction-list
+       {:keys [id] :as editing}]]
+   (and (some? editing)
+        (not= editing
+              (some
+               (fn [{r-id :id
+                     :as  reaction}]
+                 (when (= r-id id)
+                   reaction))
+               reaction-list)))))
