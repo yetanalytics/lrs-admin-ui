@@ -2,49 +2,66 @@
 # Reactions
 *********************************************/
 
+$dl-nesting-depth: 1em;
+$condition-padding: 0.5em;
+
+dl.reaction-view > dd {
+  padding-left: $dl-nesting-depth;
+}
+
+dl.reaction-ruleset > dd {
+  padding-left: $dl-nesting-depth;
+}
+
 dl.reaction-error {
-  margin-left: 1em;
   background-color: pink;
+  padding: 0.5em;
   display: grid;
   gap: 1em;
   grid-template-columns: max-content auto;
-  dt {
+  > dt {
     grid-column-start: 1;
   }
-  dd {
+  > dd {
     grid-column-start: 2;
+    margin-bottom: 0;
   }
 }
 
-dl.reaction-ruleset {
-  margin-left: 1em;
-}
-
-pre.template {
-  margin-left: 1em;
+ul.identity-paths {
+  padding-left: 0;
 }
 
 div.reaction-conditions {
-  margin-left: 1em;
   > div.condition {
     border-style: solid;
   }
 }
 
-div.condition-body {
-  margin: 0.5em;
+div.condition {
+  padding: $condition-padding;
+  > div.condition-name {
+    padding-bottom: $condition-padding;
+  }
 }
 
 div.boolean {
   border-style: solid;
+  padding: $condition-padding;
+  > div.boolean-label {
+    padding-bottom: $condition-padding;
+  }
+  // break between list items
   > div.boolean-body {
-    margin: 0.5em;
+    > div:not(:first-child) {
+      margin-top: $condition-padding;
+    }
   }
 }
 
 div.clause {
   border-style: solid;
-  padding: 0.5em;
+  padding: $condition-padding;
 }
 
 dl.op-list {
@@ -52,25 +69,27 @@ dl.op-list {
   display: grid;
   gap: 1em;
   grid-template-columns: max-content auto;
-  dt {
+  > dt {
     grid-column-start: 1;
   }
-  dd {
+  > dd {
     grid-column-start: 2;
+    margin-bottom: 0;
   }
 }
 
 dl.ref {
   border-style: solid;
   margin: 0;
-  padding: 0.5em;
+  padding: $condition-padding;
   display: grid;
   gap: 1em;
   grid-template-columns: max-content auto;
-  dt {
+  > dt {
     grid-column-start: 1;
   }
-  dd {
+  > dd {
     grid-column-start: 2;
+    margin-bottom: 0;
   }
 }
