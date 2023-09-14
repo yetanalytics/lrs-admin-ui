@@ -1,34 +1,13 @@
 (ns com.yetanalytics.lrs-admin-ui.views.reactions
   (:require [re-frame.core :refer [dispatch subscribe]]
             [com.yetanalytics.lrs-admin-ui.functions :as fns]
+            [com.yetanalytics.lrs-admin-ui.functions.reaction :as rfns]
             [goog.string :refer [format]]
             [goog.string.format]))
 
-(defn- path->string
-  "Given a vector of keys and/or indices, return a JSONPath string suitable for
-  SQL JSON access."
-  ([path]
-   (path->string path "$"))
-  ([[seg & rpath] s]
-   (if seg
-     (recur rpath
-            (cond
-              (string? seg)
-              ;; Unlike on the backend, these don't need to be valid to parse
-              (format "%s.%s" s seg)
-
-              (nat-int? seg)
-              (format "%s[%d]" s seg)
-
-              :else
-              (throw (ex-info "Invalid path segement"
-                              {:type ::invalid-path-segment
-                               :segment seg}))))
-     s)))
-
 (defn- render-path
   [path]
-  [:code (path->string path)])
+  [:code (rfns/path->string path)])
 
 (defn- val-type
   [val]
