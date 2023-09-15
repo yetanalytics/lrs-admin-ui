@@ -126,10 +126,10 @@
               :version     'string,
               :timestamp   'string,
               :object      (merge
-                       pathmap-activity
-                       pathmap-actor
-                       pathmap-sub-statement
-                       pathmap-statement-ref),
+                            pathmap-activity
+                            pathmap-actor
+                            pathmap-sub-statement
+                            pathmap-statement-ref),
               :actor       pathmap-actor,
               :stored      'string,
               :verb        pathmap-verb,
