@@ -2,7 +2,7 @@
   (:require [goog.string :refer [format]]
             [goog.string.format]))
 
-(defn- path->string
+(defn path->string
   "Given a vector of keys and/or indices, return a JSONPath string suitable for
   SQL JSON access."
   ([path]
