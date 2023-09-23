@@ -7,6 +7,13 @@ body {
 }
 
 /**************************************************
+# Section
+**************************************************/
+.section-pad {
+    margin-top: 0.5rem;
+}
+
+/**************************************************
 # a tag
 **************************************************/
 
@@ -90,6 +97,10 @@ a {
 
 .font-rama-semi-bold {
   font-family: RamaGothicESemiBold;
+}
+
+.font-monospace {
+    font-family: monospace;
 }
 
 .font-22 {
@@ -345,6 +356,7 @@ a {
 /**************************************************
 # Input
 **************************************************/
+
 .form-group-input {
   padding: 12.5px;
   font-size: 20px;
@@ -842,7 +854,7 @@ span.close-alert img {
 }
 
 /**************************************************
-# Accordions: Credentails Management
+# Accordions: Credentials Management
 **************************************************/
 .accordion {
   list-style-type: none;

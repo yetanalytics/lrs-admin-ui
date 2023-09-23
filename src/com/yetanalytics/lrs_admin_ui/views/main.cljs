@@ -6,7 +6,8 @@
    [com.yetanalytics.lrs-admin-ui.views.menu :refer [menu]]
    [com.yetanalytics.lrs-admin-ui.views.accounts :refer [accounts]]
    [com.yetanalytics.lrs-admin-ui.views.status :refer [status]]
-   [com.yetanalytics.lrs-admin-ui.views.update-password :refer [update-password]]))
+   [com.yetanalytics.lrs-admin-ui.views.update-password :refer [update-password]]
+   [com.yetanalytics.lrs-admin-ui.views.special-actions :refer [special-actions]]))
 
 (defn main []
   [:main {:class "lrs-main"}
@@ -19,5 +20,6 @@
        :browser [browser]
        :accounts [accounts]
        :status [status]
-       :update-password [update-password])]
-    [:div {:class "content-right-wrapper"} ]]])
+       :update-password [update-password]
+       :special-actions [special-actions])]
+    [:div {:class "content-right-wrapper"}]]])
