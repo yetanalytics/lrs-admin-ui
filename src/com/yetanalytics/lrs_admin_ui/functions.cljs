@@ -1,4 +1,5 @@
-(ns com.yetanalytics.lrs-admin-ui.functions)
+(ns com.yetanalytics.lrs-admin-ui.functions
+  (:require [clojure.string :as cstr]))
 
 (defn ps-event
   "Helper function that will prevent default action
@@ -8,10 +9,26 @@
   (.stopPropagation e))
 
 (defn ps-event-val
-  "Not only pevents defaults but extracts value for form elements"
+  "Not only prevents defaults but extracts value for form elements"
   [e]
   (ps-event e)
   (.. e -target -value))
+
+(defn get-event-key
+  "Return a keyword representing the key pressed during a keydown or keypress
+   `event`. Common return values include `:space`, `:enter`, `:escape`,
+   `:arrowup`, `:arrowdown`, `:pageup`, `:pagedown`, `:home`, and `:end`."
+  [event]
+  (let [keystr (cstr/lower-case (.. event -key))]
+    (if (= " " keystr)
+      :space
+      (keyword keystr))))
+
+(defn child-event?
+  "Return `true` if `event` was triggered via a child of the current element."
+  [event]
+  (.contains (.. event -currentTarget)
+             (.. event -relatedTarget)))
 
 (defn elide
   "Given a string and a length will either return the string if less

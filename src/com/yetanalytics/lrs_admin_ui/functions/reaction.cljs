@@ -24,129 +24,172 @@
                                :segment seg}))))
      s)))
 
+;; (def types #{'string 'number 'boolean 'null 'lmap 'extensions})
+
 (def pathmap-agent
-  #:agent{:account
-          #:account{:homePage 'string,
-                    :name     'string},
-          :name         'string,
-          :mbox         'string,
-          :openid       'string,
-          :mbox_sha1sum 'string,
-          :objectType   'string})
+  {"account"      {"homePage" 'string,
+                   "name"     'string},
+   "name"         'string,
+   "mbox"         'string,
+   "openid"       'string,
+   "mbox_sha1sum" 'string,
+   "objectType"   'string})
 
 (def pathmap-group
-  #:group{:objectType   'string,
-          :member       pathmap-agent,
-          :account
-          #:account{:homePage 'string, :name 'string},
-          :mbox         'string,
-          :name         'string,
-          :mbox_sha1sum 'string})
+  {"objectType"   'string,
+   "member"       [pathmap-agent],
+   "account"      {"homePage" 'string, "name" 'string},
+   "mbox"         'string,
+   "name"         'string,
+   "mbox_sha1sum" 'string})
 
 (def pathmap-actor
   (merge pathmap-agent
          pathmap-group))
 
 (def pathmap-interaction-component
-  #:interaction-component{:id          'string,
-                          :description 'lmap})
+  {"id"          'string,
+   "description" 'lmap})
 
 (def pathmap-activity
-  #:activity{:definition
-             #:definition{:source                  pathmap-interaction-component,
-                          :extensions              'extensions,
-                          :description             'lmap,
-                          :steps                   pathmap-interaction-component,
-                          :target                  pathmap-interaction-component,
-                          :moreInfo                'string,
-                          :correctResponsesPattern 'string,
-                          :interactionType         'string,
-                          :choices                 pathmap-interaction-component,
-                          :scale                   pathmap-interaction-component,
-                          :name                    'lmap,
-                          :type                    'string},
-             :id         'string,
-             :objectType 'string})
+  {"definition"
+   {"source"                  [pathmap-interaction-component],
+    "extensions"              'extensions,
+    "description"             'lmap,
+    "steps"                   [pathmap-interaction-component],
+    "target"                  [pathmap-interaction-component],
+    "moreInfo"                'string,
+    "correctResponsesPattern" ['string],
+    "interactionType"         'string,
+    "choices"                 [pathmap-interaction-component],
+    "scale"                   [pathmap-interaction-component],
+    "name"                    'lmap,
+    "type"                    'string},
+   "id"         'string,
+   "objectType" 'string})
 
 (def pathmap-statement-ref
-  #:statement-reference{:id 'string, :objectType 'string})
+  {"id" 'string, "objectType" 'string})
 
 (def pathmap-verb
-  #:verb{:display 'lmap, :id 'string})
+  {"display" 'lmap, "id" 'string})
 
 (def pathmap-attachment
-  #:attachment{:description 'lmap,
-               :display     'lmap,
-               :usageType   'string,
-               :contentType 'string,
-               :length      'number,
-               :fileUrl     'string,
-               :sha2        'string})
+  {"description" 'lmap,
+   "display"     'lmap,
+   "usageType"   'string,
+   "contentType" 'string,
+   "length"      'number,
+   "fileUrl"     'string,
+   "sha2"        'string})
 
 (def pathmap-context
-  #:context{:language     'string,
-            :extensions   'extensions,
-            :team         pathmap-group,
-            :contextActivities
-            #:context-activities{:category pathmap-activity,
-                                 :grouping pathmap-activity,
-                                 :other    pathmap-activity,
-                                 :parent   pathmap-activity},
-            :instructor   pathmap-actor,
-            :registration 'string,
-            :platform     'string,
-            :statement    pathmap-statement-ref,
-            :revision     'string})
+  {"language"     'string,
+   "extensions"   'extensions,
+   "team"         pathmap-group,
+   "contextActivities"
+   {"category" [pathmap-activity],
+    "grouping" [pathmap-activity],
+    "other"    [pathmap-activity],
+    "parent"   [pathmap-activity]},
+   "instructor"   pathmap-actor,
+   "registration" 'string,
+   "platform"     'string,
+   "statement"    pathmap-statement-ref,
+   "revision"     'string})
 
 (def pathmap-result
-  #:result{:score
-           #:score{:raw 'number, :max 'number, :min 'number, :scaled 'number},
-           :extensions 'extensions,
-           :response   'string,
-           :duration   'string,
-           :completion 'boolean,
-           :success    'boolean})
+  {"score"
+   {"raw" 'number, "max" 'number, "min" 'number, "scaled" 'number},
+   "extensions" 'extensions,
+   "response"   'string,
+   "duration"   'string,
+   "completion" 'boolean,
+   "success"    'boolean})
 
 (def pathmap-sub-statement
-  #:sub-statement{:verb        pathmap-verb,
-                  :objectType  'string,
-                  :attachments pathmap-attachment,
-                  :context     pathmap-context,
-                  :result      pathmap-result,
-                  :timestamp   'string,
-                  :object      (merge pathmap-activity
-                                 pathmap-actor
-                                 pathmap-statement-ref),
-                  :actor       pathmap-actor})
+  {"verb"        pathmap-verb,
+   "objectType"  'string,
+   "attachments" [pathmap-attachment],
+   "context"     pathmap-context,
+   "result"      pathmap-result,
+   "timestamp"   'string,
+   "object"      (merge pathmap-activity
+                        pathmap-actor
+                        pathmap-statement-ref),
+   "actor"       pathmap-actor})
 
-(def pathmap
-  #:statement{:result      pathmap-result,
-              :id          'string,
-              :context     pathmap-context,
-              :version     'string,
-              :timestamp   'string,
-              :object      (merge
-                            pathmap-activity
-                            pathmap-actor
-                            pathmap-sub-statement
-                            pathmap-statement-ref),
-              :actor       pathmap-actor,
-              :stored      'string,
-              :verb        pathmap-verb,
-              :attachments pathmap-attachment,
-              :authority   pathmap-actor})
+(def pathmap-statement
+  (merge pathmap-sub-statement
+         {"id"        'string,
+          "version"   'string,
+          "object"    (merge
+                       pathmap-activity
+                       pathmap-actor
+                       pathmap-sub-statement
+                       pathmap-statement-ref),
+          "stored"    'string,
+          "authority" pathmap-actor}))
 
-(def card-many-attrs
-  #{:context-activities/category
-    :context-activities/grouping
-    :context-activities/other
-    :context-activities/parent
-    :definition/choices
-    :definition/correctResponsesPattern
-    :definition/scale
-    :definition/source
-    :definition/steps
-    :definition/target
-    :group/member
-    :statement/attachments
-    :sub-statement/attachments})
+(defn analyze-path*
+  [pathmap path]
+  (let [ret          (get-in pathmap
+                             ;; zero out path indices
+                             (mapv (fn [seg]
+                                     (if (number? seg)
+                                       0
+                                       seg))
+                                   path))
+        ;; lmaps and extensions
+        ?p-leaf-type (when-let [prev-path (not-empty (butlast path))]
+                       (:leaf-type (analyze-path* pathmap prev-path)))]
+    {:next-keys
+     (cond
+       (map? ret)    (into [] (keys ret))
+       (vector? ret) ['idx]
+       :else         [])
+     :leaf-type (if (symbol? ret)
+                  ret
+                  (when ?p-leaf-type
+                    (cond
+                      (= 'lmap ?p-leaf-type)       'string
+                      (= 'extensions ?p-leaf-type) 'json)))
+     :valid?    (or
+                 (some? ret)
+                 (some? ?p-leaf-type))}))
+
+;; TODO: ANY PATH after 'extensions and IRI must be valid
+
+(defn analyze-path
+  "Given pathmap and a (possibly) partial path:
+    Return a map with keys:
+      :valid? Is the path complete and valid per xapi?
+      :next-keys - Coll of possible further keys. May contain the special key
+        `'idx` to denote that the current structure is an array. When this
+        coll is empty the path is complete.
+      :leaf-type - If the path is complete, one of the following symbols:
+        'string
+        'number
+        'boolean
+        'null
+        'lmap
+        'extensions
+      :valid? - Is the path a valid xapi path?"
+  [pathmap path]
+  (let [{:keys [leaf-type] :as ret} (analyze-path* pathmap path)]
+    (merge ret
+           {:leaf-type (when-not (contains? #{'lmap 'extensions} leaf-type)
+                         leaf-type)})))
+
+(comment
+  (analyze-path pathmap-statement []) ;; => {:next-keys ["object" "authority" "verb" "id" "timestamp" "context" "version" "stored" "attachments" "actor" "objectType" "result"], :leaf-type nil, :valid? true}
+  (analyze-path pathmap-statement ["actor"]) ;; => {:next-keys ["account" "name" "mbox" "openid" "mbox_sha1sum" "objectType" "member"], :leaf-type nil, :valid? true}
+  (analyze-path pathmap-statement ["actor" "member"]) ;; => {:next-keys [idx], :leaf-type nil, :valid? true}
+  (analyze-path pathmap-statement ["actor" "member" 3]) ;; => {:next-keys ["account" "name" "mbox" "openid" "mbox_sha1sum" "objectType"], :leaf-type nil, :valid? true}
+  (analyze-path pathmap-statement ["actor" "member" 3 "mbox"]) ;; => {:next-keys [], :leaf-type string, :valid? true}
+  (analyze-path pathmap-statement ["foo"]) ;; => {:next-keys [], :leaf-type nil, :valid? false}
+  (analyze-path pathmap-statement ["context" "extensions"]) ;; => {:next-keys [], :leaf-type nil, :valid? true}
+  (analyze-path pathmap-statement ["context" "extensions" "https://foo.bar/baz"]) ;; => {:next-keys [], :leaf-type json, :valid? true}
+  (analyze-path pathmap-statement ["object" "definition" "name"]) ;; => {:next-keys [], :leaf-type nil, :valid? true}
+  (analyze-path pathmap-statement ["object" "definition" "name" "en-US"]) ;; =>{:next-keys [], :leaf-type string, :valid? true}
+  )
