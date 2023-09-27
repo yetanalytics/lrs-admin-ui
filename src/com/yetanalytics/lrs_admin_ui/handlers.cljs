@@ -218,7 +218,7 @@
                        "Could not connect to LRS!"
                        (and err (< (count err) 100))
                        (str "Error from server: " err)
-                       true
+                       :else
                        "An unexpected error has occured!")]
      {:fx (cond-> [[:dispatch [:notification/notify true message]]]
             (some #(= status %) [0 401])
