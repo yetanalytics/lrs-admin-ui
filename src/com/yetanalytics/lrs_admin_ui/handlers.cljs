@@ -624,7 +624,7 @@
            :format          (ajax/json-request-format)
            :response-format (ajax/json-response-format {:keywords? false})
            :on-success      [:delete-actor/delete-success actor-ifi]
-           :on-failure      [:delete-actor/server-error (str "tried to delete " actor-ifi)]
+           :on-failure      [:delete-actor/server-error actor-ifi]
            :interceptors    [httpfn/add-jwt-interceptor]}]]}))
 
 (re-frame/reg-event-fx
@@ -633,8 +633,11 @@
    {:fx [[:dispatch [:notification/notify true (str "Successfully deleted " actor-ifi)]]]}))
 (re-frame/reg-event-fx
  :delete-actor/server-error
- (fn [_ [_ msg err]]
-   {:fx [[:dispatch [:server-error err]]]}))
+ (fn [_ [_ actor-ifi _err]]
+   {:fx [[:dispatch
+          [:server-error {:response
+                          {"error"
+                           (str "Error when attempting to delete actor " actor-ifi)}}]]]}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; OIDC Support
