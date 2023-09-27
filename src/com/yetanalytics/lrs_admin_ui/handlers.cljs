@@ -630,14 +630,12 @@
 (re-frame/reg-event-fx
  :delete-actor/delete-success
  (fn [_ [_ actor-ifi]]
-   {:fx [[:dispatch [:notification/notify true (str "Successfully deleted " actor-ifi)]]]}))
+   {:fx [[:dispatch [:notification/notify false (str "Successfully deleted " actor-ifi)]]
+         [:dispatch [:browser/load-xapi]]]}))
 (re-frame/reg-event-fx
  :delete-actor/server-error
  (fn [_ [_ actor-ifi _err]]
-   {:fx [[:dispatch
-          [:server-error {:response
-                          {"error"
-                           (str "Error when attempting to delete actor " actor-ifi)}}]]]}))
+   {:fx [[:dispatch  [:notification/notify true  (str "Error when attempting to delete actor " actor-ifi)]]]}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; OIDC Support

@@ -33,8 +33,8 @@
        
        (case @ifi-type "account"
              [:<>
-              [labeled-input "homePage" (r/cursor input [:home-page])]
-              [labeled-input "name" (r/cursor input [:name])]]
+              [labeled-input "name" (r/cursor input [:name])]
+              [labeled-input "homePage" (r/cursor input [:home-page])]]
              [labeled-input (name @ifi-type) input])
        [:div.section-pad [:input {:type "button",
                     :class "btn-blue-bold",
