@@ -40,6 +40,7 @@
                        :credential nil}
          ::db/server-host (or server-host "")
          ::db/xapi-prefix "/xapi"
+         ::db/enable-admin-delete-actor false
          ::db/enable-statement-html true
          ::db/notifications []
          ::db/oidc-auth false
