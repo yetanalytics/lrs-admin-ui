@@ -624,19 +624,16 @@
            :format          (ajax/json-request-format)
            :response-format (ajax/json-response-format {:keywords? false})
            :on-success      [:delete-actor/delete-success actor-ifi]
-           :on-failure      [:delete-actor/server-error (str "tried to delete" actor-ifi)]
+           :on-failure      [:delete-actor/server-error (str "tried to delete " actor-ifi)]
            :interceptors    [httpfn/add-jwt-interceptor]}]]}))
 
 (re-frame/reg-event-fx
  :delete-actor/delete-success
  (fn [_ [_ actor-ifi]]
    {:fx [[:dispatch [:notification/notify true (str "Successfully deleted " actor-ifi)]]]}))
-(def holder (atom nil))
 (re-frame/reg-event-fx
  :delete-actor/server-error
  (fn [_ [_ msg err]]
-   (reset! holder err)
-   (println msg)
    {:fx [[:dispatch [:server-error err]]]}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

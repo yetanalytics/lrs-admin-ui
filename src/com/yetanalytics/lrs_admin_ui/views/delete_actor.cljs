@@ -7,7 +7,7 @@
   (case type
     "account" (str "account::" (:name inp) "@" (:home-page inp))
     "mbox" (str "mbox::" inp)
-    "mbox-sha" (str "mbox_sha1sum::" inp)
+    "mbox_sha1sum" (str "mbox_sha1sum::" inp)
     "openid" (str "openid::" inp)))
 
 (defn labeled-input [label ratm]
