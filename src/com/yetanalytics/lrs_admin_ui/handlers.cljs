@@ -213,10 +213,13 @@
  :server-error
  (fn [_ [_ {:keys [response status]}]]
    ;;extract the error and present it in a notification. If 401 or 0, log out.
-   (let [message (if (= status 0)
-                   "Could not connect to LRS!"
-                   (or (response "error")
-                       "An unexpected error has occured!"))]
+   (let [err (response "error")
+         message (cond (= status 0)
+                       "Could not connect to LRS!"
+                       (and err (< (count err) 100))
+                       (str "Error from server: " err)
+                       true
+                       "An unexpected error has occured!")]
      {:fx (cond-> [[:dispatch [:notification/notify true message]]]
             (some #(= status %) [0 401])
             (merge [:dispatch [:session/set-token nil]]))})))
