@@ -1,8 +1,8 @@
-(ns com.yetanalytics.lrs-admin-ui.views.special-actions
+(ns com.yetanalytics.lrs-admin-ui.views.data-management
   (:require [com.yetanalytics.lrs-admin-ui.views.delete-actor :refer [delete-actor]]))
 
-(defn special-actions []
+(defn data-management []
       [:div {:class "left-content-wrapper"}
        [:h2 {:class "content-title"}
-        "Special Actions"]
+        "Data Management"]
        [delete-actor]])

@@ -7,7 +7,7 @@
    [com.yetanalytics.lrs-admin-ui.views.accounts :refer [accounts]]
    [com.yetanalytics.lrs-admin-ui.views.status :refer [status]]
    [com.yetanalytics.lrs-admin-ui.views.update-password :refer [update-password]]
-   [com.yetanalytics.lrs-admin-ui.views.special-actions :refer [special-actions]]))
+   [com.yetanalytics.lrs-admin-ui.views.data-management :refer [data-management]]))
 
 (defn main []
   [:main {:class "lrs-main"}
@@ -21,5 +21,5 @@
        :accounts [accounts]
        :status [status]
        :update-password [update-password]
-       :special-actions [special-actions])]
+       :data-management [data-management])]
     [:div {:class "content-right-wrapper"}]]])
