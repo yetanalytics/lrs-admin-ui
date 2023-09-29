@@ -40,6 +40,7 @@
                        :credential nil}
          ::db/server-host (or server-host "")
          ::db/xapi-prefix "/xapi"
+         ::db/enable-admin-delete-actor false
          ::db/enable-statement-html true
          ::db/notifications []
          ::db/oidc-auth false
@@ -67,14 +68,17 @@
  (fn [{:keys [db]} [_ {:keys             [url-prefix
                                           enable-stmt-html
                                           enable-admin-status
-                                          no-val?]
+                                          no-val?
+                                          enable-admin-delete-actor]
                        ?oidc             :oidc
                        ?oidc-local-admin :oidc-enable-local-admin}]]
    (merge {:db (assoc db
                       ::db/xapi-prefix url-prefix
                       ::db/enable-statement-html enable-stmt-html
                       ::db/oidc-enable-local-admin (or ?oidc-local-admin false)
-                      ::db/enable-admin-status enable-admin-status)}
+                      ::db/enable-admin-status enable-admin-status
+                      ::db/enable-admin-delete-actor enable-admin-delete-actor
+                      )}
           (when (or ?oidc no-val?)
             {:fx [(when ?oidc [:dispatch [:oidc/init ?oidc]])
                   (when no-val? [:dispatch [:session/proxy-token-init]])]}))))
@@ -209,10 +213,13 @@
  :server-error
  (fn [_ [_ {:keys [response status]}]]
    ;;extract the error and present it in a notification. If 401 or 0, log out.
-   (let [message (if (= status 0)
-                   "Could not connect to LRS!"
-                   (or (:error response)
-                       "An unexpected error has occured!"))]
+   (let [err (response "error")
+         message (cond (= status 0)
+                       "Could not connect to LRS!"
+                       (and err (< (count err) 100))
+                       (str "Error from server: " err)
+                       :else
+                       "An unexpected error has occured!")]
      {:fx (cond-> [[:dispatch [:notification/notify true message]]]
             (some #(= status %) [0 401])
             (merge [:dispatch [:session/set-token nil]]))})))
@@ -369,6 +376,7 @@
                  :on-success      [:credentials/save-success]
                  :on-failure      [:server-error]
                  :interceptors    [httpfn/add-jwt-interceptor]}}))
+
 
 (re-frame/reg-event-fx
  :credentials/save-success
@@ -602,6 +610,36 @@
  (fn [_ _]
    {:fx [[:dispatch [:notification/notify true
                      "Password update failed. Please try again."]]]}))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Delete Actor
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(re-frame/reg-event-fx
+ :delete-actor/delete-actor
+ (fn [{{server-host ::db/server-host} :db}
+      [_ actor-ifi]] 
+   {:fx [[:http-xhrio
+          {:method          :delete
+           :uri             (httpfn/serv-uri
+                             server-host
+                             "/admin/agents")
+           :params          {:actor-ifi actor-ifi}
+           :format          (ajax/json-request-format)
+           :response-format (ajax/json-response-format {:keywords? false})
+           :on-success      [:delete-actor/delete-success actor-ifi]
+           :on-failure      [:delete-actor/server-error actor-ifi]
+           :interceptors    [httpfn/add-jwt-interceptor]}]]}))
+
+(re-frame/reg-event-fx
+ :delete-actor/delete-success
+ (fn [_ [_ actor-ifi]]
+   {:fx [[:dispatch [:notification/notify false (str "Successfully deleted " actor-ifi)]]
+         [:dispatch [:browser/load-xapi]]]}))
+(re-frame/reg-event-fx
+ :delete-actor/server-error
+ (fn [_ [_ actor-ifi _err]]
+   {:fx [[:dispatch  [:notification/notify true  (str "Error when attempting to delete actor " actor-ifi)]]]}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; OIDC Support

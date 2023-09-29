@@ -19,4 +19,6 @@
     (when @(subscribe [:db/get-stmt-html-enabled])
       [menu-item {:name "Statement Browser" :page :browser}])
     (when @(subscribe [:status/enabled?])
-      [menu-item {:name "LRS Monitor" :page :status}])]])
+      [menu-item {:name "LRS Monitor" :page :status}])
+    (when (some identity [@(subscribe [:delete-actor/enabled?])])
+      [menu-item {:name "Data Management" :page :data-management}])]])

@@ -84,6 +84,7 @@
 (s/def ::notifications (s/every ::notification))
 
 (s/def ::enable-statement-html boolean?)
+(s/def ::enable-admin-delete-actor boolean?)
 
 (s/def ::oidc-auth boolean?)
 (s/def ::oidc-enable-local-admin boolean?)
@@ -151,6 +152,7 @@
                           ::xapi-prefix
                           ::notifications
                           ::enable-statement-html
+                          ::enable-admin-delete-actor
                           ::oidc-auth
                           ::oidc-enable-local-admin
                           ::enable-admin-status

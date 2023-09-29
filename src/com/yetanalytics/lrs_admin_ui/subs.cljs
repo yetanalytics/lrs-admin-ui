@@ -55,7 +55,6 @@
  (fn [db _]
    (::db/notifications db)))
 
-
 (reg-sub
  :db/get-login
  (fn [db _]
@@ -326,3 +325,9 @@
  :<- [:status/loading-map]
  (fn [loading-map [_ loading-k]]
    (true? (get loading-map loading-k))))
+
+;; Delete Actor
+(reg-sub
+ :delete-actor/enabled?
+ (fn [db _]
+   (::db/enable-admin-delete-actor db false)))
