@@ -158,12 +158,10 @@
                  (some? ret)
                  (some? ?p-leaf-type))}))
 
-;; TODO: ANY PATH after 'extensions and IRI must be valid
-
 (defn analyze-path
   "Given pathmap and a (possibly) partial path:
     Return a map with keys:
-      :valid? Is the path complete and valid per xapi?
+      :valid? Is the path valid per xapi?
       :next-keys - Coll of possible further keys. May contain the special key
         `'idx` to denote that the current structure is an array. When this
         coll is empty the path is complete.
@@ -190,6 +188,7 @@
   (analyze-path pathmap-statement ["foo"]) ;; => {:next-keys [], :leaf-type nil, :valid? false}
   (analyze-path pathmap-statement ["context" "extensions"]) ;; => {:next-keys [], :leaf-type nil, :valid? true}
   (analyze-path pathmap-statement ["context" "extensions" "https://foo.bar/baz"]) ;; => {:next-keys [], :leaf-type json, :valid? true}
+  (analyze-path pathmap-statement ["context" "extensions" "https://foo.bar/baz" "foo"]) ;; => {:next-keys [], :leaf-type nil, :valid? true}
   (analyze-path pathmap-statement ["object" "definition" "name"]) ;; => {:next-keys [], :leaf-type nil, :valid? true}
   (analyze-path pathmap-statement ["object" "definition" "name" "en-US"]) ;; =>{:next-keys [], :leaf-type string, :valid? true}
   )

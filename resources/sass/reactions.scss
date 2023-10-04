@@ -96,7 +96,7 @@ dl.ref {
 
 div.path-input {
   display: flex;
-  div {
-    min-width: 15em;
+  div.path-input-segment {
+    padding-right: 1em;
   }
 }
