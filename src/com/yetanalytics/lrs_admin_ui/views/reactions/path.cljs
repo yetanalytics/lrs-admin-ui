@@ -12,34 +12,37 @@
    (str seg-val)])
 
 (defn- path-input-segment-edit
-  [path-until
-   seg-val
-   change-fn]
-  (let [id (str (random-uuid))]
-    [:div.path-input-segment-edit
-     [form/combo-box-input
-      {:id id
-       :name (format "combo-%s" id)
-       :on-change change-fn
-       :on-search #(println 'search %)
-       :value seg-val
-       :placeholder "(select)"
-       :disabled false
-       :custom-text? true
-       :options-fn
-       (fn []
-         (let [{:keys [next-keys]} (rfns/analyze-path
-                                    rfns/pathmap-statement
-                                    path-until)]
-           (if (= ['idx] next-keys)
-             ;; index expected
-             (for [idx (range 10)]
-               {:label (str idx) :value idx})
-             (for [k next-keys]
-               {:label k :value k}))))
-       ;; :tooltip "I'M A TOOLTIP OVA HEA" ;; NOT YET IMPLEMENTED, MIGHT NEVER BE
-       ;; :required true
-       :removable? false}]]))
+  [_ _ _]
+  (let [search (r/atom "")]
+    (fn [path-until
+         seg-val
+         change-fn]
+      (let [id (str (random-uuid))]
+        [:div.path-input-segment-edit
+         [form/combo-box-input
+          {:id id
+           :name (format "combo-%s" id)
+           :on-change change-fn
+           :on-search (fn [v] (reset! search v))
+           :value seg-val
+           :placeholder "(select)"
+           :disabled false
+           :custom-text? true
+           :options-fn
+           (fn []
+             (let [{:keys [next-keys]} (rfns/analyze-path
+                                        rfns/pathmap-statement
+                                        path-until)]
+               (if (= ['idx] next-keys)
+                 ;; index expected
+                 (for [idx (range 10)]
+                   {:label (str idx) :value idx})
+                 (for [k next-keys
+                       :when (.startsWith k @search)]
+                   {:label k :value k}))))
+           ;; :tooltip "I'M A TOOLTIP OVA HEA" ;; NOT YET IMPLEMENTED, MIGHT NEVER BE
+           ;; :required true
+           :removable? false}]]))))
 
 (defn path-input
   [path
