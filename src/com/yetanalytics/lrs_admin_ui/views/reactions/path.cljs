@@ -47,10 +47,13 @@
    del-fn
    change-fn]
   (let [{:keys [next-keys
-                leaf-type]} (rfns/analyze-path
-                             rfns/pathmap-statement
-                             path)]
-    (-> [:div.path-input]
+                leaf-type
+                valid?]} (rfns/analyze-path
+                          rfns/pathmap-statement
+                          path)]
+    (-> [:div.path-input
+         {:class (when-not valid?
+                   "invalid")}]
         ;; Intermediate path
         (into
          (for [seg (butlast path)]
@@ -74,8 +77,9 @@
                              (fns/ps-event e)
                              (del-fn))}
              [:img {:src "/images/icons/icon-close-blue.svg"}]]])
-          ;; Offer another segment if path is not complete
-          (nil? leaf-type)
+          ;; Offer another segment if path is valid & not complete
+          (and valid?
+               (contains? #{nil 'json} leaf-type))
           (conj
            [:div.path-input-action
             [:a {:href "#"

@@ -96,7 +96,15 @@ dl.ref {
 
 div.path-input {
   display: flex;
-  div.path-input-segment {
-    padding-right: 1em;
+  padding: 8px;
+  > div.path-input-segment {
+    padding: 8px;
   }
+  > div.path-input-segment-edit {
+    min-width: 10em;
+  }
+}
+
+div.path-input.invalid {
+  background-color: red;
 }
