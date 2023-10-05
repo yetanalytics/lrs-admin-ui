@@ -17,12 +17,20 @@
     (fn [path-until
          seg-val
          change-fn]
-      (let [id (str (random-uuid))]
+      (let [id (str (random-uuid))
+            {:keys [next-keys]} (rfns/analyze-path
+                                 rfns/pathmap-statement
+                                 path-until)]
         [:div.path-input-segment-edit
          [form/combo-box-input
           {:id id
            :name (format "combo-%s" id)
-           :on-change change-fn
+           :on-change (fn [v]
+                        ;; If it can be an int, pass it as such
+                        (let [parsed-int (js/parseInt v)]
+                          (if (js/isNaN parsed-int)
+                            (change-fn v)
+                            (change-fn parsed-int))))
            :on-search (fn [v] (reset! search v))
            :value seg-val
            :placeholder "(select)"
@@ -30,16 +38,13 @@
            :custom-text? true
            :options-fn
            (fn []
-             (let [{:keys [next-keys]} (rfns/analyze-path
-                                        rfns/pathmap-statement
-                                        path-until)]
-               (if (= ['idx] next-keys)
-                 ;; index expected
-                 (for [idx (range 10)]
-                   {:label (str idx) :value idx})
-                 (for [k next-keys
-                       :when (.startsWith k @search)]
-                   {:label k :value k}))))
+             (if (= ['idx] next-keys)
+               ;; index expected
+               (for [idx (range 10)]
+                 {:label (str idx) :value idx})
+               (for [k next-keys
+                     :when (.startsWith k @search)]
+                 {:label k :value k})))
            ;; :tooltip "I'M A TOOLTIP OVA HEA" ;; NOT YET IMPLEMENTED, MIGHT NEVER BE
            ;; :required true
            :removable? false}]]))))
@@ -98,8 +103,11 @@
   (let [{:keys [next-keys]} (rfns/analyze-path
                              rfns/pathmap-statement
                              path)]
-    (conj path (or (first next-keys)
-                   ""))))
+    (conj path
+          (if (= '[idx] next-keys)
+            0
+            (or (first next-keys)
+                "")))))
 
 (defn- del-segment [path]
   (vec (butlast path)))
