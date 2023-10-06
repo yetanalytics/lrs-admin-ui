@@ -17,8 +17,28 @@
             goog.string.format
             [clojure.walk                                     :as w]))
 
+(let [add-csrf-header* (fn add-csrf-header* [ajax-map]
+                         (if-not (= :get (:method ajax-map))
+                             (assoc-in ajax-map [:headers "X-csrf-dummy"] nil)
+                             ajax-map))]
+  (defn add-csrf-header [map-or-vec]
+    (cond (vector? map-or-vec)
+          (mapv add-csrf-header* map-or-vec)
+          :else
+          (add-csrf-header* map-or-vec))))
+
+(def csrf-header-adder
+  {:id :csrf-header-adder
+   :before identity
+   :after (fn [context]
+            (if (get-in context [:effects :http-xhrio])
+              (update-in context [:effects :http-xhrio]
+                         add-csrf-header)
+              context))})
+
 (def global-interceptors
-  [db/check-spec-interceptor])
+  [csrf-header-adder
+   db/check-spec-interceptor])
 
 (re-frame/reg-event-fx
  :db/init
