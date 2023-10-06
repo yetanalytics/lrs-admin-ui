@@ -1,4 +1,4 @@
-.PHONY: clean clean-css dev build-sass build-sass-watch bundle
+.PHONY: clean clean-css dev build-sass build-sass-watch bundle test
 
 clean:
 	rm -rf target *.log node_modules resources/public/css/style.css resources/public/css/style.css.map pom.xml
@@ -11,6 +11,9 @@ node_modules:
 
 dev: 	node_modules
 	clojure -A:fig:dev:build
+
+test: node_modules
+	clojure -A:fig:test
 
 resources/public/css/style.css: node_modules
 	npx sass resources/sass/style.scss:resources/public/css/style.css -I ./node_modules
