@@ -114,11 +114,11 @@
   margin-top: 12px;
 }
 
-form#login-form {
+div#login-form {
   @extend .text-white, .font-condensed;
 }
 
-form#login-form div.form-group:not(:first-child) {
+div#login-form div.form-group:not(:first-child) {
   @extend .mb-0;
 }
 

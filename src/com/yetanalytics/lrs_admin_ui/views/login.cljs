@@ -14,7 +14,7 @@
         [:img {:src "images/logo.png", :alt "LRS Logo"}]]]
       [:h1 "Login"]
       [:div {:class "form-wrapper"}
-       [:form {:id "login-form"}
+       [:div {:id "login-form"}
         (when show-local-login?
           [:<>
            [:div {:class "form-group"}
