@@ -55,8 +55,9 @@
    change-fn]
   (let [{:keys [next-keys
                 leaf-type
-                valid?]} (rfns/analyze-path
-                          path)]
+                valid?
+                complete?]} (rfns/analyze-path
+                             path)]
     (-> [:div.path-input
          {:class (when-not valid?
                    "invalid")}]
@@ -85,7 +86,7 @@
              [:img {:src "/images/icons/icon-close-blue.svg"}]]])
           ;; Offer another segment if path is valid & not complete
           (and valid?
-               (contains? #{nil 'json} leaf-type))
+               (not complete?))
           (conj
            [:div.path-input-action
             [:a {:href "#"
