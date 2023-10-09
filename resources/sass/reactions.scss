@@ -103,6 +103,9 @@ div.path-input {
   > div.path-input-segment-edit {
     min-width: 10em;
   }
+  > div.path-input-action {
+    padding: 8px;
+  }
 }
 
 div.path-input.invalid {
