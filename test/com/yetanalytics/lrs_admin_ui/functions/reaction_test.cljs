@@ -1,7 +1,7 @@
 (ns com.yetanalytics.lrs-admin-ui.functions.reaction-test
   (:require [clojure.test :refer-macros [deftest is are]]
             [com.yetanalytics.lrs-admin-ui.functions.reaction
-             :refer [parent-paths analyze-path pathmap-statement]]))
+             :refer [parent-paths analyze-path]]))
 
 (deftest parent-paths-test
   (is (= [["context" "extensions" "https://foo.bar/baz" "foo"]
@@ -20,7 +20,7 @@
 
 (deftest analyze-path-test
   (are [path result]
-      (= (analyze-path pathmap-statement path)
+      (= (analyze-path path)
          result)
     []                      {:next-keys
                              ["object"

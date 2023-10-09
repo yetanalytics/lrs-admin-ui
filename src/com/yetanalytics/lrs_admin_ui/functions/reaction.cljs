@@ -154,7 +154,7 @@
         path))
 
 (defn analyze-path
-  "Given pathmap and a (possibly) partial path:
+  "Given a (possibly) partial xapi path:
     Return a map with keys:
       :valid? Is the path valid per xapi?
       :next-keys - Coll of possible further keys. May contain the special key
@@ -168,14 +168,14 @@
       :valid? - Is the path a valid xapi path?
       :complete? - For the purposes of UI, is the path complete (ie. no further
         segments should be offered)? Will be false for extension paths."
-  [pathmap path]
-  (let [ret       (get-in pathmap
+  [path]
+  (let [ret       (get-in pathmap-statement
                           (zero-indices path))
         ;; lmaps and extensions
         [?p-idx ?p-leaf-type]
         (or (some
              (fn [[idx ppath]]
-               (let [ret (get-in pathmap
+               (let [ret (get-in pathmap-statement
                                  (zero-indices ppath))]
                  (when (symbol? ret)
                    [idx ret])))

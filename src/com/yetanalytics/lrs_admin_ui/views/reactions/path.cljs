@@ -19,7 +19,6 @@
          change-fn]
       (let [id (str (random-uuid))
             {:keys [next-keys]} (rfns/analyze-path
-                                 rfns/pathmap-statement
                                  path-until)]
         [:div.path-input-segment-edit
          [form/combo-box-input
@@ -57,7 +56,6 @@
   (let [{:keys [next-keys
                 leaf-type
                 valid?]} (rfns/analyze-path
-                          rfns/pathmap-statement
                           path)]
     (-> [:div.path-input
          {:class (when-not valid?
@@ -101,7 +99,6 @@
 ;; Testing helpers
 (defn- add-segment [path]
   (let [{:keys [next-keys]} (rfns/analyze-path
-                             rfns/pathmap-statement
                              path)]
     (conj path
           (if (= '[idx] next-keys)
