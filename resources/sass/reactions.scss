@@ -127,9 +127,14 @@ div.path-input {
   }
   > div.path-input-action {
     padding: 8px;
+    > a {
+      > img {
+        max-height: 1.5em;
+      }
+    }
   }
 }
 
 div.path-input.invalid {
-  background-color: red;
+  background-color: pink;
 }

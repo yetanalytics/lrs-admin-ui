@@ -2,6 +2,7 @@
   (:require [re-frame.core :refer [dispatch subscribe]]
             [com.yetanalytics.lrs-admin-ui.functions :as fns]
             [com.yetanalytics.lrs-admin-ui.functions.reaction :as rfns]
+            [com.yetanalytics.lrs-admin-ui.views.reactions.path :as p]
             [goog.string :refer [format]]
             [goog.string.format]))
 
@@ -137,7 +138,8 @@
    (.stringify js/JSON (clj->js template) nil 2)])
 
 (defn- ruleset-view
-  [{:keys [identityPaths
+  [mode
+   {:keys [identityPaths
            conditions
            template]}]
   [:dl.reaction-ruleset
@@ -145,7 +147,10 @@
    [:dd
     (into [:ul.identity-paths]
           (for [path identityPaths]
-            [render-path path]))]
+            (if (= :edit mode)
+              [p/path-input path
+               :remove-fn (fn [_] (println 'remove))]
+              [render-path path])))]
    [:dt "Conditions"]
    [:dd [render-conditions conditions]]
    [:dt "Template"]
@@ -258,7 +263,7 @@
        [:dd [render-error error]]
 
        [:dt "Ruleset"]
-       [:dd [ruleset-view ruleset]]]]]))
+       [:dd [ruleset-view mode ruleset]]]]]))
 
 (defn reactions
   []

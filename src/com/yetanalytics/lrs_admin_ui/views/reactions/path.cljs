@@ -64,7 +64,11 @@
   [path
    & {:keys [add-fn
              del-fn
-             change-fn]}]
+             change-fn
+             remove-fn]
+      :or {add-fn (fn [_] (println 'add))
+           del-fn (fn [_] (println 'del))
+           change-fn (fn [_] (println 'change))}}]
   (let [{:keys [next-keys
                 leaf-type
                 valid?
@@ -105,38 +109,50 @@
                  :on-click (fn [e]
                              (fns/ps-event e)
                              (add-fn))}
-             [:img {:src "/images/icons/add.svg"}]]]))
+             [:img {:src "/images/icons/add.svg"}]]])
+          ;; If remove function is provided, add icon for that
+          remove-fn
+          (conj
+           [:div.path-input-action
+            [:a {:href "#"
+                 :on-click (fn [e]
+                             (fns/ps-event e)
+                             (remove-fn))}
+             [:img {:src "/images/icons/icon-delete-blue.svg"}]]])
+          )
         ;; Indicate expected type?
         )))
 
-;; Testing helpers
-(defn- add-segment [path]
-  (let [{:keys [next-keys]} (rfns/analyze-path
-                             path)]
-    (conj path
-          (if (= '[idx] next-keys)
-            0
-            (or (first next-keys)
-                "")))))
+(comment
+  ;; Testing helpers
+  (defn- add-segment [path]
+    (let [{:keys [next-keys]} (rfns/analyze-path
+                               path)]
+      (conj path
+            (if (= '[idx] next-keys)
+              0
+              (or (first next-keys)
+                  "")))))
 
-(defn- del-segment [path]
-  (vec (butlast path)))
+  (defn- del-segment [path]
+    (vec (butlast path)))
 
-(defn- change-segment [path new-val]
-  (assoc path (dec (count path)) new-val))
+  (defn- change-segment [path new-val]
+    (assoc path (dec (count path)) new-val))
 
-(defn formtest
-  []
-  (let [path (r/atom [])]
-    (fn []
-      [:div
-       [:h5 (str @path)]
-       [path-input
-        @path
-        :add-fn (fn [] (swap! path add-segment))
-        :del-fn (fn [] (swap! path del-segment))
-        :change-fn (fn [new-val] (swap! path change-segment new-val))]
-       ]))
+  (defn formtest
+    []
+    (let [path (r/atom [])]
+      (fn []
+        [:div
+         [:h5 (str @path)]
+         [path-input
+          @path
+          :add-fn (fn [] (swap! path add-segment))
+          :del-fn (fn [] (swap! path del-segment))
+          :change-fn (fn [new-val] (swap! path change-segment new-val))]
+         ]))
 
 
+    )
   )
