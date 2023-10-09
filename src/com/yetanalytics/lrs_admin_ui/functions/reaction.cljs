@@ -178,17 +178,3 @@
     (merge ret
            {:leaf-type (when-not (contains? #{'lmap 'extensions} leaf-type)
                          leaf-type)})))
-
-(comment
-  (analyze-path pathmap-statement []) ;; => {:next-keys ["object" "authority" "verb" "id" "timestamp" "context" "version" "stored" "attachments" "actor" "objectType" "result"], :leaf-type nil, :valid? true}
-  (analyze-path pathmap-statement ["actor"]) ;; => {:next-keys ["account" "name" "mbox" "openid" "mbox_sha1sum" "objectType" "member"], :leaf-type nil, :valid? true}
-  (analyze-path pathmap-statement ["actor" "member"]) ;; => {:next-keys [idx], :leaf-type nil, :valid? true}
-  (analyze-path pathmap-statement ["actor" "member" 3]) ;; => {:next-keys ["account" "name" "mbox" "openid" "mbox_sha1sum" "objectType"], :leaf-type nil, :valid? true}
-  (analyze-path pathmap-statement ["actor" "member" 3 "mbox"]) ;; => {:next-keys [], :leaf-type string, :valid? true}
-  (analyze-path pathmap-statement ["foo"]) ;; => {:next-keys [], :leaf-type nil, :valid? false}
-  (analyze-path pathmap-statement ["context" "extensions"]) ;; => {:next-keys [], :leaf-type nil, :valid? true}
-  (analyze-path pathmap-statement ["context" "extensions" "https://foo.bar/baz"]) ;; => {:next-keys [], :leaf-type json, :valid? true}
-  (analyze-path pathmap-statement ["context" "extensions" "https://foo.bar/baz" "foo"]) ;; => {:next-keys [], :leaf-type nil, :valid? true}
-  (analyze-path pathmap-statement ["object" "definition" "name"]) ;; => {:next-keys [], :leaf-type nil, :valid? true}
-  (analyze-path pathmap-statement ["object" "definition" "name" "en-US"]) ;; =>{:next-keys [], :leaf-type string, :valid? true}
-  )
