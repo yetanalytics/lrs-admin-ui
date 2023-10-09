@@ -23,32 +23,42 @@
             {:keys [next-keys]} (rfns/analyze-path
                                  path-until)]
         [:div.path-input-segment-edit
-         [form/combo-box-input
-          {:id id
-           :name (format "combo-%s" id)
-           :on-change (fn [v]
-                        ;; If it can be an int, pass it as such
-                        (let [parsed-int (js/parseInt v)]
-                          (if (js/isNaN parsed-int)
-                            (change-fn v)
-                            (change-fn parsed-int))))
-           :on-search (fn [v] (reset! search v))
-           :value seg-val
-           :placeholder "(select)"
-           :disabled false
-           :custom-text? true
-           :options-fn
-           (fn []
-             (if (= ['idx] next-keys)
-               ;; index expected
-               (for [idx (range 10)]
-                 {:label (str idx) :value idx})
-               (for [k next-keys
-                     :when (.startsWith k @search)]
-                 {:label k :value k})))
-           ;; :tooltip "I'M A TOOLTIP OVA HEA" ;; NOT YET IMPLEMENTED, MIGHT NEVER BE
-           ;; :required true
-           :removable? false}]]))))
+         (if (= '[idx] next-keys)
+           ;; When we know it is an index, use a numeric input
+           [:input.index
+            {:type "number"
+             :min "0"
+             :value seg-val
+             :on-change (fn [e]
+                          (fns/ps-event e)
+                          (change-fn (js/parseInt (fns/ps-event-val e))))}]
+           [:div.segment-combo
+            [form/combo-box-input
+             {:id id
+              :name (format "combo-%s" id)
+              :on-change (fn [v]
+                           ;; If it can be an int, pass it as such
+                           (let [parsed-int (js/parseInt v)]
+                             (if (js/isNaN parsed-int)
+                               (change-fn v)
+                               (change-fn parsed-int))))
+              :on-search (fn [v] (reset! search v))
+              :value seg-val
+              :placeholder "(select)"
+              :disabled false
+              :custom-text? true
+              :options-fn
+              (fn []
+                (if (= ['idx] next-keys)
+                  ;; index expected
+                  (for [idx (range 10)]
+                    {:label (str idx) :value idx})
+                  (for [k next-keys
+                        :when (.startsWith k @search)]
+                    {:label k :value k})))
+              ;; :tooltip "I'M A TOOLTIP OVA HEA" ;; NOT YET IMPLEMENTED, MIGHT NEVER BE
+              ;; :required true
+              :removable? false}]])]))))
 
 (defn path-input
   [path

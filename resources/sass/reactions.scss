@@ -95,7 +95,7 @@ dl.ref {
 }
 
 $path-input-border: 1px solid #6c757d;
-$path-input-border-radius: 7px;
+$path-input-border-radius: 4px;
 
 div.path-input {
   display: flex;
@@ -117,7 +117,13 @@ div.path-input {
     padding: 8px;
   }
   > div.path-input-segment-edit {
-    min-width: 10em;
+    > input.index {
+      height: 100%;
+      width: 4em;
+    }
+    > div.segment-combo {
+      min-width: 8em;
+    }
   }
   > div.path-input-action {
     padding: 8px;
