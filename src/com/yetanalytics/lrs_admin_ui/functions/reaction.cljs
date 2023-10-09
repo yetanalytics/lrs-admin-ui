@@ -153,21 +153,7 @@
             seg))
         path))
 
-(defn analyze-path
-  "Given a (possibly) partial xapi path:
-    Return a map with keys:
-      :valid? Is the path valid per xapi?
-      :next-keys - Coll of possible further keys. May contain the special key
-        `'idx` to denote that the current structure is an array.
-      :leaf-type - One of the following symbols:
-        'string
-        'number
-        'boolean
-        'null
-        'json
-      :valid? - Is the path a valid xapi path?
-      :complete? - For the purposes of UI, is the path complete (ie. no further
-        segments should be offered)? Will be false for extension paths."
+(defn analyze-path*
   [path]
   (let [ret       (get-in pathmap-statement
                           (zero-indices path))
@@ -211,3 +197,20 @@
        ;; lmaps w/o ltag are not complete
        (= 'lmap ret)                     false
        :else                             (empty? next-keys))}))
+
+(def analyze-path
+  "Given a (possibly) partial xapi path:
+    Return a map with keys:
+      :valid? Is the path valid per xapi?
+      :next-keys - Coll of possible further keys. May contain the special key
+        `'idx` to denote that the current structure is an array.
+      :leaf-type - One of the following symbols:
+        'string
+        'number
+        'boolean
+        'null
+        'json
+      :valid? - Is the path a valid xapi path?
+      :complete? - For the purposes of UI, is the path complete (ie. no further
+        segments should be offered)? Will be false for extension paths."
+  (memoize analyze-path*))
