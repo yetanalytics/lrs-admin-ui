@@ -131,18 +131,40 @@
           "stored"    'string,
           "authority" pathmap-actor}))
 
+(defn parent-paths
+  "Given a path vector, return a seq of parent paths in reverse order.
+  Does not return the root path []."
+  [path]
+  (lazy-seq
+   (when-let [ppath (not-empty
+                     (-> path
+                         butlast
+                         vec))]
+     (cons
+      ppath
+      (parent-paths ppath)))))
+
+(defn- zero-indices
+  "Replace index integers with 0 in path"
+  [path]
+  (mapv (fn [seg]
+          (if (number? seg)
+            0
+            seg))
+        path))
+
 (defn analyze-path*
   [pathmap path]
   (let [ret          (get-in pathmap
-                             ;; zero out path indices
-                             (mapv (fn [seg]
-                                     (if (number? seg)
-                                       0
-                                       seg))
-                                   path))
+                             (zero-indices path))
         ;; lmaps and extensions
-        ?p-leaf-type (when-let [prev-path (not-empty (butlast path))]
-                       (:leaf-type (analyze-path* pathmap prev-path)))]
+        ?p-leaf-type (some
+                      (fn [ppath]
+                        (let [ret (get-in pathmap
+                                          (zero-indices ppath))]
+                          (when (symbol? ret)
+                            ret)))
+                      (parent-paths path))]
     {:next-keys
      (cond
        (map? ret)    (into [] (keys ret))
