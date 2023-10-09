@@ -36,7 +36,8 @@
                               "objectType"
                               "result"],
                              :leaf-type nil,
-                             :valid?    true}
+                             :valid?    true
+                             :complete?  false}
     ["actor"]               {:next-keys
                              ["account"
                               "name"
@@ -46,11 +47,13 @@
                               "objectType"
                               "member"],
                              :leaf-type nil,
-                             :valid?    true}
+                             :valid?    true
+                             :complete? false}
     ["actor"
      "member"]              {:next-keys ['idx],
                              :leaf-type nil,
-                             :valid?    true}
+                             :valid?    true
+                             :complete? false}
     ["actor"
      "member"
      3]                     {:next-keys
@@ -61,47 +64,63 @@
                               "mbox_sha1sum"
                               "objectType"],
                              :leaf-type nil,
-                             :valid?    true}
+                             :valid?    true
+                             :complete? false}
     ["actor"
      "member"
      3
      "mbox"]                {:next-keys [],
                              :leaf-type 'string,
-                             :valid?    true}
+                             :valid?    true
+                             :complete? true}
     ["foo"]                 {:next-keys [],
                              :leaf-type nil,
-                             :valid?    false}
+                             :valid?    false
+                             :complete? true}
     ["context"
      "extensions"]          {:next-keys [],
                              :leaf-type nil,
-                             :valid?    true}
+                             :valid?    true
+                             :complete? false}
     ["context"
      "extensions"
      "https://foo.bar/baz"] {:next-keys [],
                              :leaf-type 'json,
-                             :valid?    true}
+                             :valid?    true
+                             :complete? false}
     ["context"
      "extensions"
      "https://foo.bar/baz"
      "foo"]                 {:next-keys [],
                              :leaf-type 'json,
-                             :valid?    true}
+                             :valid?    true
+                             :complete? false}
     ["context"
      "extensions"
      "https://foo.bar/baz"
      "foo"
      "bar"]                 {:next-keys [],
                              :leaf-type 'json,
-                             :valid?    true}
+                             :valid?    true
+                             :complete? false}
     ["object"
      "definition"
      "name"]                {:next-keys [],
                              :leaf-type nil,
-                             :valid?    true}
+                             :valid?    true
+                             :complete? false}
     ["object"
      "definition"
      "name"
      "en-US"]               {:next-keys [],
                              :leaf-type 'string,
-                             :valid?    true}
-    ))
+                             :valid?    true
+                             :complete? true}
+    ["object"
+     "definition"
+     "name"
+     "en-US"
+     "foo"]                 {:next-keys [],
+                             :leaf-type nil,
+                             :valid?    false
+                             :complete? true}))

@@ -153,50 +153,61 @@
             seg))
         path))
 
-(defn analyze-path*
-  [pathmap path]
-  (let [ret          (get-in pathmap
-                             (zero-indices path))
-        ;; lmaps and extensions
-        ?p-leaf-type (some
-                      (fn [ppath]
-                        (let [ret (get-in pathmap
-                                          (zero-indices ppath))]
-                          (when (symbol? ret)
-                            ret)))
-                      (parent-paths path))]
-    {:next-keys
-     (cond
-       (map? ret)    (into [] (keys ret))
-       (vector? ret) ['idx]
-       :else         [])
-     :leaf-type (if (symbol? ret)
-                  ret
-                  (when ?p-leaf-type
-                    (cond
-                      (= 'lmap ?p-leaf-type)       'string
-                      (= 'extensions ?p-leaf-type) 'json)))
-     :valid?    (or
-                 (some? ret)
-                 (some? ?p-leaf-type))}))
-
 (defn analyze-path
   "Given pathmap and a (possibly) partial path:
     Return a map with keys:
       :valid? Is the path valid per xapi?
       :next-keys - Coll of possible further keys. May contain the special key
-        `'idx` to denote that the current structure is an array. When this
-        coll is empty the path is complete.
-      :leaf-type - If the path is complete, one of the following symbols:
+        `'idx` to denote that the current structure is an array.
+      :leaf-type - One of the following symbols:
         'string
         'number
         'boolean
         'null
-        'lmap
-        'extensions
-      :valid? - Is the path a valid xapi path?"
+        'json
+      :valid? - Is the path a valid xapi path?
+      :complete? - For the purposes of UI, is the path complete (ie. no further
+        segments should be offered)? Will be false for extension paths."
   [pathmap path]
-  (let [{:keys [leaf-type] :as ret} (analyze-path* pathmap path)]
-    (merge ret
-           {:leaf-type (when-not (contains? #{'lmap 'extensions} leaf-type)
-                         leaf-type)})))
+  (let [ret       (get-in pathmap
+                          (zero-indices path))
+        ;; lmaps and extensions
+        [?p-idx ?p-leaf-type]
+        (or (some
+             (fn [[idx ppath]]
+               (let [ret (get-in pathmap
+                                 (zero-indices ppath))]
+                 (when (symbol? ret)
+                   [idx ret])))
+             (map-indexed vector (parent-paths path)))
+            [])
+        next-keys (cond
+                    (map? ret)    (into [] (keys ret))
+                    (vector? ret) ['idx]
+                    :else         [])
+        leaf-type (if (symbol? ret)
+                    (when-not (contains? #{'lmap 'extensions} ret)
+                      ret)
+                    (when ?p-leaf-type
+                      (cond
+                        (and (= 'lmap ?p-leaf-type)
+                             (= 0 ?p-idx))           'string
+                        (= 'extensions ?p-leaf-type) 'json)))
+        valid?    (or
+                   (some? ret)
+                   (= 'extensions ?p-leaf-type)
+                   (and (= 'lmap ?p-leaf-type)
+                        (= 0 ?p-idx)))]
+    {:next-keys next-keys
+     :leaf-type leaf-type
+     :valid?    valid?
+     :complete?
+     (cond
+       ;; Invalid paths are always complete
+       (not valid?)                      true
+       ;; extensions are never complete
+       (or (= 'extensions ret)
+           (= 'extensions ?p-leaf-type)) false
+       ;; lmaps w/o ltag are not complete
+       (= 'lmap ret)                     false
+       :else                             (empty? next-keys))}))
