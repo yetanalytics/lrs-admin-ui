@@ -94,18 +94,24 @@ dl.ref {
   }
 }
 
-$path-input-border: 1px solid;
+$path-input-border: 1px solid #6c757d;
+$path-input-border-radius: 7px;
 
 div.path-input {
   display: flex;
   padding: 8px;
   > div:first-child {
+    border-radius: $path-input-border-radius 0px 0px $path-input-border-radius;
     border-left: $path-input-border;
   }
   > div {
     border-top: $path-input-border;
     border-right: $path-input-border;
     border-bottom: $path-input-border;
+  }
+
+  > div:last-child {
+    border-radius: 0px $path-input-border-radius $path-input-border-radius 0px;
   }
   > div.path-input-segment {
     padding: 8px;
