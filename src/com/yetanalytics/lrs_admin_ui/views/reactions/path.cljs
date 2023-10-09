@@ -9,7 +9,9 @@
 (defn- path-input-segment
   [seg-val]
   [:div.path-input-segment
-   (str seg-val)])
+   (if (number? seg-val)
+     (format "[%s]" seg-val)
+     (str seg-val))])
 
 (defn- path-input-segment-edit
   [_ _ _]
@@ -50,9 +52,9 @@
 
 (defn path-input
   [path
-   add-fn
-   del-fn
-   change-fn]
+   & {:keys [add-fn
+             del-fn
+             change-fn]}]
   (let [{:keys [next-keys
                 leaf-type
                 valid?
@@ -121,9 +123,10 @@
        [:h5 (str @path)]
        [path-input
         @path
-        (fn [] (swap! path add-segment))
-        (fn [] (swap! path del-segment))
-        (fn [new-val] (swap! path change-segment new-val))]]))
+        :add-fn (fn [] (swap! path add-segment))
+        :del-fn (fn [] (swap! path del-segment))
+        :change-fn (fn [new-val] (swap! path change-segment new-val))]
+       ]))
 
 
   )

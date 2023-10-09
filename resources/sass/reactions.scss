@@ -94,9 +94,19 @@ dl.ref {
   }
 }
 
+$path-input-border: 1px solid;
+
 div.path-input {
   display: flex;
   padding: 8px;
+  > div:first-child {
+    border-left: $path-input-border;
+  }
+  > div {
+    border-top: $path-input-border;
+    border-right: $path-input-border;
+    border-bottom: $path-input-border;
+  }
   > div.path-input-segment {
     padding: 8px;
   }
