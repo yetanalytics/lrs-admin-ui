@@ -181,12 +181,13 @@
   [mode identity-paths]
   [:<>
    [:dt "Identity Paths"
-    [:span.add-identity-path
-     [:a {:href "#"
-          :on-click (fn [e]
-                      (fns/ps-event e)
-                      (dispatch [:reaction/add-identity-path]))}
-      [:img {:src "/images/icons/add.svg"}]]]]
+    (when (= :edit mode)
+      [:span.add-identity-path
+       [:a {:href "#"
+            :on-click (fn [e]
+                        (fns/ps-event e)
+                        (dispatch [:reaction/add-identity-path]))}
+        [:img {:src "/images/icons/add.svg"}]]])]
    [:dd
     (into [:ul.identity-paths]
           (map-indexed
