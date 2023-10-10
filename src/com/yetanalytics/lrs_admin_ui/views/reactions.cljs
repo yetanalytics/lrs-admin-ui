@@ -205,17 +205,16 @@
 (defn- edit-status
   [active]
   [:select
-   {:on-change (fn [e]
+   {:value (if (true? active) "active" "inactive")
+    :on-change (fn [e]
                  (dispatch
                   [:reaction/edit-status
                    (fns/ps-event-val e)]))}
    [:option
-    {:value "active"
-     :selected (if (true? active) "selected" "")}
+    {:value "active"}
     "Active"]
    [:option
-    {:value "inactive"
-     :selected (if (false? active) "selected" "")}
+    {:value "inactive"}
     "Inactive"]])
 
 (defn- reaction-view
