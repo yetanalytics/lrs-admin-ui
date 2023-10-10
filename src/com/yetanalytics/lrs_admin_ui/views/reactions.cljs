@@ -83,8 +83,26 @@
    [:div {:class "tenant-wrapper"}
     [reactions-table]]])
 
+(defn- render-or-edit-path
+  [mode path-path path & {:keys [remove-fn]}]
+  (if (= :edit mode)
+    [p/path-input path
+     :add-fn (fn []
+               (dispatch [:reaction/add-path-segment
+                          path-path]))
+     :del-fn (fn []
+               (dispatch [:reaction/del-path-segment
+                          path-path]))
+     :change-fn (fn [seg-val]
+                  (dispatch [:reaction/change-path-segment
+                             path-path
+                             seg-val]))
+     :remove-fn remove-fn]
+    [render-path path]))
+
 (defn- render-clause
   [mode
+   reaction-path
    {and-clauses :and
     or-clauses  :or
     not-clause  :not
@@ -94,25 +112,39 @@
     [:div.boolean.and
      [:div.boolean-label "AND"]
      (into [:div.boolean-body]
-           (for [clause and-clauses]
-             [render-clause mode clause]))]
+           (map-indexed
+            (fn [idx clause]
+              [render-clause
+               mode
+               (into reaction-path [:and idx])
+               clause])
+            and-clauses))]
     or-clauses
     [:div.boolean.or
      [:div.boolean-label "OR"]
      (into [:div.boolean-body]
-           (for [clause or-clauses]
-             [render-clause mode clause]))]
+           (map-indexed
+            (fn [idx clause]
+              [render-clause
+               mode
+               (into reaction-path [:or idx])
+               clause])
+            or-clauses))]
     not-clause
     [:div.boolean.not
      [:div.boolean-label "NOT"]
      [:div.boolean-body
-      [render-clause mode not-clause]]]
+      [render-clause mode (conj reaction-path :not) not-clause]]]
     :else
     (let [{:keys [path op val ref]} clause]
       [:div.clause.op
        (cond-> [:dl.op-list
                 [:dt "Path"]
-                [:dd [render-path path]]
+                [:dd
+                 [render-or-edit-path
+                  mode
+                  (conj reaction-path :path)
+                  path]]
                 [:dt "Op"]
                 [:dd [:code op]]]
          val (conj [:dt "Val"]
@@ -123,7 +155,11 @@
                      [:dt "Condition"]
                      [:dd (:condition ref)]
                      [:dt "Path"]
-                     [:dd [render-path (:path ref)]]]]))])))
+                     [:dd
+                      [render-or-edit-path
+                       mode
+                       (conj reaction-path :ref :path)
+                       (:path ref)]]]]))])))
 
 (defn- render-conditions
   [mode conditions]
@@ -131,7 +167,10 @@
         (for [[condition-name condition] conditions]
           [:div.condition
            [:div.condition-name condition-name]
-           [:div.condition-body [render-clause mode condition]]])))
+           [:div.condition-body [render-clause
+                                 mode
+                                 [:ruleset :conditions condition-name]
+                                 condition]]])))
 
 (defn- render-template
   [mode template]
@@ -152,21 +191,12 @@
     (into [:ul.identity-paths]
           (map-indexed
            (fn [idx path]
-             (if (= :edit mode)
-               [p/path-input path
-                :add-fn (fn []
-                          (dispatch [:reaction/add-path-segment
-                                     [:ruleset :identityPaths idx]]))
-                :del-fn (fn []
-                          (dispatch [:reaction/del-path-segment
-                                     [:ruleset :identityPaths idx]]))
-                :change-fn (fn [seg-val]
-                             (dispatch [:reaction/change-path-segment
-                                        [:ruleset :identityPaths idx]
-                                        seg-val]))
-                :remove-fn (fn []
-                             (dispatch [:reaction/delete-identity-path idx]))]
-               [render-path path]))
+             [render-or-edit-path
+              mode
+              [:ruleset :identityPaths idx]
+              path
+              :remove-fn (fn []
+                           (dispatch [:reaction/delete-identity-path idx]))])
            identity-paths))]])
 
 (defn- ruleset-view
