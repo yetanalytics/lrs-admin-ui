@@ -84,7 +84,8 @@
     [reactions-table]]])
 
 (defn- render-clause
-  [{and-clauses :and
+  [mode
+   {and-clauses :and
     or-clauses  :or
     not-clause  :not
     :as clause}]
@@ -94,18 +95,18 @@
      [:div.boolean-label "AND"]
      (into [:div.boolean-body]
            (for [clause and-clauses]
-             [render-clause clause]))]
+             [render-clause mode clause]))]
     or-clauses
     [:div.boolean.or
      [:div.boolean-label "OR"]
      (into [:div.boolean-body]
            (for [clause or-clauses]
-             [render-clause clause]))]
+             [render-clause mode clause]))]
     not-clause
     [:div.boolean.not
      [:div.boolean-label "NOT"]
      [:div.boolean-body
-      [render-clause not-clause]]]
+      [render-clause mode not-clause]]]
     :else
     (let [{:keys [path op val ref]} clause]
       [:div.clause.op
@@ -125,17 +126,48 @@
                      [:dd [render-path (:path ref)]]]]))])))
 
 (defn- render-conditions
-  [conditions]
+  [mode conditions]
   (into [:div.reaction-conditions]
         (for [[condition-name condition] conditions]
           [:div.condition
            [:div.condition-name condition-name]
-           [:div.condition-body [render-clause condition]]])))
+           [:div.condition-body [render-clause mode condition]]])))
 
 (defn- render-template
-  [template]
+  [mode template]
   [:pre.template
    (.stringify js/JSON (clj->js template) nil 2)])
+
+(defn- render-identity-paths
+  [mode identity-paths]
+  [:<>
+   [:dt "Identity Paths"
+    [:span.add-identity-path
+     [:a {:href "#"
+          :on-click (fn [e]
+                      (fns/ps-event e)
+                      (dispatch [:reaction/add-identity-path]))}
+      [:img {:src "/images/icons/add.svg"}]]]]
+   [:dd
+    (into [:ul.identity-paths]
+          (map-indexed
+           (fn [idx path]
+             (if (= :edit mode)
+               [p/path-input path
+                :add-fn (fn []
+                          (dispatch [:reaction/add-path-segment
+                                     [:ruleset :identityPaths idx]]))
+                :del-fn (fn []
+                          (dispatch [:reaction/del-path-segment
+                                     [:ruleset :identityPaths idx]]))
+                :change-fn (fn [seg-val]
+                             (dispatch [:reaction/change-path-segment
+                                        [:ruleset :identityPaths idx]
+                                        seg-val]))
+                :remove-fn (fn []
+                             (dispatch [:reaction/delete-identity-path idx]))]
+               [render-path path]))
+           identity-paths))]])
 
 (defn- ruleset-view
   [mode
@@ -143,18 +175,12 @@
            conditions
            template]}]
   [:dl.reaction-ruleset
-   [:dt "Identity Paths"]
-   [:dd
-    (into [:ul.identity-paths]
-          (for [path identityPaths]
-            (if (= :edit mode)
-              [p/path-input path
-               :remove-fn (fn [_] (println 'remove))]
-              [render-path path])))]
+   [render-identity-paths
+    mode identityPaths]
    [:dt "Conditions"]
-   [:dd [render-conditions conditions]]
+   [:dd [render-conditions mode conditions]]
    [:dt "Template"]
-   [:dd [render-template template]]])
+   [:dd [render-template mode template]]])
 
 (defn- render-error
   [?error]

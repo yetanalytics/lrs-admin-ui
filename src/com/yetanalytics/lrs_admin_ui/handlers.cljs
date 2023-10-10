@@ -10,6 +10,7 @@
             [com.yetanalytics.lrs-admin-ui.functions.password :as pass]
             [com.yetanalytics.lrs-admin-ui.functions.oidc     :as oidc]
             [com.yetanalytics.lrs-admin-ui.functions.time     :as t]
+            [com.yetanalytics.lrs-admin-ui.functions.reaction :as rfns]
             [com.yetanalytics.re-oidc                         :as re-oidc]
             [ajax.core                                        :as ajax]
             [cljs.spec.alpha                                  :refer [valid?]]
@@ -886,3 +887,64 @@
              (case select-result
                "active" true
                "inactive" false))))
+
+(defn- remove-element
+  [v idx]
+  (into (subvec v 0 idx)
+        (subvec v (inc idx))))
+
+(re-frame/reg-event-db
+ :reaction/delete-identity-path
+ global-interceptors
+ (fn [db [_ idx]]
+   (update-in db
+              [::db/editing-reaction :ruleset :identityPaths]
+              remove-element
+              idx)))
+
+(re-frame/reg-event-db
+ :reaction/add-identity-path
+ global-interceptors
+ (fn [db [_ idx]]
+   (update-in db
+              [::db/editing-reaction :ruleset :identityPaths]
+              conj
+              [])))
+
+(re-frame/reg-event-db
+ :reaction/add-path-segment
+ global-interceptors
+ (fn [db [_ path-path]]
+   (let [full-path (into [::db/editing-reaction]
+                         path-path)
+         path-before (get-in db full-path)
+         {:keys [next-keys]} (rfns/analyze-path
+                              path-before)]
+     (update-in db
+                full-path
+                conj
+                (if (= '[idx] next-keys)
+                  0
+                  (or (first next-keys)
+                      ""))))))
+
+(re-frame/reg-event-db
+ :reaction/del-path-segment
+ global-interceptors
+ (fn [db [_ path-path]]
+   (let [full-path (into [::db/editing-reaction]
+                         path-path)
+         path-before (get-in db full-path)
+         path-after (vec (butlast path-before))]
+     (assoc-in db full-path path-after))))
+
+(re-frame/reg-event-db
+ :reaction/change-path-segment
+ global-interceptors
+ (fn [db [_ path-path new-seg-val]]
+   (let [full-path (into [::db/editing-reaction]
+                         path-path)
+         path-before (get-in db full-path)
+         path-after (conj (vec (butlast path-before))
+                          new-seg-val)]
+     (assoc-in db full-path path-after))))

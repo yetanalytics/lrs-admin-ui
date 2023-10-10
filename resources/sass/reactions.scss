@@ -13,6 +13,10 @@ dl.reaction-ruleset > dd {
   padding-left: $dl-nesting-depth;
 }
 
+span.add-identity-path {
+  padding: 0.5em;
+}
+
 dl.reaction-error {
   background-color: pink;
   padding: 0.5em;
