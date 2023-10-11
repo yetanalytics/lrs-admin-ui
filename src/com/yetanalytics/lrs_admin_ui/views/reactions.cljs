@@ -226,13 +226,13 @@
    [:dd
     [render-or-edit-ref-condition
      mode
-     ref-path
+     (conj ref-path :condition)
      condition]]
    [:dt "Path"]
    [:dd
     [render-or-edit-path
      mode
-     ref-path
+     (conj ref-path :path)
      path]]])
 
 (defn- render-clause
@@ -311,7 +311,7 @@
          ref (conj [:dd
                     [render-ref
                      mode
-                     (conj reaction-path :ref :condition)
+                     (conj reaction-path :ref)
                      ref]]))])))
 
 (defn- render-conditions
