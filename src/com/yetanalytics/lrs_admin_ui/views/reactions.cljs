@@ -143,8 +143,14 @@
              t]))))
 
 (defn- val-input
-  [val-path val]
-  (let [val-type (rfns/val-type val)]
+  [val-path path val]
+  ;; path type wins over val type
+  (let [{:keys [leaf-type]} (rfns/analyze-path path)
+        val-type (or
+                  (and
+                   leaf-type
+                   (#{"string" "number" "boolean" "null"} (name leaf-type)))
+                  (rfns/val-type val))]
     (case val-type
        "null"
        [:input
@@ -192,7 +198,7 @@
    (if (= :edit mode)
      [:<>
       [select-val-type val-path path val]
-      [val-input val-path val]]
+      [val-input val-path path val]]
      [:<>
       [:span (str (val-type val) ": ")]
       [:code (if (nil? val) "null" (str val))]])])
