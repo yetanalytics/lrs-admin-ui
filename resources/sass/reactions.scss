@@ -117,6 +117,9 @@ div.path-input {
   > div:last-child {
     border-radius: 0px $path-input-border-radius $path-input-border-radius 0px;
   }
+  > div.path-input-root {
+    padding: 8px;
+  }
   > div.path-input-segment {
     padding: 8px;
   }

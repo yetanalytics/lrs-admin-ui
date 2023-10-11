@@ -76,7 +76,9 @@
                              path)]
     (-> [:div.path-input
          {:class (when-not valid?
-                   "invalid")}]
+                   "invalid")}
+         [:div.path-input-root
+          "$"]]
         ;; Intermediate path
         (into
          (for [seg (butlast path)]
