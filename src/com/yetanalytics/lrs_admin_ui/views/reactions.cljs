@@ -6,28 +6,6 @@
             [goog.string :refer [format]]
             [goog.string.format]))
 
-(defn- render-path
-  [path]
-  [:code (rfns/path->string path)])
-
-(defn- val-type
-  [val]
-  (cond
-    (string? val)
-    "string"
-    (number? val)
-    "number"
-    (boolean? val)
-    "boolean"
-    (nil? val)
-    "null"))
-
-(defn- render-val
-  [val]
-  [:div.val
-   (str (val-type val) ": ")
-   [:code (str val)]])
-
 (defn- short-error
   [{:keys [type message]}]
   (str (case type
@@ -82,6 +60,29 @@
     "Reactions"]
    [:div {:class "tenant-wrapper"}
     [reactions-table]]])
+
+(defn- render-path
+  [path]
+  [:code (rfns/path->string path)])
+
+(defn- val-type
+  [val]
+  (cond
+    (string? val)
+    "string"
+    (number? val)
+    "number"
+    (boolean? val)
+    "boolean"
+    (nil? val)
+    "null"))
+
+(defn- render-val
+  [val]
+  [:div.val
+   (str (val-type val) ": ")
+   [:code (str val)]])
+
 
 (defn- render-or-edit-path
   [mode path-path path & {:keys [remove-fn]}]
