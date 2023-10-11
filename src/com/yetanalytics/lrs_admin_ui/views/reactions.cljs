@@ -124,6 +124,95 @@
              op]))
     [:code op]))
 
+(defn- select-val-type
+  [val-path path val]
+  (let [{:keys [leaf-type]} (rfns/analyze-path path)]
+    (into [:select
+           {:value (rfns/val-type val)
+            :on-change (fn [e]
+                         (dispatch [:reaction/set-val-type
+                                    val-path
+                                    (fns/ps-event-val e)]))}]
+          (for [t (if leaf-type
+                    (if (= 'json leaf-type)
+                      ["string" "number" "boolean" "null"]
+                      [(name leaf-type)])
+                    [(rfns/val-type val)])]
+            [:option
+             {:value t}
+             t]))))
+
+(defn- val-input
+  [val-path val]
+  (let [val-type (rfns/val-type val)]
+    (case val-type
+       "null"
+       [:input
+        {:disabled true
+         :value "null"}]
+       "boolean"
+       [:select
+        {:value (str val)
+         :on-change
+         (fn [e]
+           (dispatch [:reaction/set-val
+                      val-path
+                      (case (fns/ps-event-val e)
+                        "true" true
+                        "false" false)]))}
+        [:option
+         {:value "true"}
+         "true"]
+        [:option
+         {:value "false"}
+         "false"]]
+       "number"
+       [:input
+        {:type "number"
+         :value val
+         :on-change
+         (fn [e]
+           (dispatch [:reaction/set-val
+                      val-path
+                      (js/parseFloat
+                       (fns/ps-event-val e))]))}]
+       "string"
+       [:input
+        {:type "text"
+         :value val
+         :on-change
+         (fn [e]
+           (dispatch [:reaction/set-val
+                      val-path
+                      (fns/ps-event-val e)]))}])))
+
+(defn- render-or-edit-val
+  [mode val-path path val]
+  [:div.val
+   (if (= :edit mode)
+     [:<>
+      [select-val-type val-path path val]
+      [val-input val-path val]]
+     [:<>
+      [:span (str (val-type val) ": ")]
+      [:code (if (nil? val) "null" (str val))]])])
+
+(defn- render-or-edit-ref-condition
+  [mode ref-condition-path condition]
+  (if (= :edit mode)
+    (into [:select
+           {:value condition
+            :on-change
+            (fn [e]
+              (dispatch [:reaction/set-ref-condition
+                         ref-condition-path
+                         (fns/ps-event-val e)]))}]
+          (for [condition-name @(subscribe [:reaction/edit-condition-names])]
+            [:option
+             {:value condition-name}
+             condition-name]))
+    [:span condition]))
+
 (defn- render-clause
   [mode
    reaction-path
@@ -174,13 +263,21 @@
                       mode
                       (conj reaction-path :op)
                       op]]]
-         val (conj [:dt "Val"]
-                   [:dd [render-val val]])
+         (not ref) (conj [:dt "Val"]
+                         [:dd [render-or-edit-val
+                               mode
+                               (conj reaction-path :val)
+                               path
+                               val]])
          ref (conj [:dt "Ref"]
                    [:dd
                     [:dl.ref
                      [:dt "Condition"]
-                     [:dd (:condition ref)]
+                     [:dd
+                      [render-or-edit-ref-condition
+                       mode
+                       (conj reaction-path :ref :condition)
+                       (:condition ref)]]
                      [:dt "Path"]
                      [:dd
                       [render-or-edit-path

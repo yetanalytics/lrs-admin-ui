@@ -387,3 +387,9 @@
                  (when (= r-id id)
                    reaction))
                reaction-list)))))
+
+(reg-sub
+ :reaction/edit-condition-names
+ :<- [:reaction/editing]
+ (fn [{{:keys [conditions]} :ruleset} _]
+   (map name (keys conditions))))

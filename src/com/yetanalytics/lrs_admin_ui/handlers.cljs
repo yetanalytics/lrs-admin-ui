@@ -952,7 +952,33 @@
 (re-frame/reg-event-db
  :reaction/set-op
  global-interceptors
- (fn [db [_ path new-op]]
+ (fn [db [_ op-path new-op]]
    (let [full-path (into [::db/editing-reaction]
-                         path)]
+                         op-path)]
      (assoc-in db full-path new-op))))
+
+(re-frame/reg-event-db
+ :reaction/set-val-type
+ (fn [db [_ val-path new-type]]
+   (let [full-path (into [::db/editing-reaction]
+                         val-path)]
+     (assoc-in db full-path
+               (case new-type
+                 "string" ""
+                 "number" 0
+                 "boolean" false
+                 "null" nil)))))
+
+(re-frame/reg-event-db
+ :reaction/set-val
+ (fn [db [_ val-path new-val]]
+   (let [full-path (into [::db/editing-reaction]
+                         val-path)]
+     (assoc-in db full-path new-val))))
+
+(re-frame/reg-event-db
+ :reaction/set-ref-condition
+ (fn [db [_ condition-path new-condition]]
+   (let [full-path (into [::db/editing-reaction]
+                         condition-path)]
+     (assoc-in db full-path new-condition))))

@@ -214,3 +214,16 @@
       :complete? - For the purposes of UI, is the path complete (ie. no further
         segments should be offered)? Will be false for extension paths."
   (memoize analyze-path*))
+
+(defn val-type
+  "Get a value type as a string"
+  [val]
+  (cond
+    (string? val)
+    "string"
+    (number? val)
+    "number"
+    (boolean? val)
+    "boolean"
+    (nil? val)
+    "null"))
