@@ -219,6 +219,22 @@
              condition-name]))
     [:span condition]))
 
+(defn- render-ref
+  [mode ref-path {:keys [condition path]}]
+  [:dl.ref
+   [:dt "Condition"]
+   [:dd
+    [render-or-edit-ref-condition
+     mode
+     ref-path
+     condition]]
+   [:dt "Path"]
+   [:dd
+    [render-or-edit-path
+     mode
+     ref-path
+     path]]])
+
 (defn- render-clause
   [mode
    reaction-path
@@ -293,19 +309,10 @@
                                path
                                val]])
          ref (conj [:dd
-                    [:dl.ref
-                     [:dt "Condition"]
-                     [:dd
-                      [render-or-edit-ref-condition
-                       mode
-                       (conj reaction-path :ref :condition)
-                       (:condition ref)]]
-                     [:dt "Path"]
-                     [:dd
-                      [render-or-edit-path
-                       mode
-                       (conj reaction-path :ref :path)
-                       (:path ref)]]]]))])))
+                    [render-ref
+                     mode
+                     (conj reaction-path :ref :condition)
+                     ref]]))])))
 
 (defn- render-conditions
   [mode conditions]
