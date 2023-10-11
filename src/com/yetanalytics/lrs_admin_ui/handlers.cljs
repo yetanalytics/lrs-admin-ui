@@ -948,3 +948,11 @@
          path-after (conj (vec (butlast path-before))
                           new-seg-val)]
      (assoc-in db full-path path-after))))
+
+(re-frame/reg-event-db
+ :reaction/set-op
+ global-interceptors
+ (fn [db [_ path new-op]]
+   (let [full-path (into [::db/editing-reaction]
+                         path)]
+     (assoc-in db full-path new-op))))

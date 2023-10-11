@@ -100,6 +100,29 @@
      :remove-fn remove-fn]
     [render-path path]))
 
+(defn- render-or-edit-op
+  [mode op-path op]
+  (if (= :edit mode)
+    (into [:select
+           {:value op
+            :on-change (fn [e]
+                         (dispatch
+                          [:reaction/set-op
+                           op-path
+                           (fns/ps-event-val e)]))}]
+          (for [op ["gt"
+                    "lt"
+                    "gte"
+                    "lte"
+                    "eq"
+                    "noteq"
+                    "like"
+                    "contains"]]
+            [:option
+             {:value op}
+             op]))
+    [:code op]))
+
 (defn- render-clause
   [mode
    reaction-path
@@ -146,7 +169,10 @@
                   (conj reaction-path :path)
                   path]]
                 [:dt "Op"]
-                [:dd [:code op]]]
+                [:dd [render-or-edit-op
+                      mode
+                      (conj reaction-path :op)
+                      op]]]
          val (conj [:dt "Val"]
                    [:dd [render-val val]])
          ref (conj [:dt "Ref"]
