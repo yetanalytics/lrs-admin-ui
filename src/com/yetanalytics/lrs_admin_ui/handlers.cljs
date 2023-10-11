@@ -1037,3 +1037,24 @@
                    (dissoc :and :or)
                    (assoc bool-key (or and-clauses
                                        or-clauses)))))))
+(re-frame/reg-event-db
+ :reaction/set-condition-name
+ (fn [db [_ old-name new-name]]
+   (let [reaction (::db/editing-reaction db)
+         other-names (-> reaction
+                         :ruleset
+                         :conditions
+                         keys
+                         set
+                         (disj old-name))]
+     (if (contains? other-names new-name)
+       ;; TODO: maybe pop error
+       db
+       (let [condition-val (-> reaction
+                               :ruleset
+                               :conditions
+                               old-name)]
+         (assoc db ::db/editing-reaction
+                (-> reaction
+                    (update-in [:ruleset :conditions] dissoc old-name)
+                    (assoc-in [:ruleset :conditions new-name] condition-val))))))))

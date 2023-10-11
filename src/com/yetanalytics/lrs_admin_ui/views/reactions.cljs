@@ -335,12 +335,26 @@
                      (conj reaction-path :ref)
                      ref]]))])))
 
+(defn- render-or-edit-condition-name
+  [mode condition-name]
+  [:div.condition-name
+   (if (= :edit mode)
+     [:input
+      {:type "text"
+       :value condition-name
+       :on-change
+       (fn [e]
+         (dispatch [:reaction/set-condition-name
+                    condition-name (keyword (fns/ps-event-val e))]))}]
+     condition-name)])
+
 (defn- render-conditions
   [mode conditions]
   (into [:div.reaction-conditions]
         (for [[condition-name condition] conditions]
           [:div.condition
-           [:div.condition-name condition-name]
+           [render-or-edit-condition-name
+            mode condition-name]
            [:div.condition-body [render-clause
                                  mode
                                  [:ruleset :conditions condition-name]
