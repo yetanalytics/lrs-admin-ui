@@ -262,15 +262,31 @@
                 [:dd [render-or-edit-op
                       mode
                       (conj reaction-path :op)
-                      op]]]
-         (not ref) (conj [:dt "Val"]
-                         [:dd [render-or-edit-val
+                      op]]
+                [:dt
+                 (if (= :edit mode)
+                   [:select
+                    {:value (if ref "ref" "val")
+                     :on-change
+                     (fn [e]
+                       (dispatch [:reaction/set-val-or-ref
+                                  reaction-path
+                                  (fns/ps-event-val e)]))}
+                    [:option
+                     {:value "ref"}
+                     "Ref"]
+                    [:option
+                     {:value "val"}
+                     "Val"]]
+                   (if ref
+                     "Ref"
+                     "Val"))]]
+         (not ref) (conj [:dd [render-or-edit-val
                                mode
                                (conj reaction-path :val)
                                path
                                val]])
-         ref (conj [:dt "Ref"]
-                   [:dd
+         ref (conj [:dd
                     [:dl.ref
                      [:dt "Condition"]
                      [:dd

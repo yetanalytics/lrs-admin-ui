@@ -957,20 +957,26 @@
                          op-path)]
      (assoc-in db full-path new-op))))
 
+(defn- init-type
+  [new-type]
+  (case new-type
+    "string" ""
+    "number" 0
+    "boolean" false
+    "null" nil))
+
 (re-frame/reg-event-db
  :reaction/set-val-type
+ global-interceptors
  (fn [db [_ val-path new-type]]
    (let [full-path (into [::db/editing-reaction]
                          val-path)]
      (assoc-in db full-path
-               (case new-type
-                 "string" ""
-                 "number" 0
-                 "boolean" false
-                 "null" nil)))))
+               (init-type new-type)))))
 
 (re-frame/reg-event-db
  :reaction/set-val
+ global-interceptors
  (fn [db [_ val-path new-val]]
    (let [full-path (into [::db/editing-reaction]
                          val-path)]
@@ -978,7 +984,41 @@
 
 (re-frame/reg-event-db
  :reaction/set-ref-condition
+ global-interceptors
  (fn [db [_ condition-path new-condition]]
    (let [full-path (into [::db/editing-reaction]
                          condition-path)]
      (assoc-in db full-path new-condition))))
+
+(re-frame/reg-event-db
+ :reaction/set-val-or-ref
+ global-interceptors
+ (fn [db [_ clause-path set-to]]
+   (let [full-path (into [::db/editing-reaction]
+                         clause-path)
+         reaction (::db/editing-reaction db)
+         condition-names (-> reaction
+                             :ruleset
+                             :conditions
+                             keys
+                             (->> (map name)))
+         {:keys [path] :as clause} (get-in db full-path)
+         {:keys [leaf-type]} (rfns/analyze-path path)]
+     (case set-to
+       "val"
+       (assoc-in db
+                 full-path
+                 (-> clause
+                     (dissoc :ref)
+                     (assoc :val
+                            (case leaf-type
+                              nil "" ;; TODO: this might not work
+                              'json "" ;; or this
+                              (init-type (name leaf-type))))))
+       "ref"
+       (assoc-in db
+                 full-path
+                 (-> clause
+                     (dissoc :val)
+                     (assoc :ref {:condition (first condition-names)
+                                  :path []})))))))
