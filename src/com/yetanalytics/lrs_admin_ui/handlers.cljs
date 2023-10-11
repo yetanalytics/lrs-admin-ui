@@ -1022,3 +1022,18 @@
                      (dissoc :val)
                      (assoc :ref {:condition (first condition-names)
                                   :path []})))))))
+
+(re-frame/reg-event-db
+ :reaction/and-or-toggle
+ global-interceptors
+ (fn [db [_ clause-path bool-key]]
+   (let [full-path (into [::db/editing-reaction]
+                         clause-path)
+         {and-clauses :and
+          or-clauses :or
+          :as clause} (get-in db full-path)]
+     (assoc-in db full-path
+               (-> clause
+                   (dissoc :and :or)
+                   (assoc bool-key (or and-clauses
+                                       or-clauses)))))))

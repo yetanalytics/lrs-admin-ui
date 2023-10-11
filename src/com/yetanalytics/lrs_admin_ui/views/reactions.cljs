@@ -235,6 +235,27 @@
      (conj ref-path :path)
      path]]])
 
+(defn- and-or-label
+  [mode
+   reaction-path
+   bool-key]
+  [:div.boolean-label
+   (if (= :edit mode)
+     [:select
+      {:value (name bool-key)
+       :on-change
+       (fn [e]
+         (dispatch [:reaction/and-or-toggle
+                    reaction-path
+                    (keyword (fns/ps-event-val e))]))}
+      [:option
+       {:value "and"}
+       "AND"]
+      [:option
+       {:value "or"}
+       "OR"]]
+     (case bool-key :and "AND" :or "OR"))])
+
 (defn- render-clause
   [mode
    reaction-path
@@ -245,7 +266,7 @@
   (cond
     and-clauses
     [:div.boolean.and
-     [:div.boolean-label "AND"]
+     [and-or-label mode reaction-path :and]
      (into [:div.boolean-body]
            (map-indexed
             (fn [idx clause]
@@ -256,7 +277,7 @@
             and-clauses))]
     or-clauses
     [:div.boolean.or
-     [:div.boolean-label "OR"]
+     [and-or-label mode reaction-path :or]
      (into [:div.boolean-body]
            (map-indexed
             (fn [idx clause]
