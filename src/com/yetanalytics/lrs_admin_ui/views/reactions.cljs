@@ -400,7 +400,10 @@
              [delete-icon
               :on-click
               (fn []
-                (dispatch [:reaction/delete-condition condition-name]))])])))
+                (dispatch [:reaction/delete-condition condition-name]))])
+           (when (and (= :edit mode)
+                      (nil? condition))
+             [add-icon])])))
 
 (defn- render-template
   [mode template]
