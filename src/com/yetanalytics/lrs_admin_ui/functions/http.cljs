@@ -6,13 +6,16 @@
             goog.string.format))
 
 (defn serv-uri
-  [server-host path]
-  (str server-host path))
+  [server-host path & {:keys [proxy-path]
+                       :or {proxy-path ""}}]
+  (str server-host proxy-path path))
 
 (defn build-xapi-url
-  [server-host xapi-prefix path params]
+  [server-host xapi-prefix path params  & {:keys [proxy-path]
+                                           :or {proxy-path ""}}]
   (let [path' (or path
-                  (format "%s/statements"
+                  (format "%s%s/statements"
+                          (if (some? proxy-path) proxy-path "")
                           xapi-prefix))
         param-map (cond-> {:unwrap_html true}
                     (some? params)
@@ -52,7 +55,7 @@
   (assoc request :headers
          {"Accept" "text/html"
           "Authorization" (format "Basic %s" (make-basic-auth
-                                         @(subscribe [:browser/get-credential])))
+                                              @(subscribe [:browser/get-credential])))
           "X-Experience-API-Version" "1.0.3"}))
 
 (def format-html-interceptor
