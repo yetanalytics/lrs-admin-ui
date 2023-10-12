@@ -442,7 +442,9 @@
    [render-identity-paths
     mode identityPaths]
    [:dt "Conditions"]
-   [:dd [render-conditions mode conditions]]
+   [:dd [render-conditions mode conditions]
+    (when (= :edit mode)
+      [add-icon])]
    [:dt "Template"]
    [:dd [render-template mode template]]])
 
