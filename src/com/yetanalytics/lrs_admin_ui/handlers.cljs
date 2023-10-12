@@ -1068,7 +1068,6 @@
                          clause-path)
          parent-path (butlast full-path)
          k (last full-path)]
-     #_(println parent-path k)
      (cond
        ;; is an element in a list
        (number? k)
@@ -1077,8 +1076,7 @@
          (assoc-in db parent-path new-parent))
        ;; is at the root of a condition, nil it
        (keyword? k)
-       (assoc-in db full-path nil)
-       :else db))))
+       (assoc-in db full-path nil)))))
 
 (re-frame/reg-event-db
  :reaction/delete-condition
