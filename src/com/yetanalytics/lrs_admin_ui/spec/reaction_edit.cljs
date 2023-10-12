@@ -53,7 +53,7 @@
                       :gen-max 3))
 (s/def ::or (s/every ::condition
                      :gen-max 3))
-(s/def ::not ::condition)
+(s/def ::not (s/nilable ::condition))
 
 (s/def ::conditions
   (s/map-of simple-keyword?

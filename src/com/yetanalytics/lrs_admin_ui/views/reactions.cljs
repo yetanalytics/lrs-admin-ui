@@ -266,6 +266,16 @@
                     (on-click))}
     [:img {:src "/images/icons/icon-delete-blue.svg"}]]])
 
+(defn- add-icon
+  [& {:keys [on-click]
+      :or {on-click (fn [] (println 'add))}}]
+  [:div.add-icon
+   [:a {:href "#"
+        :on-click (fn [e]
+                    (fns/ps-event e)
+                    (on-click))}
+    [:img {:src "/images/icons/add.svg"}]]])
+
 (defn- render-clause
   [mode
    reaction-path
@@ -284,7 +294,9 @@
                    mode
                    (into reaction-path [:and idx])
                    clause])
-                and-clauses))]
+                and-clauses))
+         (when (= :edit mode)
+           [add-icon])]
         or-clauses
         [:div.clause.boolean.or
          [and-or-label mode reaction-path :or]
@@ -295,12 +307,18 @@
                    mode
                    (into reaction-path [:or idx])
                    clause])
-                or-clauses))]
-        not-clause
+                or-clauses))
+         (when (= :edit mode)
+           [add-icon])]
+        (find clause :not)
         [:div.clause.boolean.not
          [:div.boolean-label "NOT"]
          [:div.boolean-body
-          [render-clause mode (conj reaction-path :not) not-clause]]]
+          (when not-clause
+            [render-clause mode (conj reaction-path :not) not-clause])]
+         (when (and (= :edit mode)
+                    (nil? not-clause))
+           [add-icon])]
         :else
         (let [{:keys [path op val ref]} clause]
           [:div.clause.op
@@ -344,10 +362,12 @@
                          mode
                          (conj reaction-path :ref)
                          ref]]))]))
-      (conj [delete-icon
-             :on-click
-             (fn []
-               (dispatch [:reaction/delete-clause reaction-path]))])))
+      (cond->
+          (= :edit mode) (conj [delete-icon
+                                :on-click
+                                (fn []
+                                  (dispatch
+                                   [:reaction/delete-clause reaction-path]))]))))
 
 (defn- render-or-edit-condition-name
   [mode condition-name]
@@ -376,10 +396,11 @@
                mode
                [:ruleset :conditions condition-name]
                condition])]
-           [delete-icon
-            :on-click
-            (fn []
-              (dispatch [:reaction/delete-condition condition-name]))]])))
+           (when (= :edit mode)
+             [delete-icon
+              :on-click
+              (fn []
+                (dispatch [:reaction/delete-condition condition-name]))])])))
 
 (defn- render-template
   [mode template]

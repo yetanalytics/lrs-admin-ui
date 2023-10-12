@@ -1085,3 +1085,21 @@
    (update-in db
               [::db/editing-reaction :ruleset :conditions]
               dissoc condition-key)))
+
+(re-frame/reg-event-db
+ :reaction/add-clause
+ global-interceptors
+ (fn [db [_ parent-path clause-type]] ;; :and, :or, :not, :logic
+   (let [pkey (last parent-path) ;; :and, :or, :not, <condition name>
+         full-path (into [::db/editing-reaction]
+                         parent-path)
+         new-clause (case clause-type
+                      :and {:and []}
+                      :or {:or []}
+                      :not {:not nil}
+                      :logic {:path []
+                              :op "eq"
+                              :val ""})]
+     (if (contains? #{:and :or} pkey)
+       (update-in db full-path conj new-clause)
+       (assoc-in db full-path new-clause)))))
