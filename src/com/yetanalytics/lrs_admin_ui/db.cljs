@@ -2,7 +2,8 @@
   (:require [cljs.spec.alpha :as s :include-macros true]
             [re-frame.core :as re-frame]
             [xapi-schema.spec :as xs]
-            [com.yetanalytics.lrs-admin-ui.spec.reaction :as rs]))
+            [com.yetanalytics.lrs-admin-ui.spec.reaction :as rs]
+            [com.yetanalytics.lrs-admin-ui.spec.reaction-edit :as rse]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Spec to define the db
@@ -146,7 +147,7 @@
 (s/def ::enable-reactions boolean?)
 (s/def ::reactions (s/every ::rs/reaction))
 (s/def ::reaction-focus ::rs/id)
-(s/def ::editing-reaction ::rs/reaction)
+(s/def ::editing-reaction ::rse/reaction)
 
 (s/def ::db (s/keys :req [::session
                           ::credentials
