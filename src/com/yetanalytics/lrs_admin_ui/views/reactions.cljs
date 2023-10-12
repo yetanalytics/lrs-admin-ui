@@ -256,6 +256,16 @@
        "OR"]]
      (case bool-key :and "AND" :or "OR"))])
 
+(defn- delete-icon
+  [& {:keys [on-click]
+      :or {on-click (fn [] (println 'delete))}}]
+  [:div.delete-icon
+   [:a {:href "#"
+        :on-click (fn [e]
+                    (fns/ps-event e)
+                    (on-click))}
+    [:img {:src "/images/icons/icon-delete-blue.svg"}]]])
+
 (defn- render-clause
   [mode
    reaction-path
@@ -263,77 +273,81 @@
     or-clauses  :or
     not-clause  :not
     :as clause}]
-  (cond
-    and-clauses
-    [:div.boolean.and
-     [and-or-label mode reaction-path :and]
-     (into [:div.boolean-body]
-           (map-indexed
-            (fn [idx clause]
-              [render-clause
-               mode
-               (into reaction-path [:and idx])
-               clause])
-            and-clauses))]
-    or-clauses
-    [:div.boolean.or
-     [and-or-label mode reaction-path :or]
-     (into [:div.boolean-body]
-           (map-indexed
-            (fn [idx clause]
-              [render-clause
-               mode
-               (into reaction-path [:or idx])
-               clause])
-            or-clauses))]
-    not-clause
-    [:div.boolean.not
-     [:div.boolean-label "NOT"]
-     [:div.boolean-body
-      [render-clause mode (conj reaction-path :not) not-clause]]]
-    :else
-    (let [{:keys [path op val ref]} clause]
-      [:div.clause.op
-       (cond-> [:dl.op-list
-                [:dt "Path"]
-                [:dd
-                 [render-or-edit-path
-                  mode
-                  (conj reaction-path :path)
-                  path]]
-                [:dt "Op"]
-                [:dd [render-or-edit-op
+  (-> (cond
+        and-clauses
+        [:div.clause.boolean.and
+         [and-or-label mode reaction-path :and]
+         (into [:div.boolean-body]
+               (map-indexed
+                (fn [idx clause]
+                  [render-clause
+                   mode
+                   (into reaction-path [:and idx])
+                   clause])
+                and-clauses))]
+        or-clauses
+        [:div.clause.boolean.or
+         [and-or-label mode reaction-path :or]
+         (into [:div.boolean-body]
+               (map-indexed
+                (fn [idx clause]
+                  [render-clause
+                   mode
+                   (into reaction-path [:or idx])
+                   clause])
+                or-clauses))]
+        not-clause
+        [:div.clause.boolean.not
+         [:div.boolean-label "NOT"]
+         [:div.boolean-body
+          [render-clause mode (conj reaction-path :not) not-clause]]]
+        :else
+        (let [{:keys [path op val ref]} clause]
+          [:div.clause.op
+           (cond-> [:dl.op-list
+                    [:dt "Path"]
+                    [:dd
+                     [render-or-edit-path
                       mode
-                      (conj reaction-path :op)
-                      op]]
-                [:dt
-                 (if (= :edit mode)
-                   [:select
-                    {:value (if ref "ref" "val")
-                     :on-change
-                     (fn [e]
-                       (dispatch [:reaction/set-val-or-ref
-                                  reaction-path
-                                  (fns/ps-event-val e)]))}
-                    [:option
-                     {:value "ref"}
-                     "Ref"]
-                    [:option
-                     {:value "val"}
-                     "Val"]]
-                   (if ref
-                     "Ref"
-                     "Val"))]]
-         (not ref) (conj [:dd [render-or-edit-val
-                               mode
-                               (conj reaction-path :val)
-                               path
-                               val]])
-         ref (conj [:dd
-                    [render-ref
-                     mode
-                     (conj reaction-path :ref)
-                     ref]]))])))
+                      (conj reaction-path :path)
+                      path]]
+                    [:dt "Op"]
+                    [:dd [render-or-edit-op
+                          mode
+                          (conj reaction-path :op)
+                          op]]
+                    [:dt
+                     (if (= :edit mode)
+                       [:select
+                        {:value (if ref "ref" "val")
+                         :on-change
+                         (fn [e]
+                           (dispatch [:reaction/set-val-or-ref
+                                      reaction-path
+                                      (fns/ps-event-val e)]))}
+                        [:option
+                         {:value "ref"}
+                         "Ref"]
+                        [:option
+                         {:value "val"}
+                         "Val"]]
+                       (if ref
+                         "Ref"
+                         "Val"))]]
+             (not ref) (conj [:dd [render-or-edit-val
+                                   mode
+                                   (conj reaction-path :val)
+                                   path
+                                   val]])
+             ref (conj [:dd
+                        [render-ref
+                         mode
+                         (conj reaction-path :ref)
+                         ref]]))]))
+      (conj [delete-icon
+             :on-click
+             (fn []
+               (dispatch [:reaction/delete-clause reaction-path]))])))
 
 (defn- render-or-edit-condition-name
   [mode condition-name]
@@ -355,10 +369,17 @@
           [:div.condition
            [render-or-edit-condition-name
             mode condition-name]
-           [:div.condition-body [render-clause
-                                 mode
-                                 [:ruleset :conditions condition-name]
-                                 condition]]])))
+           [:div.condition-body
+            ;; condition can be nil during edit
+            (when condition
+              [render-clause
+               mode
+               [:ruleset :conditions condition-name]
+               condition])]
+           [delete-icon
+            :on-click
+            (fn []
+              (dispatch [:reaction/delete-condition condition-name]))]])))
 
 (defn- render-template
   [mode template]

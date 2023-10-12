@@ -43,15 +43,20 @@ div.reaction-conditions {
 }
 
 div.condition {
+  position: relative;
   padding: $condition-padding;
   > div.condition-name {
     padding-bottom: $condition-padding;
   }
 }
 
-div.boolean {
+div.clause {
   border-style: solid;
   padding: $condition-padding;
+  position: relative;
+}
+
+div.boolean {
   > div.boolean-label {
     padding-bottom: $condition-padding;
   }
@@ -63,9 +68,15 @@ div.boolean {
   }
 }
 
-div.clause {
-  border-style: solid;
-  padding: $condition-padding;
+div.delete-icon {
+  position: absolute;
+  top: 0.25em;
+  right: 0.25em;
+  > a {
+    > img {
+      max-height: 1.4em;
+    }
+  }
 }
 
 dl.op-list {

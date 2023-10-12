@@ -1039,6 +1039,7 @@
                                        or-clauses)))))))
 (re-frame/reg-event-db
  :reaction/set-condition-name
+ global-interceptors
  (fn [db [_ old-name new-name]]
    (let [reaction (::db/editing-reaction db)
          other-names (-> reaction
@@ -1058,3 +1059,31 @@
                 (-> reaction
                     (update-in [:ruleset :conditions] dissoc old-name)
                     (assoc-in [:ruleset :conditions new-name] condition-val))))))))
+
+(re-frame/reg-event-db
+ :reaction/delete-clause
+ global-interceptors
+ (fn [db [_ clause-path]]
+   (let [full-path (into [::db/editing-reaction]
+                         clause-path)
+         parent-path (butlast full-path)
+         k (last full-path)]
+     #_(println parent-path k)
+     (cond
+       ;; is an element in a list
+       (number? k)
+       (let [parent (get-in db parent-path)
+             new-parent (remove-element parent k)]
+         (assoc-in db parent-path new-parent))
+       ;; is at the root of a condition, nil it
+       (keyword? k)
+       (assoc-in db full-path nil)
+       :else db))))
+
+(re-frame/reg-event-db
+ :reaction/delete-condition
+ global-interceptors
+ (fn [db [_ condition-key]]
+   (update-in db
+              [::db/editing-reaction :ruleset :conditions]
+              dissoc condition-key)))
