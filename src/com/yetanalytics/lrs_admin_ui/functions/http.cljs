@@ -6,14 +6,13 @@
             goog.string.format))
 
 (defn serv-uri
-  [server-host path & {:keys [proxy-path]
-                       :or {proxy-path ""}}]
+  [server-host path proxy-path]
   (str server-host proxy-path path))
 
 (defn build-xapi-url
-  [server-host xapi-prefix path params  & {:keys [proxy-path]
-                                           :or {proxy-path ""}}]
-  (let [path' (or path
+  [server-host xapi-prefix path params proxy-path]
+  (let [_ (println proxy-path)
+        path' (or path
                   (format "%s%s/statements"
                           (if (some? proxy-path) proxy-path "")
                           xapi-prefix))

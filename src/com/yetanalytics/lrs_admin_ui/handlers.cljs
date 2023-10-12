@@ -127,7 +127,7 @@
                  :uri             (httpfn/serv-uri
                                    server-host
                                    "/admin/account/login"
-                                   :proxy-path proxy-path)
+                                   proxy-path)
                  :format          (ajax/json-request-format)
                  :response-format (ajax/json-response-format {:keywords? true})
                  :params          (::db/login db)
@@ -162,7 +162,7 @@
                    :uri             (httpfn/serv-uri
                                      server-host
                                      "/admin/me"
-                                     :proxy-path proxy-path)
+                                     proxy-path)
                    :response-format (ajax/json-response-format {:keywords? true})
                    :on-success      [:session/me-success-handler]
                    :on-failure      [:login/error-handler]
@@ -315,7 +315,7 @@
         proxy-path  ::db/proxy-path
         xapi-prefix ::db/xapi-prefix} :db} [_ {:keys [path params]}]]
    (let [xapi-url (httpfn/build-xapi-url
-                   server-host xapi-prefix path params :proxy-path proxy-path)]
+                   server-host xapi-prefix path params proxy-path)]
      {:dispatch   [:browser/set-address xapi-url]
       :http-xhrio {:method          :get
                    :uri             xapi-url
@@ -365,7 +365,7 @@
                  :uri             (httpfn/serv-uri
                                    server-host
                                    "/admin/creds"
-                                   :proxy-path proxy-path)
+                                   proxy-path)
                  :response-format (ajax/json-response-format {:keywords? true})
                  :on-success      [:credentials/set-credentials]
                  :on-failure      [:server-error]
@@ -386,7 +386,7 @@
                  :uri             (httpfn/serv-uri
                                    server-host
                                    "/admin/creds"
-                                   :proxy-path proxy-path)
+                                   proxy-path)
                  :params          credential
                  :format          (ajax/json-request-format)
                  :response-format (ajax/json-response-format {:keywords? true})
@@ -413,7 +413,7 @@
                  :uri             (httpfn/serv-uri
                                    server-host
                                    "/admin/creds"
-                                   :proxy-path proxy-path)
+                                   proxy-path)
                  :params          credential
                  :format          (ajax/json-request-format)
                  :response-format (ajax/json-response-format {:keywords? true})
@@ -439,7 +439,7 @@
                  :uri             (httpfn/serv-uri
                                    server-host
                                    "/admin/creds"
-                                   :proxy-path proxy-path)
+                                   proxy-path)
                  :params          credential
                  :format          (ajax/json-request-format)
                  :response-format (ajax/json-response-format {:keywords? true})
@@ -471,7 +471,7 @@
                  :uri             (httpfn/serv-uri
                                    server-host
                                    "/admin/account"
-                                   :proxy-path proxy-path)
+                                   proxy-path)
                  :response-format (ajax/json-response-format {:keywords? true})
                  :on-success      [:accounts/set-accounts]
                  :on-failure      [:server-error]
@@ -486,7 +486,7 @@
                  :uri             (httpfn/serv-uri
                                    server-host
                                    "/admin/account"
-                                   :proxy-path proxy-path)
+                                   proxy-path)
                  :response-format (ajax/json-response-format {:keywords? true})
                  :params          {:account-id account-id}
                  :format          (ajax/json-request-format)
@@ -521,7 +521,7 @@
                      :uri             (httpfn/serv-uri
                                        server-host
                                        "/admin/account/create"
-                                       :proxy-path proxy-path)
+                                       proxy-path)
                      :response-format (ajax/json-response-format {:keywords? true})
                      :params          new-account
                      :format          (ajax/json-request-format)
@@ -614,7 +614,7 @@
                      :uri             (httpfn/serv-uri
                                        server-host
                                        "/admin/account/password"
-                                       :proxy-path proxy-path)
+                                       proxy-path)
                      :response-format (ajax/json-response-format {:keywords? true})
                      :params          update-password
                      :format          (ajax/json-request-format)
@@ -654,7 +654,7 @@
            :uri             (httpfn/serv-uri
                              server-host
                              "/admin/agents"
-                             :proxy-path proxy-path)
+                             proxy-path)
            :params          {:actor-ifi actor-ifi}
            :format          (ajax/json-request-format)
            :response-format (ajax/json-response-format {:keywords? false})
@@ -744,7 +744,7 @@
            :uri             (httpfn/serv-uri
                              server-host
                              "/admin/status"
-                             :proxy-path proxy-path)
+                             proxy-path)
            :params          (reduce-kv
                              (fn [m k v]
                                (assoc m (name k) v))
