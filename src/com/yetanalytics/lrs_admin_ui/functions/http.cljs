@@ -11,8 +11,7 @@
 
 (defn build-xapi-url
   [server-host xapi-prefix path params proxy-path]
-  (let [_ (println proxy-path)
-        path' (or path
+  (let [path' (or path
                   (format "%s%s/statements"
                           (if (some? proxy-path) proxy-path "")
                           xapi-prefix))
