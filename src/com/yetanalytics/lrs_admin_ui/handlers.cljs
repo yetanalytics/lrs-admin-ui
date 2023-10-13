@@ -13,6 +13,7 @@
             [com.yetanalytics.re-oidc                         :as re-oidc]
             [ajax.core                                        :as ajax]
             [cljs.spec.alpha                                  :refer [valid?]]
+            [clojure.string                                   :refer [split]]
             [goog.string                                      :refer [format]]
             goog.string.format
             [clojure.walk                                     :as w]))
@@ -40,6 +41,7 @@
                        :credential nil}
          ::db/server-host (or server-host "")
          ::db/xapi-prefix "/xapi"
+         ::db/proxy-path  nil
          ::db/enable-admin-delete-actor false
          ::db/enable-statement-html true
          ::db/notifications []
@@ -53,19 +55,25 @@
  :db/get-env
  global-interceptors
  (fn [{{server-host ::db/server-host} :db} _]
-   {:http-xhrio {:method          :get
-                 :uri             (httpfn/serv-uri
-                                   server-host
-                                   "/admin/env")
-                 :format          (ajax/json-request-format)
-                 :response-format (ajax/json-response-format {:keywords? true})
-                 :on-success      [:db/set-env]
-                 :on-failure      [:server-error]}}))
+   (let [path-parts (split js/window.location.pathname "/")]
+     {:http-xhrio {:method          :get
+                   ;; Check if this is prod or dev. If prod and at admin path
+                   ;; then use "env" relative path to account for proxy. If dev
+                   ;; use absolute.
+                   :uri             (if (and (some #(= "admin" %) path-parts)
+                                             (= server-host ""))
+                                      "env"
+                                      (str server-host "/admin/env"))
+                   :format          (ajax/json-request-format)
+                   :response-format (ajax/json-response-format {:keywords? true})
+                   :on-success      [:db/set-env]
+                   :on-failure      [:server-error]}})))
 
 (re-frame/reg-event-fx
  :db/set-env
  global-interceptors
  (fn [{:keys [db]} [_ {:keys             [url-prefix
+                                          proxy-path
                                           enable-stmt-html
                                           enable-admin-status
                                           no-val?
@@ -74,11 +82,11 @@
                        ?oidc-local-admin :oidc-enable-local-admin}]]
    (merge {:db (assoc db
                       ::db/xapi-prefix url-prefix
+                      ::db/proxy-path proxy-path
                       ::db/enable-statement-html enable-stmt-html
                       ::db/oidc-enable-local-admin (or ?oidc-local-admin false)
                       ::db/enable-admin-status enable-admin-status
-                      ::db/enable-admin-delete-actor enable-admin-delete-actor
-                      )}
+                      ::db/enable-admin-delete-actor enable-admin-delete-actor)}
           (when (or ?oidc no-val?)
             {:fx [(when ?oidc [:dispatch [:oidc/init ?oidc]])
                   (when no-val? [:dispatch [:session/proxy-token-init]])]}))))
@@ -113,11 +121,13 @@
  :session/authenticate
  global-interceptors
  (fn [{{server-host ::db/server-host
+        proxy-path  ::db/proxy-path
         :as db} :db} _]
    {:http-xhrio {:method          :post
                  :uri             (httpfn/serv-uri
                                    server-host
-                                   "/admin/account/login")
+                                   "/admin/account/login"
+                                   proxy-path)
                  :format          (ajax/json-request-format)
                  :response-format (ajax/json-response-format {:keywords? true})
                  :params          (::db/login db)
@@ -145,12 +155,14 @@
 (re-frame/reg-event-fx
  :session/get-me
  global-interceptors
- (fn [{{server-host ::db/server-host :as db} :db} _]
+ (fn [{{server-host ::db/server-host
+        proxy-path  ::db/proxy-path :as db} :db} _]
    (when (not (get db ::db/oidc-auth))
      {:http-xhrio {:method          :get
                    :uri             (httpfn/serv-uri
                                      server-host
-                                     "/admin/me")
+                                     "/admin/me"
+                                     proxy-path)
                    :response-format (ajax/json-response-format {:keywords? true})
                    :on-success      [:session/me-success-handler]
                    :on-failure      [:login/error-handler]
@@ -300,9 +312,10 @@
  :browser/load-xapi
  global-interceptors
  (fn [{{server-host ::db/server-host
+        proxy-path  ::db/proxy-path
         xapi-prefix ::db/xapi-prefix} :db} [_ {:keys [path params]}]]
    (let [xapi-url (httpfn/build-xapi-url
-                   server-host xapi-prefix path params)]
+                   server-host xapi-prefix path params proxy-path)]
      {:dispatch   [:browser/set-address xapi-url]
       :http-xhrio {:method          :get
                    :uri             xapi-url
@@ -346,11 +359,13 @@
 (re-frame/reg-event-fx
  :credentials/load-credentials
  global-interceptors
- (fn [{{server-host ::db/server-host} :db} _]
+ (fn [{{server-host ::db/server-host
+        proxy-path  ::db/proxy-path} :db} _]
    {:http-xhrio {:method          :get
                  :uri             (httpfn/serv-uri
                                    server-host
-                                   "/admin/creds")
+                                   "/admin/creds"
+                                   proxy-path)
                  :response-format (ajax/json-response-format {:keywords? true})
                  :on-success      [:credentials/set-credentials]
                  :on-failure      [:server-error]
@@ -365,11 +380,13 @@
 (re-frame/reg-event-fx
  :credentials/save-credential
  global-interceptors
- (fn [{{server-host ::db/server-host} :db} [_ credential]]
+ (fn [{{server-host ::db/server-host
+        proxy-path  ::db/proxy-path} :db} [_ credential]]
    {:http-xhrio {:method          :put
                  :uri             (httpfn/serv-uri
                                    server-host
-                                   "/admin/creds")
+                                   "/admin/creds"
+                                   proxy-path)
                  :params          credential
                  :format          (ajax/json-request-format)
                  :response-format (ajax/json-response-format {:keywords? true})
@@ -390,11 +407,13 @@
 (re-frame/reg-event-fx
  :credentials/create-credential
  global-interceptors
- (fn [{{server-host ::db/server-host} :db} [_ credential]]
+ (fn [{{server-host ::db/server-host
+        proxy-path  ::db/proxy-path} :db} [_ credential]]
    {:http-xhrio {:method          :post
                  :uri             (httpfn/serv-uri
                                    server-host
-                                   "/admin/creds")
+                                   "/admin/creds"
+                                   proxy-path)
                  :params          credential
                  :format          (ajax/json-request-format)
                  :response-format (ajax/json-response-format {:keywords? true})
@@ -414,11 +433,13 @@
 (re-frame/reg-event-fx
  :credentials/delete-credential
  global-interceptors
- (fn [{{server-host ::db/server-host} :db} [_ credential]]
+ (fn [{{server-host ::db/server-host
+        proxy-path  ::db/proxy-path} :db} [_ credential]]
    {:http-xhrio {:method          :delete
                  :uri             (httpfn/serv-uri
                                    server-host
-                                   "/admin/creds")
+                                   "/admin/creds"
+                                   proxy-path)
                  :params          credential
                  :format          (ajax/json-request-format)
                  :response-format (ajax/json-response-format {:keywords? true})
@@ -444,11 +465,13 @@
 (re-frame/reg-event-fx
  :accounts/load-accounts
  global-interceptors
- (fn [{{server-host ::db/server-host} :db} _]
+ (fn [{{server-host ::db/server-host
+        proxy-path  ::db/proxy-path} :db} _]
    {:http-xhrio {:method          :get
                  :uri             (httpfn/serv-uri
                                    server-host
-                                   "/admin/account")
+                                   "/admin/account"
+                                   proxy-path)
                  :response-format (ajax/json-response-format {:keywords? true})
                  :on-success      [:accounts/set-accounts]
                  :on-failure      [:server-error]
@@ -457,11 +480,13 @@
 (re-frame/reg-event-fx
  :accounts/delete-account
  global-interceptors
- (fn [{{server-host ::db/server-host} :db} [_ {:keys [account-id username]}]]
+ (fn [{{server-host ::db/server-host
+        proxy-path  ::db/proxy-path} :db} [_ {:keys [account-id username]}]]
    {:http-xhrio {:method          :delete
                  :uri             (httpfn/serv-uri
                                    server-host
-                                   "/admin/account")
+                                   "/admin/account"
+                                   proxy-path)
                  :response-format (ajax/json-response-format {:keywords? true})
                  :params          {:account-id account-id}
                  :format          (ajax/json-request-format)
@@ -487,6 +512,7 @@
  :accounts/create-account
  global-interceptors
  (fn [{{server-host ::db/server-host
+        proxy-path  ::db/proxy-path
         :as db} :db} _]
    (let [{:keys [username] :as new-account}
          (::db/new-account db)]
@@ -494,7 +520,8 @@
        {:http-xhrio {:method          :post
                      :uri             (httpfn/serv-uri
                                        server-host
-                                       "/admin/account/create")
+                                       "/admin/account/create"
+                                       proxy-path)
                      :response-format (ajax/json-response-format {:keywords? true})
                      :params          new-account
                      :format          (ajax/json-request-format)
@@ -579,13 +606,15 @@
  :update-password/update-password!
  global-interceptors
  (fn [{{server-host ::db/server-host
+        proxy-path  ::db/proxy-path
         :as db} :db} _]
    (let [update-password (::db/update-password db)]
      (if (valid? ::input/valid-update-password update-password)
        {:http-xhrio {:method          :put
                      :uri             (httpfn/serv-uri
                                        server-host
-                                       "/admin/account/password")
+                                       "/admin/account/password"
+                                       proxy-path)
                      :response-format (ajax/json-response-format {:keywords? true})
                      :params          update-password
                      :format          (ajax/json-request-format)
@@ -617,13 +646,15 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (re-frame/reg-event-fx
  :delete-actor/delete-actor
- (fn [{{server-host ::db/server-host} :db}
-      [_ actor-ifi]] 
+ (fn [{{server-host ::db/server-host
+        proxy-path  ::db/proxy-path} :db}
+      [_ actor-ifi]]
    {:fx [[:http-xhrio
           {:method          :delete
            :uri             (httpfn/serv-uri
                              server-host
-                             "/admin/agents")
+                             "/admin/agents"
+                             proxy-path)
            :params          {:actor-ifi actor-ifi}
            :format          (ajax/json-request-format)
            :response-format (ajax/json-response-format {:keywords? false})
@@ -696,6 +727,7 @@
  :status/get-data
  global-interceptors
  (fn [{{server-host      ::db/server-host
+        proxy-path       ::db/proxy-path
         {:keys [params]} ::db/status
         :as              db}
        :db}
@@ -711,7 +743,8 @@
           {:method          :get
            :uri             (httpfn/serv-uri
                              server-host
-                             "/admin/status")
+                             "/admin/status"
+                             proxy-path)
            :params          (reduce-kv
                              (fn [m k v]
                                (assoc m (name k) v))
