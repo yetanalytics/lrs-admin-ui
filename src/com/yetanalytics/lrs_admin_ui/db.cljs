@@ -75,6 +75,7 @@
 
 (s/def ::server-host string?)
 (s/def ::xapi-prefix string?) ;; default /xapi
+(s/def ::proxy-path (s/nilable string?)) ;; default nil
 
 (s/def :notification/id int?)
 (s/def :notification/error? boolean?)
@@ -86,6 +87,7 @@
 (s/def ::notifications (s/every ::notification))
 
 (s/def ::enable-statement-html boolean?)
+(s/def ::enable-admin-delete-actor boolean?)
 
 (s/def ::oidc-auth boolean?)
 (s/def ::oidc-enable-local-admin boolean?)
@@ -156,8 +158,10 @@
                           ::accounts
                           ::server-host
                           ::xapi-prefix
+                          ::proxy-path
                           ::notifications
                           ::enable-statement-html
+                          ::enable-admin-delete-actor
                           ::oidc-auth
                           ::oidc-enable-local-admin
                           ::enable-admin-status
