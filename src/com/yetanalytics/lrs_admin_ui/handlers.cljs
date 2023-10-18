@@ -882,11 +882,13 @@
 (re-frame/reg-event-fx
  :reaction/load-reactions
  global-interceptors
- (fn [{{server-host ::db/server-host} :db} _]
+ (fn [{{server-host ::db/server-host
+        proxy-path  ::db/proxy-path} :db} _]
    {:http-xhrio {:method          :get
                  :uri             (httpfn/serv-uri
                                    server-host
-                                   "/admin/reaction")
+                                   "/admin/reaction"
+                                   proxy-path)
                  :response-format (ajax/json-response-format {:keywords? true})
                  :on-success      [:reaction/set-reactions]
                  :on-failure      [:server-error]
