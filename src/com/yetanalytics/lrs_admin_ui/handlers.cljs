@@ -1152,6 +1152,15 @@
        (assoc-in db full-path nil)))))
 
 (re-frame/reg-event-db
+ :reaction/add-condition
+ global-interceptors
+ (fn [db [_ ?condition-key]]
+   (let [k (or ?condition-key (keyword (str (random-uuid))))]
+     (update-in db
+                [::db/editing-reaction :ruleset :conditions]
+                assoc k nil))))
+
+(re-frame/reg-event-db
  :reaction/delete-condition
  global-interceptors
  (fn [db [_ condition-key]]

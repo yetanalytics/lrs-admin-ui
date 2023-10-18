@@ -2,6 +2,7 @@
   (:require [re-frame.core :refer [dispatch subscribe]]
             [com.yetanalytics.lrs-admin-ui.functions :as fns]
             [com.yetanalytics.lrs-admin-ui.functions.reaction :as rfns]
+            [com.yetanalytics.lrs-admin-ui.views.form :as form]
             [com.yetanalytics.lrs-admin-ui.views.reactions.path :as p]
             [goog.string :refer [format]]
             [goog.string.format]))
@@ -266,15 +267,31 @@
                     (on-click))}
     [:img {:src "/images/icons/icon-delete-blue.svg"}]]])
 
-(defn- add-icon
-  [& {:keys [on-click]
-      :or {on-click (fn [] (println 'add))}}]
+(defn- add-condition
+  []
   [:div.add-icon
    [:a {:href "#"
         :on-click (fn [e]
                     (fns/ps-event e)
-                    (on-click))}
+                    (dispatch [:reaction/add-condition]))}
     [:img {:src "/images/icons/add.svg"}]]])
+
+(defn- add-clause
+  [parent-path]
+  [:div.add-clause
+   [form/action-dropdown
+    {:options [{:value :and
+                :label "AND"}
+               {:value :or
+                :label "OR"}
+               {:value :not
+                :label "NOT"}
+               {:value :logic
+                :label "Logic"}]
+     :select-fn (fn [v]
+                  (dispatch [:reaction/add-clause
+                             parent-path
+                             v]))}]])
 
 (defn- render-clause
   [mode
@@ -296,7 +313,8 @@
                    clause])
                 and-clauses))
          (when (= :edit mode)
-           [add-icon])]
+           [add-clause
+            (conj reaction-path :and)])]
         or-clauses
         [:div.clause.boolean.or
          [and-or-label mode reaction-path :or]
@@ -309,7 +327,8 @@
                    clause])
                 or-clauses))
          (when (= :edit mode)
-           [add-icon])]
+           [add-clause
+            (conj reaction-path :or)])]
         (find clause :not)
         [:div.clause.boolean.not
          [:div.boolean-label "NOT"]
@@ -318,7 +337,8 @@
             [render-clause mode (conj reaction-path :not) not-clause])]
          (when (and (= :edit mode)
                     (nil? not-clause))
-           [add-icon])]
+           [add-clause
+            (conj reaction-path :not)])]
         :else
         (let [{:keys [path op val ref]} clause]
           [:div.clause.op
@@ -403,7 +423,8 @@
                 (dispatch [:reaction/delete-condition condition-name]))])
            (when (and (= :edit mode)
                       (nil? condition))
-             [add-icon])])))
+             [add-clause
+              [:ruleset :conditions condition-name]])])))
 
 (defn- render-template
   [mode template]
@@ -444,7 +465,7 @@
    [:dt "Conditions"]
    [:dd [render-conditions mode conditions]
     (when (= :edit mode)
-      [add-icon])]
+      [add-condition])]
    [:dt "Template"]
    [:dd [render-template mode template]]])
 

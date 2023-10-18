@@ -95,3 +95,42 @@
               :search-update-fn on-search
               :options          opts-coll
               :custom-text?     custom-text?}])]]))))
+
+;; Action Dropdown ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn action-dropdown
+  "Icon that, when clicked, presents a dropdown of clickable actions."
+  [_]
+  (let [state (r/atom {:dropdown-open? false
+                       :dropdown-focus nil})
+        dropdown-open? (r/cursor state [:dropdown-open?])
+        dropdown-focus (r/cursor state [:dropdown-focus])
+        id (str (random-uuid))]
+    (fn [{:keys [options
+                 select-fn
+                 label
+                 icon-src]
+          :or {options []
+               select-fn (fn [v] (println 'select v))
+               icon-src "/images/icons/add.svg"}}]
+      [:div.action-dropdown
+       {:on-blur (fn [e]
+                   ;; FIXME: Horrible hack, can't figure out how to stop the clobbering here
+                   (js/setTimeout #(swap! state assoc :dropdown-open? false) 200))}
+       [:div.action-dropdown-icon
+        [:a {:href "#"
+             :on-click (fn [e]
+                         (fns/ps-event e)
+                         (swap! state assoc :dropdown-open? true))}
+         [:img {:src icon-src}]]
+        (when label
+          [:span.action-dropdown-label label])]
+       [:div.action-dropdown-list
+        {:class (if @dropdown-open? "dropdown-open" "")}
+        [dropdown-items
+         {:id id
+          :name id
+          :dropdown-focus dropdown-focus
+          :value-update-fn (fn [v]
+                             (select-fn v))
+          :options options}]]])))

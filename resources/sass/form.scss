@@ -337,3 +337,21 @@ main:not(.page-list-manager) div.form-coll-wrapper tr:nth-child(even) {
 div.form-coll-wrapper a.title-button {
   margin-left: 12px;
 }
+
+// Action Dropdown
+
+div.action-dropdown {
+  position: relative;
+  div.action-dropdown-list {
+    border: 1px solid #909090;
+    border-radius: 4px;
+    // Ensure that the dropdown covers other elements
+    z-index: 1000;
+    position: absolute;
+    background: white;
+    display: none;
+  }
+  div.action-dropdown-list.dropdown-open {
+    display: inline-block;
+  }
+}
