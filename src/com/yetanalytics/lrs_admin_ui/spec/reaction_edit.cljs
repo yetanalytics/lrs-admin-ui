@@ -55,9 +55,15 @@
                      :gen-max 3))
 (s/def ::not (s/nilable ::condition))
 
+(s/def ::sort-idx nat-int?)
+
+(s/def ::top-level-condition
+  (s/merge ::condition
+           (s/keys :req-un [::sort-idx])))
+
 (s/def ::conditions
   (s/map-of simple-keyword?
-            (s/nilable ::condition)
+            (s/nilable ::top-level-condition)
             :gen-max 3))
 
 (s/def ::identityPaths

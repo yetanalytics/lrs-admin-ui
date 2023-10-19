@@ -405,7 +405,10 @@
 (defn- render-conditions
   [mode conditions]
   (into [:div.reaction-conditions]
-        (for [[condition-name condition] conditions]
+        (for [[condition-name condition]
+              (sort-by
+               (comp :sort-idx val)
+               conditions)]
           [:div.condition
            [render-or-edit-condition-name
             mode condition-name]

@@ -227,3 +227,40 @@
     "boolean"
     (nil? val)
     "null"))
+
+(defn index-conditions
+  "Provide sort-indices for reaction conditions editing. Base order on prior
+  indices if available."
+  [reaction]
+  (update-in
+   reaction
+   [:ruleset :conditions]
+   (fn [conditions]
+     (reduce
+      (fn [m
+           [idx
+            [condition-key
+             condition-val]]]
+        (assoc
+         m
+         condition-key
+         (assoc condition-val :sort-idx idx)))
+      {}
+      (map-indexed
+       vector
+       (sort-by
+        (comp :sort-idx val)
+        conditions))))))
+
+(defn strip-condition-indices
+  "Remove all indices from conditions."
+  [reaction]
+  (update-in
+   reaction
+   [:ruleset :conditions]
+   (fn [conditions]
+     (reduce-kv
+      (fn [m k v]
+        (assoc m k (dissoc v :sort-idx)))
+      {}
+      conditions))))

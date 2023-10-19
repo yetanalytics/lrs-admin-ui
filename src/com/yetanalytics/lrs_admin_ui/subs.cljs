@@ -3,6 +3,7 @@
             [com.yetanalytics.lrs-admin-ui.db :as db]
             [com.yetanalytics.lrs-admin-ui.functions.time :as t]
             [com.yetanalytics.lrs-admin-ui.input :as i]
+            [com.yetanalytics.lrs-admin-ui.functions.reaction :as rfns]
             [clojure.spec.alpha :as s :include-macros true]))
 
 (reg-sub
@@ -390,7 +391,7 @@
  (fn [[reaction-list
        {:keys [id] :as editing}]]
    (and (some? editing)
-        (not= editing
+        (not= (rfns/strip-condition-indices editing)
               (some
                (fn [{r-id :id
                      :as  reaction}]

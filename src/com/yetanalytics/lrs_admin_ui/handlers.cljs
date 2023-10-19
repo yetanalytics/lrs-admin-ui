@@ -921,11 +921,12 @@
  :reaction/edit
  global-interceptors
  (fn [{:keys [db]} [_ reaction-id]]
-   (if-let [reaction (some
-                      (fn [{:keys [id] :as reaction}]
-                        (when (= id reaction-id)
-                          reaction))
-                      (::db/reactions db))]
+   (if-let [reaction (some-> (some
+                              (fn [{:keys [id] :as reaction}]
+                                (when (= id reaction-id)
+                                  reaction))
+                              (::db/reactions db))
+                             rfns/index-conditions)]
      {:db (assoc db ::db/editing-reaction reaction)
       ;; unset focus in case we're looking at one
       :fx [[:dispatch [:reaction/unset-focus]]]}
@@ -1156,17 +1157,25 @@
  global-interceptors
  (fn [db [_ ?condition-key]]
    (let [k (or ?condition-key (keyword (str (random-uuid))))]
-     (update-in db
-                [::db/editing-reaction :ruleset :conditions]
-                assoc k nil))))
+     (-> db
+         (update-in
+          [::db/editing-reaction :ruleset :conditions]
+          assoc k nil)
+         (update
+          ::db/editing-reaction
+          rfns/index-conditions)))))
 
 (re-frame/reg-event-db
  :reaction/delete-condition
  global-interceptors
  (fn [db [_ condition-key]]
-   (update-in db
-              [::db/editing-reaction :ruleset :conditions]
-              dissoc condition-key)))
+   (-> db
+       (update-in
+        [::db/editing-reaction :ruleset :conditions]
+        dissoc condition-key)
+       (update
+        ::db/editing-reaction
+        rfns/index-conditions))))
 
 (re-frame/reg-event-db
  :reaction/add-clause
