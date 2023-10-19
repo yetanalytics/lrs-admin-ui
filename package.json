@@ -17,6 +17,7 @@
     "victory-chart": "^36.6.8",
     "victory-core": "^36.6.8",
     "victory-scatter": "^36.6.8",
-    "victory-tooltip": "^36.6.8"
+    "victory-tooltip": "^36.6.8",
+    "codemirror": "5.65.0"
   }
 }
