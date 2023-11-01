@@ -355,3 +355,110 @@ div.action-dropdown {
     display: inline-block;
   }
 }
+
+// Validation
+
+/** JSON Validation **/
+
+span.validation-status img {
+  width: 15px;
+  height: 15px;
+  vertical-align: top;
+  margin-top: 3px;
+  margin-right: 5px;
+}
+
+div.validation-display-wrapper {
+  margin-bottom: 5px;
+}
+
+div.validation-display {
+  background-color: #eeffed;
+  padding: 5px;
+  border-radius: 5px;
+  border-bottom-left-radius: 0px;
+  border-bottom-right-radius: 0px;
+}
+
+div.validation-display.warning {
+  background-color: #ffffe8;
+}
+
+div.validation-display.invalid {
+  background-color: #fff2f2;
+}
+
+div.validation-display.loading {
+  background-color: #f0f0f0;
+}
+
+div.validation-error-wrapper {
+  position: absolute;
+  z-index: 99999;
+  width: 100%;
+}
+
+div.validation-errors {
+  padding: 5px;
+  background-color: #FaFaFa;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  border-top-left-radius: 0px;
+  border-top-right-radius: 0px;
+  width: 85%;
+  // Don't let the validation errors clip past the page
+  max-height: 400px;
+  overflow: auto;
+}
+
+div.validation-errors p i {
+  font-size: 13.5px;
+  font-style: italic;
+}
+
+div.validation-errors ul {
+  list-style: none;
+  text-transform: none;
+  margin: 0px;
+  padding-left: 0px;
+  width: 100%;
+}
+
+div.validation-errors ul li {
+  padding: 5px;
+  width: 100%;
+  background-color: #ffffff;
+  font-weight: normal;
+
+  border: solid 1px #ddd;
+  color: #595959;
+  margin-top: 5px;
+  font-size: 15px;
+}
+
+div.validation-errors ul li p img {
+  height: 15px;
+  width: 15px;
+  margin-right: 6px;
+}
+
+
+p.validation-details {
+  white-space: pre-line;
+  word-break: break-word;
+  font-family: monospace;
+}
+
+p.validation-details textarea {
+  width: 100%;
+  border-radius: 5px;
+  background-color: #ededed;
+  font-size: 12.5px;
+  height: 150px;
+  border: none;
+  resize: none;
+  color: #504e4e;
+  padding: 5px;
+  margin: 2px;
+  margin-top: 11px;
+}
