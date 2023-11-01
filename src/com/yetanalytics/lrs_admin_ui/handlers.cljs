@@ -1194,3 +1194,23 @@
      (if (contains? #{:and :or} pkey)
        (update-in db full-path conj new-clause)
        (assoc-in db full-path new-clause)))))
+
+(re-frame/reg-event-db
+ :reaction/update-template
+ global-interceptors
+ (fn [db [_ new-value]]
+   (-> db
+       (dissoc ::db/editing-reaction-template-errors)
+       (assoc-in [::db/editing-reaction :ruleset :template] new-value))))
+
+(re-frame/reg-event-db
+ :reaction/set-template-errors
+ global-interceptors
+ (fn [db [_ errors]]
+   (assoc db ::db/editing-reaction-template-errors errors)))
+
+(re-frame/reg-event-db
+ :reaction/clear-template-errors
+ global-interceptors
+ (fn [db _]
+   (dissoc db ::db/editing-reaction-template-errors)))

@@ -4,6 +4,7 @@
             [com.yetanalytics.lrs-admin-ui.functions.reaction :as rfns]
             [com.yetanalytics.lrs-admin-ui.views.form :as form]
             [com.yetanalytics.lrs-admin-ui.views.reactions.path :as p]
+            [com.yetanalytics.lrs-admin-ui.views.reactions.template :as t]
             [goog.string :refer [format]]
             [goog.string.format]))
 
@@ -429,11 +430,6 @@
              [add-clause
               [:ruleset :conditions condition-name]])])))
 
-(defn- render-template
-  [mode template]
-  [:pre.template
-   (.stringify js/JSON (clj->js template) nil 2)])
-
 (defn- render-identity-paths
   [mode identity-paths]
   [:<>
@@ -470,7 +466,7 @@
     (when (= :edit mode)
       [add-condition])]
    [:dt "Template"]
-   [:dd [render-template mode template]]])
+   [:dd [t/render-or-edit-template mode template]]])
 
 (defn- render-error
   [?error]

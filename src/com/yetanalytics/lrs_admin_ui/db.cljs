@@ -151,6 +151,13 @@
 (s/def ::reaction-focus ::rs/id)
 (s/def ::editing-reaction ::rse/reaction)
 
+(s/def :reaction-template-error/message string?)
+(s/def ::reaction-template-error
+  (s/keys :req-un [:reaction-template-error/message]))
+
+(s/def ::editing-reaction-template-errors
+  (s/every ::reaction-template-error))
+
 (s/def ::db (s/keys :req [::session
                           ::credentials
                           ::login
@@ -170,7 +177,8 @@
                           ::enable-reactions
                           ::reactions]
                     :opt [::reaction-focus
-                          ::editing-reaction]))
+                          ::editing-reaction
+                          ::editing-reaction-template-errors]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Continuous DB Validation

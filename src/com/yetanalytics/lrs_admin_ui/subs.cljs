@@ -404,3 +404,25 @@
  :<- [:reaction/editing]
  (fn [{{:keys [conditions]} :ruleset} _]
    (map name (keys conditions))))
+
+(reg-sub
+ :reaction/edit-template-errors
+ (fn [db _]
+   (::db/editing-reaction-template-errors db [])))
+
+(reg-sub
+ :reaction/edit-template-buffer
+ :<- [:reaction/list]
+ :<- [:reaction/editing]
+ :<- [:reaction/edit-template-errors]
+ (fn [[reaction-list editing errors] _]
+   (let [editing-id (:id editing)
+         saved (some
+                (fn [{:keys [id] :as reaction}]
+                  (when (= editing-id id)
+                    (get-in reaction [:ruleset :template])))
+                reaction-list)]
+     {:saved saved
+      :value (get-in editing [:ruleset :template])
+      :status (if (empty? errors) :valid :error)
+      :errors errors})))
