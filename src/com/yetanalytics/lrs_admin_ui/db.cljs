@@ -157,6 +157,7 @@
 
 (s/def ::editing-reaction-template-errors
   (s/every ::reaction-template-error))
+(s/def ::editing-reaction-template-json string?)
 
 (s/def ::db (s/keys :req [::session
                           ::credentials
@@ -178,7 +179,8 @@
                           ::reactions]
                     :opt [::reaction-focus
                           ::editing-reaction
-                          ::editing-reaction-template-errors]))
+                          ::editing-reaction-template-errors
+                          ::editing-reaction-template-json]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Continuous DB Validation

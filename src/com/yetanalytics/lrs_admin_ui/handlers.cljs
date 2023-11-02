@@ -927,7 +927,13 @@
                                   reaction))
                               (::db/reactions db))
                              rfns/index-conditions)]
-     {:db (assoc db ::db/editing-reaction reaction)
+     {:db (-> db
+              (assoc ::db/editing-reaction reaction)
+              (assoc ::db/editing-reaction-template-json
+                     (.stringify js/JSON
+                                 (clj->js (get-in reaction [:ruleset :template]))
+                                 nil
+                                 2)))
       ;; unset focus in case we're looking at one
       :fx [[:dispatch [:reaction/unset-focus]]]}
      {:fx [[:dispatch [:notification/notify true
@@ -937,7 +943,10 @@
  :reaction/cancel-edit
  global-interceptors
  (fn [db _]
-   (dissoc db ::db/editing-reaction)))
+   (dissoc db
+           ::db/editing-reaction
+           ::db/editing-reaction-template-json
+           ::db/editing-reaction-template-errors)))
 
 (re-frame/reg-event-fx
  :reaction/back-to-list
@@ -1214,3 +1223,15 @@
  global-interceptors
  (fn [db _]
    (dissoc db ::db/editing-reaction-template-errors)))
+
+(re-frame/reg-event-db
+ :reaction/set-template-json
+ global-interceptors
+ (fn [db [_ json]]
+   (assoc db ::db/editing-reaction-template-json json)))
+
+(re-frame/reg-event-db
+ :reaction/clear-template-json
+ global-interceptors
+ (fn [db _]
+   (dissoc db ::db/editing-reaction-template-json)))

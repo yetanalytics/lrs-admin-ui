@@ -406,6 +406,11 @@
    (map name (keys conditions))))
 
 (reg-sub
+ :reaction/edit-template-json
+ (fn [db _]
+   (::db/editing-reaction-template-json db)))
+
+(reg-sub
  :reaction/edit-template-errors
  (fn [db _]
    (::db/editing-reaction-template-errors db [])))
@@ -414,15 +419,17 @@
  :reaction/edit-template-buffer
  :<- [:reaction/list]
  :<- [:reaction/editing]
+ :<- [:reaction/edit-template-json]
  :<- [:reaction/edit-template-errors]
- (fn [[reaction-list editing errors] _]
+ (fn [[reaction-list editing json errors] _]
    (let [editing-id (:id editing)
-         saved (some
-                (fn [{:keys [id] :as reaction}]
+         saved      (some
+                     (fn [{:keys [id] :as reaction}]
                   (when (= editing-id id)
                     (get-in reaction [:ruleset :template])))
                 reaction-list)]
-     {:saved saved
-      :value (get-in editing [:ruleset :template])
+     {:saved  saved
+      :value  (get-in editing [:ruleset :template])
+      :json   json
       :status (if (empty? errors) :valid :error)
       :errors errors})))

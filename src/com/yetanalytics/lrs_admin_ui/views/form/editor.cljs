@@ -110,58 +110,27 @@
   "Create a buffered JSON CodeMirror editor that accepts the following keys
    | Key | Description
    | --- | ---
-   | `buffer` | A reactive object carrying the content of the buffer - a map of `:value`, `:saved`, `:status`, and `:errors`
-   | `save`   | A function that dispatches an fx to save the parsed JSON value to the buffer.
-   | `error`  | A function that dispatches an fx to save an error to the buffer.
+   | `buffer`   | A reactive object carrying the content of the buffer - a map of `:value`, `:saved`, `:json`, `:status`, and `:errors`
+   | `save`     | A function that dispatches an fx to save the parsed JSON value to the buffer.
+   | `error`    | A function that dispatches an fx to save an error to the buffer.
+   | `set-json` | A function that saves the unparsed json value
 
    Additionally there is the `keywordize-keys?` kwarg; if `true`, all keys
    should be keywordized, otherwise they should be kept as strings."
-  [{:keys [buffer save error]}
+  [{:keys [buffer save error
+           set-json]}
    & {:keys [keywordize-keys?]
       :or   {keywordize-keys? true}}]
-  (let [clj-value  (:value @buffer)
-        json-value (r/atom (js/JSON.stringify (clj->js clj-value) nil 2))]
-    (fn []
-      [:div
-       [validation-display
-        {:buffer buffer}]
-       [editor {:value @json-value}
-        :on-change
-        (fn [edit-val]
-          (try (reset! json-value edit-val)
-               (save (js->clj (js/JSON.parse edit-val)
-                              :keywordize-keys keywordize-keys?))
-               (catch js/Error e
-                 (error [{:message "Invalid JSON Syntax"
-                          :details (str e)}]))))]])))
-
-(defn mini-json-editor
-  "A miniature JSON editor designed to look like and be used as a text area.
-
-   The `on-change`, `value`, and `err-match` args are exactly like those for
-   the `form/textarea-input` component, while `error` is exactly like
-   the arg in `buffered-json-editor`."
-  [{:keys [on-change value err-match error]}
-   & {:keys [keywordize-keys?]
-      :or   {keywordize-keys? true}}]
-  (let [json-value (r/atom (js/JSON.stringify (clj->js value) nil 2))]
-    (fn []
-      [:div
-       [editor {:value @json-value}
-        :display-settings
-        {:theme              "juejin"
-         :lineNumbers        false
-         :cursorScrollMargin 10           ; Align with regular text areas
-         :viewportMargin     js/Infinity} ; Expand view as lines are added
-        :on-change
-        (fn [edit-val]
-          (reset! json-value edit-val)
-          (try (let [clj-value (js->clj (js/JSON.parse edit-val)
-                                        :keywordize-keys keywordize-keys?)]
-                 (on-change clj-value))
-               (catch js/Error e
-                 (error [{:message  "Invalid JSON Syntax"
-                          :details  (format "%s\n\nat location %s"
-                                            (str e)
-                                            (cstr/join " -> " err-match))
-                          :location err-match}]))))]])))
+  (let [{:keys [json]} @buffer]
+    [:div
+     [validation-display
+      {:buffer buffer}]
+     [editor {:value json}
+      :on-change
+      (fn [edit-val]
+        (try (set-json edit-val)
+             (save (js->clj (js/JSON.parse edit-val)
+                            :keywordize-keys keywordize-keys?))
+             (catch js/Error e
+               (error [{:message "Invalid JSON Syntax"
+                        :details (str e)}]))))]]))

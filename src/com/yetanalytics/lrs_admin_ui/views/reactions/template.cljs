@@ -7,6 +7,8 @@
   []
   [ed/buffered-json-editor
    {:buffer (re-frame/subscribe [:reaction/edit-template-buffer])
+    :set-json (fn [json]
+                (re-frame/dispatch [:reaction/set-template-json json]))
     :save (fn [v]
             (re-frame/dispatch [:reaction/update-template v]))
     :error (fn [errors]
