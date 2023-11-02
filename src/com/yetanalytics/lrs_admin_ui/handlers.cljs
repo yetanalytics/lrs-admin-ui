@@ -1169,7 +1169,7 @@
      (-> db
          (update-in
           [::db/editing-reaction :ruleset :conditions]
-          assoc k nil)
+          assoc k {:and []})
          (update
           ::db/editing-reaction
           rfns/index-conditions)))))
