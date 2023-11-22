@@ -498,11 +498,17 @@
       "Edit"])
    (when (and (= :edit mode)
               @(subscribe [:reaction/edit-dirty?]))
-     [:a {:href "#!"
-          :on-click (fn [e]
-                      (fns/ps-event e)
-                      (dispatch [:reaction/edit id]))}
-      "Revert Changes"])])
+     [:<>
+      [:a {:href "#!"
+           :on-click (fn [e]
+                       (fns/ps-event e)
+                       (dispatch [:reaction/save-edit id]))}
+       "Save"]
+      [:a {:href "#!"
+           :on-click (fn [e]
+                       (fns/ps-event e)
+                       (dispatch [:reaction/edit id]))}
+       "Revert Changes"]])])
 
 (defn- edit-title
   [title]

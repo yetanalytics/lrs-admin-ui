@@ -939,14 +939,55 @@
      {:fx [[:dispatch [:notification/notify true
                        "Cannot edit, reaction not found!"]]]})))
 
+(re-frame/reg-event-fx
+ :reaction/save-edit
+ global-interceptors
+ (fn [{{server-host       ::db/server-host
+        proxy-path        ::db/proxy-path
+        ?editing-reaction ::db/editing-reaction} :db} _]
+   (when-let [{:keys [id
+                      title
+                      ruleset
+                      active]} (some-> ?editing-reaction
+                                       rfns/strip-condition-indices)]
+     {:http-xhrio {:method          :put
+                   :uri             (httpfn/serv-uri
+                                     server-host
+                                     "/admin/reaction"
+                                     proxy-path)
+                   :format          (ajax/json-request-format)
+                   :response-format (ajax/json-response-format {:keywords? true})
+                   :params          {:reactionId id
+                                     :ruleset    ruleset
+                                     :active     active
+                                     :title      title}
+                   :on-success      [:reaction/save-edit-success]
+                   :on-failure      [:server-error]
+                   :interceptors    [httpfn/add-jwt-interceptor]}})))
+
+(defn- cancel-edit
+  [db]
+  (dissoc db
+          ::db/editing-reaction
+          ::db/editing-reaction-template-json
+          ::db/editing-reaction-template-errors))
+
+(re-frame/reg-event-fx
+ :reaction/save-edit-success
+ global-interceptors
+ (fn [{:keys [db]} [_ {:keys [reactionId]}]]
+   {:db (-> db
+            cancel-edit
+            (assoc ::db/reaction-focus reactionId))
+    :fx [[:dispatch [:reaction/load-reactions]]]}))
+
+;; TODO: :reaction/save-edit-fail
+
 (re-frame/reg-event-db
  :reaction/cancel-edit
  global-interceptors
  (fn [db _]
-   (dissoc db
-           ::db/editing-reaction
-           ::db/editing-reaction-template-json
-           ::db/editing-reaction-template-errors)))
+   (cancel-edit db)))
 
 (re-frame/reg-event-fx
  :reaction/back-to-list
