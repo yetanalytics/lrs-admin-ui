@@ -348,8 +348,9 @@
  (fn [[editing
        focus]]
    (cond
-     ;; TODO: NEW
-     editing :edit
+     editing (if (:id editing)
+               :edit
+               :new)
      focus :focus
      :else :list)))
 
@@ -391,13 +392,14 @@
  (fn [[reaction-list
        {:keys [id] :as editing}]]
    (and (some? editing)
-        (not= (rfns/strip-condition-indices editing)
-              (some
-               (fn [{r-id :id
-                     :as  reaction}]
-                 (when (= r-id id)
-                   reaction))
-               reaction-list)))))
+        (or (nil? id)
+            (not= (rfns/strip-condition-indices editing)
+                  (some
+                   (fn [{r-id :id
+                         :as  reaction}]
+                     (when (= r-id id)
+                       reaction))
+                   reaction-list))))))
 
 (reg-sub
  :reaction/edit-condition-names
@@ -428,7 +430,7 @@
                   (when (= editing-id id)
                     (get-in reaction [:ruleset :template])))
                 reaction-list)]
-     {:saved  saved
+     {:saved  (or saved {})
       :value  (get-in editing [:ruleset :template])
       :json   json
       :status (if (empty? errors) :valid :error)

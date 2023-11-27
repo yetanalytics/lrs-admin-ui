@@ -95,10 +95,13 @@
    (s/keys :req-un [:lrsql.spec.edit-reaction.error/type
                     :lrsql.spec.edit-reaction.error/message])))
 
+(s/def ::title string?)
+
 (s/def ::reaction
-  (s/keys :req-un [::id
+  (s/keys :req-un [::title
                    ::ruleset
-                   ::active
+                   ::active]
+          :opt-un [::id
                    ::created
                    ::modified
                    ::error]))

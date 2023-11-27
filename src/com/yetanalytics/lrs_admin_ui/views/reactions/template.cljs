@@ -17,7 +17,7 @@
 
 (defn render-or-edit-template
   [mode template]
-  (if (= :edit mode)
+  (if (contains? #{:edit :new} mode)
     [edit-template]
     [:pre.template
      (.stringify js/JSON (clj->js template) nil 2)]))

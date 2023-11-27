@@ -60,6 +60,11 @@
   [:div {:class "left-content-wrapper"}
    [:h2 {:class "content-title"}
     "Reactions"]
+   [:a {:href "#"
+        :on-click (fn [e]
+                    (fns/ps-event e)
+                    (dispatch [:reaction/new]))}
+    "New"]
    [:div {:class "tenant-wrapper"}
     [reactions-table]]])
 
@@ -88,7 +93,7 @@
 
 (defn- render-or-edit-path
   [mode path-path path & {:keys [remove-fn]}]
-  (if (= :edit mode)
+  (if (contains? #{:edit :new} mode)
     [p/path-input path
      :add-fn (fn []
                (dispatch [:reaction/add-path-segment
@@ -105,7 +110,7 @@
 
 (defn- render-or-edit-op
   [mode op-path op]
-  (if (= :edit mode)
+  (if (contains? #{:edit :new} mode)
     (into [:select
            {:value op
             :on-change (fn [e]
@@ -197,7 +202,7 @@
 (defn- render-or-edit-val
   [mode val-path path val]
   [:div.val
-   (if (= :edit mode)
+   (if (contains? #{:edit :new} mode)
      [:<>
       [select-val-type val-path path val]
       [val-input val-path path val]]
@@ -207,7 +212,7 @@
 
 (defn- render-or-edit-ref-condition
   [mode ref-condition-path condition]
-  (if (= :edit mode)
+  (if (contains? #{:edit :new} mode)
     (into [:select
            {:value condition
             :on-change
@@ -242,7 +247,7 @@
    reaction-path
    bool-key]
   [:div.boolean-label
-   (if (= :edit mode)
+   (if (contains? #{:edit :new} mode)
      [:select
       {:value (name bool-key)
        :on-change
@@ -313,7 +318,7 @@
                    (into reaction-path [:and idx])
                    clause])
                 and-clauses))
-         (when (= :edit mode)
+         (when (contains? #{:edit :new} mode)
            [add-clause
             (conj reaction-path :and)])]
         or-clauses
@@ -327,7 +332,7 @@
                    (into reaction-path [:or idx])
                    clause])
                 or-clauses))
-         (when (= :edit mode)
+         (when (contains? #{:edit :new} mode)
            [add-clause
             (conj reaction-path :or)])]
         (find clause :not)
@@ -336,7 +341,7 @@
          [:div.boolean-body
           (when not-clause
             [render-clause mode (conj reaction-path :not) not-clause])]
-         (when (and (= :edit mode)
+         (when (and (contains? #{:edit :new} mode)
                     (nil? not-clause))
            [add-clause
             (conj reaction-path :not)])]
@@ -356,7 +361,7 @@
                           (conj reaction-path :op)
                           op]]
                     [:dt
-                     (if (= :edit mode)
+                     (if (contains? #{:edit :new} mode)
                        [:select
                         {:value (if ref "ref" "val")
                          :on-change
@@ -384,16 +389,17 @@
                          (conj reaction-path :ref)
                          ref]]))]))
       (cond->
-          (= :edit mode) (conj [delete-icon
-                                :on-click
-                                (fn []
-                                  (dispatch
-                                   [:reaction/delete-clause reaction-path]))]))))
+        (contains? #{:edit :new} mode)
+        (conj [delete-icon
+               :on-click
+               (fn []
+                 (dispatch
+                  [:reaction/delete-clause reaction-path]))]))))
 
 (defn- render-or-edit-condition-name
   [mode condition-name]
   [:div.condition-name
-   (if (= :edit mode)
+   (if (contains? #{:edit :new} mode)
      [:input
       {:type "text"
        :value condition-name
@@ -420,12 +426,12 @@
                mode
                [:ruleset :conditions condition-name]
                condition])]
-           (when (= :edit mode)
+           (when (contains? #{:edit :new} mode)
              [delete-icon
               :on-click
               (fn []
                 (dispatch [:reaction/delete-condition condition-name]))])
-           (when (and (= :edit mode)
+           (when (and (contains? #{:edit :new} mode)
                       (nil? condition))
              [add-clause
               [:ruleset :conditions condition-name]])])))
@@ -434,7 +440,7 @@
   [mode identity-paths]
   [:<>
    [:dt "Identity Paths"
-    (when (= :edit mode)
+    (when (contains? #{:edit :new} mode)
       [:span.add-identity-path
        [:a {:href "#"
             :on-click (fn [e]
@@ -463,7 +469,7 @@
     mode identityPaths]
    [:dt "Conditions"]
    [:dd [render-conditions mode conditions]
-    (when (= :edit mode)
+    (when (contains? #{:edit :new} mode)
       [add-condition])]
    [:dt "Template"]
    [:dd [t/render-or-edit-template mode template]]])
@@ -483,7 +489,7 @@
     "None"))
 
 (defn- reaction-actions
-  [mode id]
+  [mode ?id]
   [:div.reaction-actions
    [:a {:href "#!"
         :on-click (fn [e]
@@ -494,7 +500,7 @@
      [:a {:href "#!"
           :on-click (fn [e]
                       (fns/ps-event e)
-                      (dispatch [:reaction/edit id]))}
+                      (dispatch [:reaction/edit ?id]))}
       "Edit"])
    (when (and (= :edit mode)
               @(subscribe [:reaction/edit-dirty?]))
@@ -502,13 +508,19 @@
       [:a {:href "#!"
            :on-click (fn [e]
                        (fns/ps-event e)
-                       (dispatch [:reaction/save-edit id]))}
+                       (dispatch [:reaction/save-edit]))}
        "Save"]
       [:a {:href "#!"
            :on-click (fn [e]
                        (fns/ps-event e)
-                       (dispatch [:reaction/edit id]))}
-       "Revert Changes"]])])
+                       (dispatch [:reaction/revert-edit]))}
+       "Revert Changes"]])
+   (when (= :new mode)
+     [:a {:href "#!"
+          :on-click (fn [e]
+                      (fns/ps-event e)
+                      (dispatch [:reaction/save-edit]))}
+      "Create"])])
 
 (defn- edit-title
   [title]
@@ -546,12 +558,13 @@
                 ruleset] :as reaction} @(subscribe
                                          (case mode
                                            :focus [:reaction/focus]
-                                           :edit [:reaction/editing]))]
+                                           [:reaction/editing]))]
     [:div {:class "left-content-wrapper"}
      [:h2 {:class "content-title"}
       (case mode
         :focus "Reaction Details"
-        :edit "Edit Reaction")]
+        :edit "Edit Reaction"
+        :new "New Reaction")]
      [reaction-actions mode id]
      [:div {:class "tenant-wrapper"}
       [:dl.reaction-view
@@ -559,22 +572,22 @@
        [:dd
         (case mode
           :focus title
-          :edit [edit-title title])]
+          [edit-title title])]
 
        [:dt "ID"]
-       [:dd id]
+       [:dd (or id "[New]")]
 
        [:dt "Status"]
        [:dd
         (case mode
           :focus (if active "Active" "Inactive")
-          :edit [edit-status active])]
+          [edit-status active])]
 
        [:dt "Created"]
-       [:dd created]
+       [:dd (or created "[New]")]
 
        [:dt "Modified"]
-       [:dd modified]
+       [:dd (or modified "[New]")]
 
        [:dt "Error"]
        [:dd [render-error error]]

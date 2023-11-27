@@ -92,8 +92,11 @@
    (s/keys :req-un [:lrsql.spec.reaction.error/type
                     :lrsql.spec.reaction.error/message])))
 
+(s/def ::title string?)
+
 (s/def ::reaction
   (s/keys :req-un [::id
+                   ::title
                    ::ruleset
                    ::active
                    ::created

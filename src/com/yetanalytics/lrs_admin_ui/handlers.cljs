@@ -917,6 +917,16 @@
  (fn [db _]
    (dissoc db ::db/reaction-focus)))
 
+(defn- prep-edit-reaction-template
+  [{reaction ::db/editing-reaction
+    :as      db}]
+  (assoc db
+         ::db/editing-reaction-template-json
+         (.stringify js/JSON
+                     (clj->js (get-in reaction [:ruleset :template]))
+                     nil
+                     2)))
+
 (re-frame/reg-event-fx
  :reaction/edit
  global-interceptors
@@ -929,15 +939,44 @@
                              rfns/index-conditions)]
      {:db (-> db
               (assoc ::db/editing-reaction reaction)
-              (assoc ::db/editing-reaction-template-json
-                     (.stringify js/JSON
-                                 (clj->js (get-in reaction [:ruleset :template]))
-                                 nil
-                                 2)))
+              prep-edit-reaction-template)
       ;; unset focus in case we're looking at one
       :fx [[:dispatch [:reaction/unset-focus]]]}
      {:fx [[:dispatch [:notification/notify true
                        "Cannot edit, reaction not found!"]]]})))
+
+(re-frame/reg-event-fx
+ :reaction/new
+ global-interceptors
+ (fn [{:keys [db]} [_ reaction-id]]
+   (let [reaction {:title  "new-reaction"
+                   :active true
+                   :ruleset
+                   {:identityPaths []
+                    :conditions     {}
+                    :template       {}}}]
+     {:db (-> db
+              (assoc ::db/editing-reaction reaction)
+              prep-edit-reaction-template)
+      ;; unset focus in case we're looking at one
+      :fx [[:dispatch [:reaction/unset-focus]]]})))
+
+(re-frame/reg-event-fx
+ :reaction/revert-edit
+ global-interceptors
+ (fn [{:keys [db]} _]
+   (when-let [reaction-id (get-in db [::db/editing-reaction :id])]
+     (when-let [reaction (some-> (some
+                                  (fn [{:keys [id] :as reaction}]
+                                    (when (= id reaction-id)
+                                      reaction))
+                                  (::db/reactions db))
+                                 rfns/index-conditions)]
+       {:db (-> db
+                (assoc ::db/editing-reaction reaction)
+                prep-edit-reaction-template)
+        ;; unset focus in case we're looking at one
+        :fx [[:dispatch [:reaction/unset-focus]]]}))))
 
 (re-frame/reg-event-fx
  :reaction/save-edit
@@ -945,22 +984,22 @@
  (fn [{{server-host       ::db/server-host
         proxy-path        ::db/proxy-path
         ?editing-reaction ::db/editing-reaction} :db} _]
-   (when-let [{:keys [id
-                      title
+   (when-let [{:keys [title
                       ruleset
-                      active]} (some-> ?editing-reaction
-                                       rfns/strip-condition-indices)]
-     {:http-xhrio {:method          :put
+                      active]
+               ?reaction-id :id} (some-> ?editing-reaction
+                                         rfns/strip-condition-indices)]
+     {:http-xhrio {:method          (if ?reaction-id :put :post)
                    :uri             (httpfn/serv-uri
                                      server-host
                                      "/admin/reaction"
                                      proxy-path)
                    :format          (ajax/json-request-format)
                    :response-format (ajax/json-response-format {:keywords? true})
-                   :params          {:reactionId id
-                                     :ruleset    ruleset
-                                     :active     active
-                                     :title      title}
+                   :params          (cond-> {:ruleset ruleset
+                                             :active  active
+                                             :title   title}
+                                      ?reaction-id (assoc :reactionId ?reaction-id))
                    :on-success      [:reaction/save-edit-success]
                    :on-failure      [:server-error]
                    :interceptors    [httpfn/add-jwt-interceptor]}})))
