@@ -53,7 +53,12 @@
                   :on-click (fn [e]
                               (fns/ps-event e)
                               (dispatch [:reaction/edit id]))}
-              "Edit"]]]))])
+              "Edit"]
+             [:a {:href "#!"
+                  :on-click (fn [e]
+                              (fns/ps-event e)
+                              (dispatch [:reaction/delete id]))}
+              "Delete"]]]))])
 
 (defn- reactions-list
   []

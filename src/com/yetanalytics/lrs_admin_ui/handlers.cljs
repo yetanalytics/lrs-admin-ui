@@ -1022,6 +1022,33 @@
 
 ;; TODO: :reaction/save-edit-fail
 
+(re-frame/reg-event-fx
+ :reaction/delete
+ global-interceptors
+ (fn [{{server-host       ::db/server-host
+        proxy-path        ::db/proxy-path} :db} [_ reaction-id]]
+   {:http-xhrio {:method          :delete
+                 :uri             (httpfn/serv-uri
+                                   server-host
+                                   "/admin/reaction"
+                                   proxy-path)
+                 :format          (ajax/json-request-format)
+                 :response-format (ajax/json-response-format {:keywords? true})
+                 :params          {:reactionId reaction-id}
+                 :on-success      [:reaction/delete-success]
+                 :on-failure      [:server-error]
+                 :interceptors    [httpfn/add-jwt-interceptor]}}))
+
+(re-frame/reg-event-fx
+ :reaction/delete-success
+ global-interceptors
+ (fn [{{server-host       ::db/server-host
+        proxy-path        ::db/proxy-path} :db} _]
+   {:fx [[:dispatch [:reaction/load-reactions]]
+         [:dispatch [:reaction/back-to-list]]
+         [:dispatch [:notification/notify false
+                     "Reaction Deleted"]]]}))
+
 (re-frame/reg-event-db
  :reaction/cancel-edit
  global-interceptors
