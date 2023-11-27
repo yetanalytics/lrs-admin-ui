@@ -57,7 +57,7 @@
              [:a {:href "#!"
                   :on-click (fn [e]
                               (fns/ps-event e)
-                              (dispatch [:reaction/delete id]))}
+                              (dispatch [:reaction/delete-confirm id]))}
               "Delete"]]]))])
 
 (defn- reactions-list

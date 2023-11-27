@@ -159,6 +159,21 @@
   (s/every ::reaction-template-error))
 (s/def ::editing-reaction-template-json string?)
 
+(s/def ::dialog-ref any?)
+
+(s/def :dialog-choice/label string?)
+(s/def :dialog-choice/dispatch vector?)
+(s/def ::dialog-choice
+  (s/keys :req-un [:dialog-choice/label
+                   :dialog-choice/dispatch]))
+
+(s/def :dialog-data/prompt string?)
+(s/def :dialog-data/choices
+  (s/every ::dialog-choice :min-count 1))
+(s/def ::dialog-data
+  (s/keys :req-un [:dialog-data/prompt
+                   :dialog-data/choices]))
+
 (s/def ::db (s/keys :req [::session
                           ::credentials
                           ::login
@@ -180,7 +195,9 @@
                     :opt [::reaction-focus
                           ::editing-reaction
                           ::editing-reaction-template-errors
-                          ::editing-reaction-template-json]))
+                          ::editing-reaction-template-json
+                          ::dialog-ref
+                          ::dialog-data]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Continuous DB Validation

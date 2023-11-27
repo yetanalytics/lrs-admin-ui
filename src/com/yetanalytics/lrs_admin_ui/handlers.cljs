@@ -927,15 +927,19 @@
                      nil
                      2)))
 
+(defn- find-reaction
+  [db reaction-id]
+  (some
+   (fn [{:keys [id] :as reaction}]
+     (when (= id reaction-id)
+       reaction))
+   (::db/reactions db)))
+
 (re-frame/reg-event-fx
  :reaction/edit
  global-interceptors
  (fn [{:keys [db]} [_ reaction-id]]
-   (if-let [reaction (some-> (some
-                              (fn [{:keys [id] :as reaction}]
-                                (when (= id reaction-id)
-                                  reaction))
-                              (::db/reactions db))
+   (if-let [reaction (some-> (find-reaction db reaction-id)
                              rfns/index-conditions)]
      {:db (-> db
               (assoc ::db/editing-reaction reaction)
@@ -966,11 +970,7 @@
  global-interceptors
  (fn [{:keys [db]} _]
    (when-let [reaction-id (get-in db [::db/editing-reaction :id])]
-     (when-let [reaction (some-> (some
-                                  (fn [{:keys [id] :as reaction}]
-                                    (when (= id reaction-id)
-                                      reaction))
-                                  (::db/reactions db))
+     (when-let [reaction (some-> (find-reaction db reaction-id)
                                  rfns/index-conditions)]
        {:db (-> db
                 (assoc ::db/editing-reaction reaction)
@@ -1021,6 +1021,20 @@
     :fx [[:dispatch [:reaction/load-reactions]]]}))
 
 ;; TODO: :reaction/save-edit-fail
+
+(re-frame/reg-event-fx
+ :reaction/delete-confirm
+ global-interceptors
+ (fn [{:keys [db]} [_ reaction-id]]
+   (let [{:keys [title]} (find-reaction db reaction-id)]
+     {:fx [[:dispatch
+            [:dialog/present
+             {:prompt (format "Really delete reaction: %s?" title)
+              :choices
+              [{:label "Cancel"
+                :dispatch [:dialog/cancel]}
+               {:label "Delete"
+                :dispatch [:reaction/delete reaction-id]}]}]]]})))
 
 (re-frame/reg-event-fx
  :reaction/delete
@@ -1379,3 +1393,58 @@
  global-interceptors
  (fn [db _]
    (dissoc db ::db/editing-reaction-template-json)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Dialog
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(re-frame/reg-event-db
+ :dialog/set-ref
+ global-interceptors
+ (fn [db [_ dialog-ref]]
+   (assoc db ::db/dialog-ref dialog-ref)))
+
+(re-frame/reg-event-db
+ :dialog/clear-data
+ global-interceptors
+ (fn [db _]
+   (dissoc db ::db/dialog-data)))
+
+(re-frame/reg-fx
+ :dialog/show
+ (fn [{:keys [dialog-ref]}]
+   (.addEventListener
+    dialog-ref
+    "close",
+    (fn [_]
+      (re-frame/dispatch [:dialog/clear-data]))
+    #js {:once true})
+   (.showModal dialog-ref)))
+
+(re-frame/reg-fx
+ :dialog/close
+ (fn [{:keys [dialog-ref]}]
+   (.close dialog-ref)))
+
+(re-frame/reg-event-fx
+ :dialog/present
+ global-interceptors
+ (fn [{:keys [db]} [_ dialog-data]]
+   (when-let [dialog-ref (::db/dialog-ref db)]
+     {:db          (assoc db ::db/dialog-data dialog-data)
+      :dialog/show {:dialog-ref dialog-ref}})))
+
+(re-frame/reg-event-fx
+ :dialog/cancel
+ global-interceptors
+ (fn [{:keys [db]} _]
+   (let [dialog-ref (::db/dialog-ref db)]
+     {:dialog/close {:dialog-ref dialog-ref}})))
+
+(re-frame/reg-event-fx
+ :dialog/dispatch
+ (fn [{:keys [db]} [_ dispatch-v]]
+   (let [dialog-ref (::db/dialog-ref db)]
+     {:dialog/close {:dialog-ref dialog-ref}
+      :fx
+      [[:dispatch dispatch-v]]})))

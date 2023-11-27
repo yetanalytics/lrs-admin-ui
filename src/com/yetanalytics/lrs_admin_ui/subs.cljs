@@ -435,3 +435,10 @@
       :json   json
       :status (if (empty? errors) :valid :error)
       :errors errors})))
+
+;; Dialog
+
+(reg-sub
+ :dialog/data
+ (fn [db _]
+   (::db/dialog-data db)))
