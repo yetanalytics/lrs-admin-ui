@@ -1035,6 +1035,37 @@
               conj
               [])))
 
+(defn- init-type
+  [new-type]
+  (case (name new-type)
+    "string" ""
+    "number" 0
+    "boolean" true
+    "null" nil))
+
+(defn- val-type
+  [val]
+  (cond
+    (string? val) "string"
+    (number? val) "number"
+    (boolean? val) "boolean"
+    (nil? val) "null"))
+
+(defn- ensure-val-type
+  "If the path calls for a different type, initialize value."
+  [{:keys [path
+           val
+           ref] :as c}]
+  (if ref
+    c
+    (let [{:keys [leaf-type]} (rfns/analyze-path path)]
+      (if leaf-type
+        (let [vtype (val-type val)]
+          (assoc c :val (if (= leaf-type vtype)
+                          val
+                          (init-type leaf-type))))
+        c))))
+
 (re-frame/reg-event-db
  :reaction/add-path-segment
  global-interceptors
@@ -1043,14 +1074,18 @@
                          path-path)
          path-before (get-in db full-path)
          {:keys [next-keys]} (rfns/analyze-path
-                              path-before)]
-     (update-in db
-                full-path
-                conj
-                (if (= '[idx] next-keys)
-                  0
-                  (or (first next-keys)
-                      ""))))))
+                              path-before)
+         parent-path (butlast full-path)]
+     (-> db
+         (update-in full-path
+                    conj
+                    (if (= '[idx] next-keys)
+                      0
+                      (or (first next-keys)
+                          "")))
+         (update-in
+          parent-path
+          ensure-val-type)))))
 
 (re-frame/reg-event-db
  :reaction/del-path-segment
@@ -1059,8 +1094,13 @@
    (let [full-path (into [::db/editing-reaction]
                          path-path)
          path-before (get-in db full-path)
-         path-after (vec (butlast path-before))]
-     (assoc-in db full-path path-after))))
+         path-after (vec (butlast path-before))
+         parent-path (butlast full-path)]
+     (-> db
+         (assoc-in full-path path-after)
+         (update-in
+          parent-path
+          ensure-val-type)))))
 
 (re-frame/reg-event-db
  :reaction/change-path-segment
@@ -1070,8 +1110,13 @@
                          path-path)
          path-before (get-in db full-path)
          path-after (conj (vec (butlast path-before))
-                          new-seg-val)]
-     (assoc-in db full-path path-after))))
+                          new-seg-val)
+         parent-path (butlast full-path)]
+     (-> db
+         (assoc-in full-path path-after)
+         (update-in
+          parent-path
+          ensure-val-type)))))
 
 (re-frame/reg-event-db
  :reaction/set-op
@@ -1080,14 +1125,6 @@
    (let [full-path (into [::db/editing-reaction]
                          op-path)]
      (assoc-in db full-path new-op))))
-
-(defn- init-type
-  [new-type]
-  (case new-type
-    "string" ""
-    "number" 0
-    "boolean" false
-    "null" nil))
 
 (re-frame/reg-event-db
  :reaction/set-val-type
@@ -1138,7 +1175,7 @@
                             (case leaf-type
                               nil "" ;; TODO: this might not work
                               'json "" ;; or this
-                              (init-type (name leaf-type))))))
+                              (init-type leaf-type)))))
        "ref"
        (assoc-in db
                  full-path
