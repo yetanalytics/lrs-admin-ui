@@ -979,6 +979,18 @@
         :fx [[:dispatch [:reaction/unset-focus]]]}))))
 
 (re-frame/reg-event-fx
+ :reaction/server-error
+ global-interceptors
+ (fn [_ [_ {:keys [response status]}]]
+   (println response status)
+   (if (= 400 status)
+     {:fx [[:dispatch
+            [:notification/notify true
+             (format "Cannot save reaction: %s"
+                     (get response :error))]]]}
+     {:fx [[:dispatch [:server-error]]]})))
+
+(re-frame/reg-event-fx
  :reaction/save-edit
  global-interceptors
  (fn [{{server-host       ::db/server-host
@@ -1001,7 +1013,7 @@
                                              :title   title}
                                       ?reaction-id (assoc :reactionId ?reaction-id))
                    :on-success      [:reaction/save-edit-success]
-                   :on-failure      [:server-error]
+                   :on-failure      [:reaction/server-error]
                    :interceptors    [httpfn/add-jwt-interceptor]}})))
 
 (defn- cancel-edit
