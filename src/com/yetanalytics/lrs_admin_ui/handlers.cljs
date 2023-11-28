@@ -953,7 +953,8 @@
  :reaction/new
  global-interceptors
  (fn [{:keys [db]} [_ reaction-id]]
-   (let [reaction {:title  "new-reaction"
+   (let [reaction {:title  (format "reaction-%s"
+                                   (fns/rand-alpha-str 16))
                    :active true
                    :ruleset
                    {:identityPaths []

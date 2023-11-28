@@ -37,3 +37,8 @@
   (if (> len (count text))
     text
     (str (subs text 0 (- len 3)) "...")))
+
+(defn rand-alpha-str
+  "Produce a random alphanumeric string of the given length"
+  [length]
+  (apply str (repeatedly length #(rand-nth "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"))))
