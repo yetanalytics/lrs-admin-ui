@@ -1369,9 +1369,12 @@
                       :logic {:path []
                               :op "eq"
                               :val ""})]
-     (if (contains? #{:and :or} pkey)
-       (update-in db full-path conj new-clause)
-       (assoc-in db full-path new-clause)))))
+     (-> (if (contains? #{:and :or} pkey)
+           (update-in db full-path conj new-clause)
+           (assoc-in db full-path new-clause))
+         (update
+          ::db/editing-reaction
+          rfns/index-conditions)))))
 
 (re-frame/reg-event-db
  :reaction/update-template
