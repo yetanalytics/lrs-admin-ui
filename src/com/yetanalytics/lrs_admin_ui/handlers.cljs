@@ -953,8 +953,8 @@
  :reaction/new
  global-interceptors
  (fn [{:keys [db]} [_ reaction-id]]
-   (let [reaction {:title  (format "reaction-%s"
-                                   (fns/rand-alpha-str 16))
+   (let [reaction {:title  (format "reaction_%s"
+                                   (fns/rand-alpha-str 8))
                    :active true
                    :ruleset
                    {:identityPaths []
@@ -1335,7 +1335,8 @@
  :reaction/add-condition
  global-interceptors
  (fn [db [_ ?condition-key]]
-   (let [k (or ?condition-key (keyword (str (random-uuid))))]
+   (let [k (or ?condition-key (keyword (format "condition_%s"
+                                               (fns/rand-alpha-str 8))))]
      (-> db
          (update-in
           [::db/editing-reaction :ruleset :conditions]
