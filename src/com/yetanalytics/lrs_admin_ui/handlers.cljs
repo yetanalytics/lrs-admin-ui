@@ -982,7 +982,6 @@
  :reaction/server-error
  global-interceptors
  (fn [_ [_ {:keys [response status]}]]
-   (println response status)
    (if (= 400 status)
      {:fx [[:dispatch
             [:notification/notify true
