@@ -457,11 +457,13 @@
             (filter
              (if strict?
                (fn [problem]
-                 (let [ppath (:in problem)]
+                 (let [ppath (rfns/fix-ruleset-in-path
+                              (:in problem))]
                    (= path
                       ppath)))
                (fn [problem]
-                 (let [ppath (:in problem)]
+                 (let [ppath (rfns/fix-ruleset-in-path
+                              (:in problem))]
                    (= path
                       (take pcount ppath)))))))))
      [])))

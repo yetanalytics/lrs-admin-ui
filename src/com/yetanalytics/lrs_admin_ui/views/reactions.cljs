@@ -312,107 +312,95 @@
     or-clauses  :or
     not-clause  :not
     :as clause}]
-  (let [attrs {:class
-               (if (and (contains? #{:edit :new} mode)
-                        (not-empty
-                         @(subscribe
-                           [:reaction/edit-ruleset-spec-errors-at-path
-                            (rest reaction-path)])))
-                 "reaction-invalid"
-                 "")}]
-    (-> (cond
-          and-clauses
-          [:div.clause.boolean.and
-           attrs
-           [and-or-label mode reaction-path :and]
-           (into [:div.boolean-body]
-                 (map-indexed
-                  (fn [idx clause]
-                    [render-clause
-                     mode
-                     (into reaction-path [:and idx])
-                     clause])
-                  and-clauses))
-           (when (contains? #{:edit :new} mode)
-             [add-clause
-              (conj reaction-path :and)])]
-          or-clauses
-          [:div.clause.boolean.or
-           attrs
-           [and-or-label mode reaction-path :or]
-           (into [:div.boolean-body]
-                 (map-indexed
-                  (fn [idx clause]
-                    [render-clause
-                     mode
-                     (into reaction-path [:or idx])
-                     clause])
-                  or-clauses))
-           (when (contains? #{:edit :new} mode)
-             [add-clause
-              (conj reaction-path :or)])]
-          (find clause :not)
-          [:div.clause.boolean.not
-           attrs
-           [:div.boolean-label "NOT"]
-           [:div.boolean-body
-            (when not-clause
-              [render-clause mode (conj reaction-path :not) not-clause])]
-           (when (and (contains? #{:edit :new} mode)
-                      (nil? not-clause))
-             [add-clause
-              (conj reaction-path :not)])]
-          :else
-          (let [{:keys [path op val ref]} clause]
-            [:div.clause.op
-             attrs
-             (cond-> [:dl.op-list
-                      [:dt "Path"]
-                      [:dd
-                       [render-or-edit-path
-                        mode
-                        (conj reaction-path :path)
-                        path]]
-                      [:dt "Op"]
-                      [:dd [render-or-edit-op
-                            mode
-                            (conj reaction-path :op)
-                            op]]
-                      [:dt
-                       (if (contains? #{:edit :new} mode)
-                         [:select
-                          {:value (if ref "ref" "val")
-                           :on-change
-                           (fn [e]
-                             (dispatch [:reaction/set-val-or-ref
-                                        reaction-path
-                                        (fns/ps-event-val e)]))}
-                          [:option
-                           {:value "ref"}
-                           "Ref"]
-                          [:option
-                           {:value "val"}
-                           "Val"]]
-                         (if ref
-                           "Ref"
-                           "Val"))]]
-               (not ref) (conj [:dd [render-or-edit-val
-                                     mode
-                                     (conj reaction-path :val)
-                                     path
-                                     val]])
-               ref (conj [:dd
-                          [render-ref
-                           mode
-                           (conj reaction-path :ref)
-                           ref]]))]))
-        (cond->
-            (contains? #{:edit :new} mode)
-          (conj [delete-icon
-                 :on-click
-                 (fn []
-                   (dispatch
-                    [:reaction/delete-clause reaction-path]))])))))
+  (-> (cond
+        and-clauses
+        [:div.clause.boolean.and
+         [and-or-label mode reaction-path :and]
+         (into [:div.boolean-body]
+               (map-indexed
+                (fn [idx clause]
+                  [render-clause
+                   mode
+                   (into reaction-path [:and idx])
+                   clause])
+                and-clauses))
+         (when (contains? #{:edit :new} mode)
+           [add-clause
+            (conj reaction-path :and)])]
+        or-clauses
+        [:div.clause.boolean.or
+         [and-or-label mode reaction-path :or]
+         (into [:div.boolean-body]
+               (map-indexed
+                (fn [idx clause]
+                  [render-clause
+                   mode
+                   (into reaction-path [:or idx])
+                   clause])
+                or-clauses))
+         (when (contains? #{:edit :new} mode)
+           [add-clause
+            (conj reaction-path :or)])]
+        (find clause :not)
+        [:div.clause.boolean.not
+         [:div.boolean-label "NOT"]
+         [:div.boolean-body
+          (when not-clause
+            [render-clause mode (conj reaction-path :not) not-clause])]
+         (when (and (contains? #{:edit :new} mode)
+                    (nil? not-clause))
+           [add-clause
+            (conj reaction-path :not)])]
+        :else
+        (let [{:keys [path op val ref]} clause]
+          [:div.clause.op
+           (cond-> [:dl.op-list
+                    [:dt "Path"]
+                    [:dd
+                     [render-or-edit-path
+                      mode
+                      (conj reaction-path :path)
+                      path]]
+                    [:dt "Op"]
+                    [:dd [render-or-edit-op
+                          mode
+                          (conj reaction-path :op)
+                          op]]
+                    [:dt
+                     (if (contains? #{:edit :new} mode)
+                       [:select
+                        {:value (if ref "ref" "val")
+                         :on-change
+                         (fn [e]
+                           (dispatch [:reaction/set-val-or-ref
+                                      reaction-path
+                                      (fns/ps-event-val e)]))}
+                        [:option
+                         {:value "ref"}
+                         "Ref"]
+                        [:option
+                         {:value "val"}
+                         "Val"]]
+                       (if ref
+                         "Ref"
+                         "Val"))]]
+             (not ref) (conj [:dd [render-or-edit-val
+                                   mode
+                                   (conj reaction-path :val)
+                                   path
+                                   val]])
+             ref (conj [:dd
+                        [render-ref
+                         mode
+                         (conj reaction-path :ref)
+                         ref]]))]))
+      (cond->
+          (contains? #{:edit :new} mode)
+        (conj [delete-icon
+               :on-click
+               (fn []
+                 (dispatch
+                  [:reaction/delete-clause reaction-path]))]))))
 
 (defn- render-or-edit-condition-name
   [mode condition-name]
@@ -613,7 +601,7 @@
 
        [:dt "Ruleset"]
        [:dd
-        [e/render-ruleset-errors [:conditions]]
+        #_[e/render-ruleset-errors [:conditions]]
         [ruleset-view mode ruleset]]]]]))
 
 (defn reactions
