@@ -4,8 +4,7 @@
             [com.yetanalytics.lrs-admin-ui.functions.time :as t]
             [com.yetanalytics.lrs-admin-ui.input :as i]
             [com.yetanalytics.lrs-admin-ui.functions.reaction :as rfns]
-            [clojure.spec.alpha :as s :include-macros true]
-            [com.yetanalytics.lrs-admin-ui.spec.reaction :as rs]))
+            [clojure.spec.alpha :as s :include-macros true]))
 
 (reg-sub
  :db/get-db
@@ -436,35 +435,6 @@
       :json   json
       :status (if (empty? errors) :valid :error)
       :errors errors})))
-
-(reg-sub
- :reaction/edit-ruleset-spec-errors
- :<- [:reaction/editing]
- (fn [{:keys [ruleset]} _]
-   (s/explain-data ::rs/ruleset ruleset)))
-
-(reg-sub
- :reaction/edit-ruleset-spec-errors-at-path
- :<- [:reaction/edit-ruleset-spec-errors]
- ;; return errors for the (possibly partial) path
- (fn [errors [_ path & {:keys [strict?]
-                        :or   {strict? false}}]]
-   (if errors
-     (let [pcount (count path)]
-       (-> errors
-           ::s/problems
-           (->>
-            (filter
-             (if strict?
-               (fn [problem]
-                 (let [ppath (:in problem)]
-                   (= path
-                      ppath)))
-               (fn [problem]
-                 (let [ppath (:in problem)]
-                   (= path
-                      (take pcount ppath)))))))))
-     [])))
 
 ;; Dialog
 

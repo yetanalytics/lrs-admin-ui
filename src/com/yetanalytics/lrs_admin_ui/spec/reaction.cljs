@@ -1,21 +1,16 @@
 (ns com.yetanalytics.lrs-admin-ui.spec.reaction
   "Duplicates lrsql.spec.reaction" ;; TODO: Use a common cljc source
-  (:require [cljs.spec.alpha :as s :include-macros true]
-            [xapi-schema.spec :as xs]
-            [com.yetanalytics.lrs-admin-ui.functions.reaction :as rfns]))
+  (:require [cljs.spec.alpha  :as s :include-macros true]
+            [xapi-schema.spec :as xs]))
 
 (s/def ::condition-name
   string?)
 
 (s/def ::path
-  (s/and
-   (s/every
-    (s/or :string string?
-          :index nat-int?)
-    :gen-max 4)
-   (fn valid-path?
-     [path]
-     (some? (:leaf-type (rfns/analyze-path path))))))
+  (s/every
+   (s/or :string string?
+         :index nat-int?)
+   :gen-max 4))
 
 (s/def ::val (s/or :string string?
                    :number number?
@@ -107,9 +102,3 @@
                    ::created
                    ::modified
                    ::error]))
-
-;; new reactions lack some fields
-(s/def ::new-reaction
-  (s/keys :req-un [::title
-                   ::ruleset
-                   ::active]))

@@ -5,10 +5,6 @@
 $dl-nesting-depth: 1em;
 $condition-padding: 0.5em;
 
-.reaction-invalid {
-  background-color: pink;
-}
-
 dl.reaction-view > dd {
   padding-left: $dl-nesting-depth;
 }
