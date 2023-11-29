@@ -75,7 +75,7 @@
                 complete?]} (rfns/analyze-path
                              path)]
     (-> [:div.path-input
-         {:class (when-not leaf-type
+         {:class (when-not valid?
                    "invalid")}
          [:div.path-input-root
           "$"]]

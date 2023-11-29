@@ -1,6 +1,5 @@
 (ns com.yetanalytics.lrs-admin-ui.views.reactions.errors
-  (:require [re-frame.core :refer [subscribe]]
-            [cljs.pprint :as pprint]))
+  (:require [re-frame.core :refer [subscribe]]))
 
 (defn render-ruleset-errors
   [path]
@@ -8,5 +7,4 @@
                  [:reaction/edit-ruleset-spec-errors-at-path
                   path])]
     [:pre
-     (with-out-str
-       (pprint/pprint errors))]))
+     (pr-str errors)]))
