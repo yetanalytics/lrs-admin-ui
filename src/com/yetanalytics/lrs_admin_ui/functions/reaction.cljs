@@ -210,7 +210,6 @@
         'boolean
         'null
         'json - In the case of extensions, might be any JSON scalar!
-      :valid? - Is the path a valid xapi path?
       :complete? - For the purposes of UI, is the path complete (ie. no further
         segments should be offered)? Will be false for extension paths."
   (memoize analyze-path*))

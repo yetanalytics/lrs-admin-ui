@@ -17,7 +17,8 @@
             [clojure.string                                   :refer [split]]
             [goog.string                                      :refer [format]]
             goog.string.format
-            [clojure.walk                                     :as w]))
+            [clojure.walk                                     :as w]
+            [com.yetanalytics.lrs-admin-ui.spec.reaction      :as rs]))
 
 (def global-interceptors
   [db/check-spec-interceptor])
@@ -999,22 +1000,27 @@
    (when-let [{:keys [title
                       ruleset
                       active]
-               ?reaction-id :id} (some-> ?editing-reaction
-                                         rfns/strip-condition-indices)]
-     {:http-xhrio {:method          (if ?reaction-id :put :post)
-                   :uri             (httpfn/serv-uri
-                                     server-host
-                                     "/admin/reaction"
-                                     proxy-path)
-                   :format          (ajax/json-request-format)
-                   :response-format (ajax/json-response-format {:keywords? true})
-                   :params          (cond-> {:ruleset ruleset
-                                             :active  active
-                                             :title   title}
-                                      ?reaction-id (assoc :reactionId ?reaction-id))
-                   :on-success      [:reaction/save-edit-success]
-                   :on-failure      [:reaction/server-error]
-                   :interceptors    [httpfn/add-jwt-interceptor]}})))
+               ?reaction-id :id
+               :as reaction} (some-> ?editing-reaction
+                                     rfns/strip-condition-indices)]
+     (if (valid? ::rs/new-reaction reaction)
+       {:http-xhrio {:method          (if ?reaction-id :put :post)
+                     :uri             (httpfn/serv-uri
+                                       server-host
+                                       "/admin/reaction"
+                                       proxy-path)
+                     :format          (ajax/json-request-format)
+                     :response-format (ajax/json-response-format {:keywords? true})
+                     :params          (cond-> {:ruleset ruleset
+                                               :active  active
+                                               :title   title}
+                                        ?reaction-id (assoc :reactionId ?reaction-id))
+                     :on-success      [:reaction/save-edit-success]
+                     :on-failure      [:reaction/server-error]
+                     :interceptors    [httpfn/add-jwt-interceptor]}}
+       {:fx [[:dispatch
+              [:notification/notify true
+               "Cannot save invalid reaction."]]]}))))
 
 (defn- cancel-edit
   [db]
@@ -1131,6 +1137,7 @@
   [new-type]
   (case (name new-type)
     "string" ""
+    "json"   ""
     "number" 0
     "boolean" true
     "null" nil))
