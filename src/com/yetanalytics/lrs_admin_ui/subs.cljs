@@ -4,6 +4,7 @@
             [com.yetanalytics.lrs-admin-ui.functions.time :as t]
             [com.yetanalytics.lrs-admin-ui.input :as i]
             [com.yetanalytics.lrs-admin-ui.functions.reaction :as rfns]
+            [com.yetanalytics.lrs-admin-ui.spec.reaction :as rs]
             [clojure.spec.alpha :as s :include-macros true]))
 
 (reg-sub
@@ -435,6 +436,33 @@
       :json   json
       :status (if (empty? errors) :valid :error)
       :errors errors})))
+
+(reg-sub
+ :reaction/edit-spec-errors
+ :<- [:reaction/editing]
+ (fn [editing _]
+   (when editing
+     (some-> (s/explain-data
+              ::rs/new-reaction
+              (rfns/strip-condition-indices
+               editing))
+             :cljs.spec.alpha/problems))))
+
+(reg-sub
+ :reaction/edit-spec-errors-map
+ :<- [:reaction/edit-spec-errors]
+ (fn [errors _]
+   (reduce
+    (fn [m problem]
+      (update m (:in problem) (fnil conj []) problem))
+    {}
+    errors)))
+
+(reg-sub
+ :reaction/edit-spec-errors-in
+ :<- [:reaction/edit-spec-errors-map]
+ (fn [emap [_ in-path]]
+   (get emap (rfns/fix-ruleset-in-path in-path))))
 
 ;; Dialog
 

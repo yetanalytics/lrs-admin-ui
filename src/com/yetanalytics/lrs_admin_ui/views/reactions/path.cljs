@@ -65,17 +65,20 @@
    & {:keys [add-fn
              del-fn
              change-fn
-             remove-fn]
+             remove-fn
+             spec-valid?]
       :or {add-fn (fn [_] (println 'add))
            del-fn (fn [_] (println 'del))
-           change-fn (fn [_] (println 'change))}}]
+           change-fn (fn [_] (println 'change))
+           spec-valid? true}}]
   (let [{:keys [next-keys
                 leaf-type
-                valid?
-                complete?]} (rfns/analyze-path
-                             path)]
+                complete?
+                valid?]} (rfns/analyze-path
+                          path)]
     (-> [:div.path-input
-         {:class (when-not valid?
+         {:class (when (or (not spec-valid?)
+                           (not valid?))
                    "invalid")}
          [:div.path-input-root
           "$"]]

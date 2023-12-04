@@ -47,7 +47,7 @@
          (first val)))
     true))
 
-(defn- valid-path?
+(defn- valid-clause-path?
   [{:keys [path
            op
            val
@@ -78,7 +78,7 @@
                   (or ::val ::ref))
              (or ::and ::or ::not))])
    valid-like-val?
-   valid-path?))
+   valid-clause-path?))
 
 (s/def ::and (s/every ::condition
                       :min-count 1

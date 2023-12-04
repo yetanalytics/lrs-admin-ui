@@ -97,7 +97,9 @@
 
 
 (defn- render-or-edit-path
-  [mode path-path path & {:keys [remove-fn]}]
+  [mode path-path path & {:keys [remove-fn
+                                 spec-valid?]
+                          :or {spec-valid? true}}]
   (if (contains? #{:edit :new} mode)
     [p/path-input path
      :add-fn (fn []
@@ -110,7 +112,8 @@
                   (dispatch [:reaction/change-path-segment
                              path-path
                              seg-val]))
-     :remove-fn remove-fn]
+     :remove-fn remove-fn
+     :spec-valid? spec-valid?]
     [render-path path]))
 
 (defn- render-or-edit-op
@@ -456,13 +459,38 @@
     (into [:ul.identity-paths]
           (map-indexed
            (fn [idx path]
-             [render-or-edit-path
-              mode
-              [:ruleset :identityPaths idx]
-              path
-              :remove-fn (fn []
-                           (dispatch [:reaction/delete-identity-path idx]))])
+             (let [path-path [:ruleset :identityPaths idx]]
+               [render-or-edit-path
+                mode
+                path-path
+                path
+                :remove-fn (fn []
+                             (dispatch [:reaction/delete-identity-path idx]))
+                :spec-valid? (if (contains? #{:edit :new} mode)
+                               (if (not-empty
+                                    @(subscribe
+                                      [:reaction/edit-spec-errors-in path-path]))
+                                 false
+                                 true)
+                               true)]))
            identity-paths))]])
+
+(defn- render-conditions-errors
+  "Render out top-level conditions errors, currently there is only one, an empty
+  conditions map."
+  []
+  (when-let [problems @(subscribe [:reaction/edit-spec-errors-in
+                                   [:ruleset :conditions]])]
+    (println "weenus")
+    (cond-> [:ul.conditions-errors]
+      (some
+       (fn [{:keys [pred]}]
+         (= pred
+            '(cljs.core/<= 1 (cljs.core/count %) 9007199254740991)))
+       problems)
+      (conj
+       [:li
+        "Reaction must specify at least one condition."]))))
 
 (defn- ruleset-view
   [mode
@@ -473,7 +501,10 @@
    [render-identity-paths
     mode identityPaths]
    [:dt "Conditions"]
-   [:dd [render-conditions mode conditions]
+   [:dd
+    (when (contains? #{:edit :new} mode)
+      [render-conditions-errors])
+    [render-conditions mode conditions]
     (when (contains? #{:edit :new} mode)
       [add-condition])]
    [:dt "Template"]
@@ -573,6 +604,12 @@
      [reaction-actions mode id]
      [:div {:class "tenant-wrapper"}
       [:dl.reaction-view
+       [:dt "Error Debug"]
+       [:dd
+        (into [:ul]
+              (for [problem @(subscribe [:reaction/edit-spec-errors])]
+                [:li [:strong (pr-str (:in problem))] " - " (pr-str problem)]))
+        ]
        [:dt "Title"]
        [:dd
         (case mode

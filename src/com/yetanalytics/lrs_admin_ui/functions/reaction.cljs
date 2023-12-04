@@ -263,3 +263,12 @@
         (assoc m k (dissoc v :sort-idx)))
       {}
       conditions))))
+
+(defn fix-ruleset-in-path
+  "Clojure spec adds an array idx to the :in path on failures of map-of specs.
+  This function takes a reaction ruleset condition path and adds the idx,
+  making the path usable for finding things."
+  [[seg0 seg1 seg2 & rest-seg :as path]]
+  (if (and (= [:ruleset :conditions] [seg0 seg1]) seg2)
+    (into [seg0 seg1 seg2 1] rest-seg)
+    path))
