@@ -481,7 +481,6 @@
   []
   (when-let [problems @(subscribe [:reaction/edit-spec-errors-in
                                    [:ruleset :conditions]])]
-    (println "weenus")
     (cond-> [:ul.conditions-errors]
       (some
        (fn [{:keys [pred]}]
