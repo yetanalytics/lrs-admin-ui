@@ -417,22 +417,40 @@
                     condition-name (keyword (fns/ps-event-val e))]))}]
      condition-name)])
 
+(defn- render-condition-errors
+  "Render individual condition errors."
+  [condition-path]
+  (when-let [problems @(subscribe [:reaction/edit-spec-errors-in
+                                   condition-path])]
+    (cond-> [:ul.reaction-error-list]
+      (some
+       (fn [{:keys [pred]}]
+         (= pred
+            'cljs.core/map?))
+       problems)
+      (conj
+       [:li
+        "Condition must have at least one clause."]))))
+
 (defn- render-conditions
   [mode conditions]
   (into [:div.reaction-conditions]
         (for [[condition-name condition]
               (sort-by
                (comp :sort-idx val)
-               conditions)]
+               conditions)
+              :let [condition-path [:ruleset :conditions condition-name]]]
           [:div.condition
            [render-or-edit-condition-name
             mode condition-name]
+           (when (contains? #{:edit :new} mode)
+             [render-condition-errors condition-path])
            [:div.condition-body
             ;; condition can be nil during edit
             (when condition
               [render-clause
                mode
-               [:ruleset :conditions condition-name]
+               condition-path
                condition])]
            (when (contains? #{:edit :new} mode)
              [delete-icon
@@ -442,7 +460,7 @@
            (when (and (contains? #{:edit :new} mode)
                       (nil? condition))
              [add-clause
-              [:ruleset :conditions condition-name]])])))
+              condition-path])])))
 
 (defn- render-identity-paths
   [mode identity-paths]
@@ -481,7 +499,7 @@
   []
   (when-let [problems @(subscribe [:reaction/edit-spec-errors-in
                                    [:ruleset :conditions]])]
-    (cond-> [:ul.conditions-errors]
+    (cond-> [:ul.reaction-error-list]
       (some
        (fn [{:keys [pred]}]
          (= pred
