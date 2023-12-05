@@ -313,54 +313,73 @@
                              parent-path
                              v]))}]])
 
-(defn- render-clause
-  [mode
-   reaction-path
-   {and-clauses :and
-    or-clauses  :or
-    not-clause  :not
-    :as clause}]
-  (-> (cond
-        and-clauses
-        [:div.clause.boolean.and
-         [clause-label mode reaction-path :and]
-         (into [:div.boolean-body]
-               (map-indexed
-                (fn [idx clause]
-                  [render-clause
-                   mode
-                   (into reaction-path [:and idx])
-                   clause])
-                and-clauses))
-         (when (contains? #{:edit :new} mode)
-           [add-clause
-            (conj reaction-path :and)])]
-        or-clauses
-        [:div.clause.boolean.or
-         [clause-label mode reaction-path :or]
-         (into [:div.boolean-body]
-               (map-indexed
-                (fn [idx clause]
-                  [render-clause
-                   mode
-                   (into reaction-path [:or idx])
-                   clause])
-                or-clauses))
-         (when (contains? #{:edit :new} mode)
-           [add-clause
-            (conj reaction-path :or)])]
-        (find clause :not)
-        [:div.clause.boolean.not
-         [clause-label mode reaction-path :not]
-         [:div.boolean-body
-          (when not-clause
-            [render-clause mode (conj reaction-path :not) not-clause])]
-         (when (and (contains? #{:edit :new} mode)
-                    (nil? not-clause))
-           [add-clause
-            (conj reaction-path :not)])]
-        :else
-        (let [{:keys [path op val ref]} clause]
+(declare render-clause)
+
+(defn- render-and
+  [mode reaction-path and-clauses]
+  [:div.clause.boolean.and
+   [clause-label mode reaction-path :and]
+   (into [:div.boolean-body]
+         (map-indexed
+          (fn [idx clause]
+            [render-clause
+             mode
+             (into reaction-path [:and idx])
+             clause])
+          and-clauses))
+   (when (contains? #{:edit :new} mode)
+     [:<>
+      [add-clause
+       (conj reaction-path :and)]
+      [delete-icon
+       :on-click
+       (fn []
+         (dispatch
+          [:reaction/delete-clause reaction-path]))]])])
+
+(defn- render-or
+  [mode reaction-path or-clauses]
+  [:div.clause.boolean.or
+   [clause-label mode reaction-path :or]
+   (into [:div.boolean-body]
+         (map-indexed
+          (fn [idx clause]
+            [render-clause
+             mode
+             (into reaction-path [:or idx])
+             clause])
+          or-clauses))
+   (when (contains? #{:edit :new} mode)
+     [:<>
+      [add-clause
+       (conj reaction-path :or)]
+      [delete-icon
+       :on-click
+       (fn []
+         (dispatch
+          [:reaction/delete-clause reaction-path]))]])])
+
+(defn- render-not
+  [mode reaction-path not-clause]
+  [:div.clause.boolean.not
+   [clause-label mode reaction-path :not]
+   [:div.boolean-body
+    (when not-clause
+      [render-clause mode (conj reaction-path :not) not-clause])]
+   (when (and (contains? #{:edit :new} mode)
+              (nil? not-clause))
+     [add-clause
+      (conj reaction-path :not)])
+   (when (contains? #{:edit :new} mode)
+     [delete-icon
+      :on-click
+      (fn []
+        (dispatch
+         [:reaction/delete-clause reaction-path]))])])
+
+(defn- render-logic
+  [mode reaction-path clause]
+  (let [{:keys [path op val ref]} clause]
           [:div.clause.op
            [clause-label mode reaction-path :logic]
            (cond-> [:dl.op-list
@@ -402,7 +421,34 @@
                         [render-ref
                          mode
                          (conj reaction-path :ref)
-                         ref]]))]))
+                         ref]]))
+           (when (contains? #{:edit :new} mode)
+             [delete-icon
+              :on-click
+              (fn []
+                (dispatch
+                 [:reaction/delete-clause reaction-path]))])]))
+
+(defn- render-clause
+  [mode
+   reaction-path
+   {and-clauses :and
+    or-clauses  :or
+    not-clause  :not
+    :as clause}]
+  (-> (cond
+        and-clauses
+        [render-and
+         mode reaction-path and-clauses]
+        or-clauses
+        [render-or
+         mode reaction-path or-clauses]
+        (find clause :not)
+        [render-not
+         mode reaction-path not-clause]
+        :else
+        [render-logic
+         mode reaction-path clause])
       (cond->
         (contains? #{:edit :new} mode)
         (conj [delete-icon
