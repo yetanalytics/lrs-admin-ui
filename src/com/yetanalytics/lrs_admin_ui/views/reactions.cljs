@@ -389,11 +389,31 @@
         (dispatch
          [:reaction/delete-clause reaction-path]))])])
 
+(defn- render-logic-errors
+  [clause-path]
+  (when-let [problems @(subscribe [:reaction/edit-spec-errors-in
+                                   clause-path])]
+    (let [pred-set (into #{}
+                         (map :pred problems))]
+      (cond-> [:ul.reaction-error-list]
+        (pred-set
+         'com.yetanalytics.lrs-admin-ui.spec.reaction/valid-clause-path?)
+        (conj
+         [:li
+          "Incomplete path."])
+        (pred-set
+         'com.yetanalytics.lrs-admin-ui.spec.reaction/valid-like-val?)
+        (conj [:li
+               "The 'like' op only supports string values."])))))
+
 (defn- render-logic
   [mode reaction-path clause]
   (let [{:keys [path op val ref]} clause]
           [:div.clause.op
            [clause-label mode reaction-path :logic]
+           (when (contains? #{:edit :new} mode)
+             [render-logic-errors
+              reaction-path])
            (cond-> [:dl.op-list
                     [:dt "Path"]
                     [:dd
