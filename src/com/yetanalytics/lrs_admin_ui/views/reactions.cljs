@@ -685,12 +685,6 @@
      [reaction-actions mode id]
      [:div {:class "tenant-wrapper"}
       [:dl.reaction-view
-       [:dt "Error Debug"]
-       [:dd
-        (into [:ul]
-              (for [problem @(subscribe [:reaction/edit-spec-errors])]
-                [:li [:strong (pr-str (:in problem))] " - " (pr-str problem)]))
-        ]
        [:dt "Title"]
        [:dd
         (case mode
