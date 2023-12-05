@@ -319,6 +319,10 @@
   [mode reaction-path and-clauses]
   [:div.clause.boolean.and
    [clause-label mode reaction-path :and]
+   (when (empty? and-clauses)
+     [:ul.reaction-error-list
+      [:li
+       "AND must have at least one clause."]])
    (into [:div.boolean-body]
          (map-indexed
           (fn [idx clause]
@@ -341,6 +345,10 @@
   [mode reaction-path or-clauses]
   [:div.clause.boolean.or
    [clause-label mode reaction-path :or]
+   (when (empty? or-clauses)
+     [:ul.reaction-error-list
+      [:li
+       "OR must have at least one clause."]])
    (into [:div.boolean-body]
          (map-indexed
           (fn [idx clause]
@@ -363,6 +371,10 @@
   [mode reaction-path not-clause]
   [:div.clause.boolean.not
    [clause-label mode reaction-path :not]
+   (when (nil? not-clause)
+     [:ul.reaction-error-list
+      [:li
+       "NOT must specify a clause."]])
    [:div.boolean-body
     (when not-clause
       [render-clause mode (conj reaction-path :not) not-clause])]
@@ -465,18 +477,11 @@
 
 (defn- render-condition-errors
   "Render individual condition errors."
-  [condition-path]
-  (when-let [problems @(subscribe [:reaction/edit-spec-errors-in
-                                   condition-path])]
-    (cond-> [:ul.reaction-error-list]
-      (some
-       (fn [{:keys [pred]}]
-         (= pred
-            'cljs.core/map?))
-       problems)
-      (conj
-       [:li
-        "Condition must have at least one clause."]))))
+  [condition]
+  (when (empty? (select-keys condition [:and :or :not :path]))
+    [:ul.reaction-error-list
+     [:li
+      "Condition must have at least one clause."]]))
 
 (defn- render-conditions
   [mode conditions]
@@ -490,7 +495,7 @@
            [render-or-edit-condition-name
             mode condition-name]
            (when (contains? #{:edit :new} mode)
-             [render-condition-errors condition-path])
+             [render-condition-errors condition])
            [:div.condition-body
             ;; condition can be nil during edit
             (when condition
@@ -542,18 +547,11 @@
 (defn- render-conditions-errors
   "Render out top-level conditions errors, currently there is only one, an empty
   conditions map."
-  []
-  (when-let [problems @(subscribe [:reaction/edit-spec-errors-in
-                                   [:ruleset :conditions]])]
-    (cond-> [:ul.reaction-error-list]
-      (some
-       (fn [{:keys [pred]}]
-         (= pred
-            '(cljs.core/<= 1 (cljs.core/count %) 9007199254740991)))
-       problems)
-      (conj
-       [:li
-        "Reaction must specify at least one condition."]))))
+  [conditions]
+  (when (empty? conditions)
+    [:ul.reaction-error-list
+     [:li
+      "Ruleset must specify at least one condition."]]))
 
 (defn- ruleset-view
   [mode
@@ -566,7 +564,7 @@
    [:dt "Conditions"]
    [:dd
     (when (contains? #{:edit :new} mode)
-      [render-conditions-errors])
+      [render-conditions-errors conditions])
     [render-conditions mode conditions]
     (when (contains? #{:edit :new} mode)
       [add-condition])]
