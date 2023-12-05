@@ -1284,9 +1284,9 @@
                                   :path []})))))))
 
 (re-frame/reg-event-db
- :reaction/and-or-toggle
+ :reaction/set-clause-type
  global-interceptors
- (fn [db [_ clause-path bool-key]]
+ (fn [db [_ clause-path clause-type]] ;; #{"and" "or" "not" "logic"}
    (let [full-path (into [::db/editing-reaction]
                          clause-path)
          {and-clauses :and
@@ -1294,9 +1294,17 @@
           :as clause} (get-in db full-path)]
      (assoc-in db full-path
                (-> clause
-                   (dissoc :and :or)
-                   (assoc bool-key (or and-clauses
-                                       or-clauses)))))))
+                   ;; preserve sort idx if there
+                   (select-keys [:sort-idx])
+                   (merge
+                    (case clause-type
+                      "and" {:and (or or-clauses [])}
+                      "or" {:or (or and-clauses [])}
+                      "not" {:not nil}
+                      "logic" {:path []
+                               :op "eq"
+                               :val ""})))))))
+
 (re-frame/reg-event-db
  :reaction/set-condition-name
  global-interceptors

@@ -250,26 +250,32 @@
      (conj ref-path :path)
      path]]])
 
-(defn- and-or-label
+(defn- clause-label
   [mode
    reaction-path
-   bool-key]
+   type-key]
   [:div.boolean-label
    (if (contains? #{:edit :new} mode)
      [:select
-      {:value (name bool-key)
+      {:value (name type-key)
        :on-change
        (fn [e]
-         (dispatch [:reaction/and-or-toggle
+         (dispatch [:reaction/set-clause-type
                     reaction-path
-                    (keyword (fns/ps-event-val e))]))}
+                    (fns/ps-event-val e)]))}
       [:option
        {:value "and"}
        "AND"]
       [:option
        {:value "or"}
-       "OR"]]
-     (case bool-key :and "AND" :or "OR"))])
+       "OR"]
+      [:option
+       {:value "not"}
+       "NOT"]
+      [:option
+       {:value "logic"}
+       "Logic"]]
+     (case type-key :and "AND" :or "OR" :not "NOT" ""))])
 
 (defn- delete-icon
   [& {:keys [on-click]
@@ -317,7 +323,7 @@
   (-> (cond
         and-clauses
         [:div.clause.boolean.and
-         [and-or-label mode reaction-path :and]
+         [clause-label mode reaction-path :and]
          (into [:div.boolean-body]
                (map-indexed
                 (fn [idx clause]
@@ -331,7 +337,7 @@
             (conj reaction-path :and)])]
         or-clauses
         [:div.clause.boolean.or
-         [and-or-label mode reaction-path :or]
+         [clause-label mode reaction-path :or]
          (into [:div.boolean-body]
                (map-indexed
                 (fn [idx clause]
@@ -345,7 +351,7 @@
             (conj reaction-path :or)])]
         (find clause :not)
         [:div.clause.boolean.not
-         [:div.boolean-label "NOT"]
+         [clause-label mode reaction-path :not]
          [:div.boolean-body
           (when not-clause
             [render-clause mode (conj reaction-path :not) not-clause])]
@@ -356,6 +362,7 @@
         :else
         (let [{:keys [path op val ref]} clause]
           [:div.clause.op
+           [clause-label mode reaction-path :logic]
            (cond-> [:dl.op-list
                     [:dt "Path"]
                     [:dd
