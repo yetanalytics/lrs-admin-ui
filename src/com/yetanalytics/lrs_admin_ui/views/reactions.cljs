@@ -436,26 +436,19 @@
     or-clauses  :or
     not-clause  :not
     :as clause}]
-  (-> (cond
-        and-clauses
-        [render-and
-         mode reaction-path and-clauses]
-        or-clauses
-        [render-or
-         mode reaction-path or-clauses]
-        (find clause :not)
-        [render-not
-         mode reaction-path not-clause]
-        :else
-        [render-logic
-         mode reaction-path clause])
-      (cond->
-        (contains? #{:edit :new} mode)
-        (conj [delete-icon
-               :on-click
-               (fn []
-                 (dispatch
-                  [:reaction/delete-clause reaction-path]))]))))
+  (cond
+    and-clauses
+    [render-and
+     mode reaction-path and-clauses]
+    or-clauses
+    [render-or
+     mode reaction-path or-clauses]
+    (find clause :not)
+    [render-not
+     mode reaction-path not-clause]
+    :else
+    [render-logic
+     mode reaction-path clause]))
 
 (defn- render-or-edit-condition-name
   [mode condition-name]
