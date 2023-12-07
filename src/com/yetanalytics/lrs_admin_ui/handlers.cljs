@@ -18,7 +18,8 @@
             [goog.string                                      :refer [format]]
             goog.string.format
             [clojure.walk                                     :as w]
-            [com.yetanalytics.lrs-admin-ui.spec.reaction      :as rs]))
+            [com.yetanalytics.lrs-admin-ui.spec.reaction      :as rs]
+            [com.yetanalytics.lrs-reactions.path              :as rpath]))
 
 (def global-interceptors
   [db/check-spec-interceptor])
@@ -1157,7 +1158,7 @@
            ref] :as c}]
   (if ref
     c
-    (let [{:keys [leaf-type]} (rfns/analyze-path path)]
+    (let [{:keys [leaf-type]} (rpath/analyze-path path)]
       (if leaf-type
         (let [vtype (val-type val)]
           (assoc c :val (if (= leaf-type vtype)
@@ -1172,7 +1173,7 @@
    (let [full-path (into [::db/editing-reaction]
                          path-path)
          path-before (get-in db full-path)
-         {:keys [next-keys]} (rfns/analyze-path
+         {:keys [next-keys]} (rpath/analyze-path
                               path-before)
          parent-path (butlast full-path)]
      (-> db
@@ -1263,7 +1264,7 @@
                              keys
                              (->> (map name)))
          {:keys [path] :as clause} (get-in db full-path)
-         {:keys [leaf-type]} (rfns/analyze-path path)]
+         {:keys [leaf-type]} (rpath/analyze-path path)]
      (case set-to
        "val"
        (assoc-in db

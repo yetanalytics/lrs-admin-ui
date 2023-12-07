@@ -2,6 +2,7 @@
   (:require [re-frame.core :refer [dispatch subscribe]]
             [com.yetanalytics.lrs-admin-ui.functions :as fns]
             [com.yetanalytics.lrs-admin-ui.functions.reaction :as rfns]
+            [com.yetanalytics.lrs-reactions.path :as rpath]
             [com.yetanalytics.lrs-admin-ui.views.form :as form]
             [com.yetanalytics.lrs-admin-ui.views.reactions.path :as p]
             [com.yetanalytics.lrs-admin-ui.views.reactions.template :as t]
@@ -141,7 +142,7 @@
 
 (defn- select-val-type
   [val-path path val]
-  (let [{:keys [leaf-type]} (rfns/analyze-path path)]
+  (let [{:keys [leaf-type]} (rpath/analyze-path path)]
     (into [:select
            {:value (rfns/val-type val)
             :on-change (fn [e]
@@ -160,7 +161,7 @@
 (defn- val-input
   [val-path path val]
   ;; path type wins over val type
-  (let [{:keys [leaf-type]} (rfns/analyze-path path)
+  (let [{:keys [leaf-type]} (rpath/analyze-path path)
         val-type (or
                   (and
                    leaf-type
@@ -397,12 +398,12 @@
                          (map :pred problems))]
       (cond-> [:ul.reaction-error-list]
         (pred-set
-         'com.yetanalytics.lrs-admin-ui.spec.reaction/valid-clause-path?)
+         'com.yetanalytics.lrs-reactions.spec/valid-clause-path?)
         (conj
          [:li
           "Incomplete path."])
         (pred-set
-         'com.yetanalytics.lrs-admin-ui.spec.reaction/valid-like-val?)
+         'com.yetanalytics.lrs-reactions.spec/valid-like-val?)
         (conj [:li
                "The 'like' op only supports string values."])))))
 

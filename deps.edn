@@ -25,7 +25,10 @@
                                                  :exclusions
                                                  [org.clojure/clojurescript
                                                   reagent/reagent
-                                                  cljsjs/codemirror]}}
+                                                  cljsjs/codemirror]}
+        com.yetanalytics/lrs-reactions          {:mvn/version "0.0.1-SNAPSHOT"
+                                                 :exclusions
+                                                 [org.clojure/clojure]}}
  :paths ["src" "resources"]
  :aliases {:fig {:extra-deps
                   {com.bhauman/rebel-readline-cljs {:mvn/version "0.1.4"}
