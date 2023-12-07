@@ -1,7 +1,7 @@
 (ns com.yetanalytics.lrs-admin-ui.views.reactions.path
   (:require [reagent.core :as r]
             [com.yetanalytics.lrs-admin-ui.functions :as fns]
-            [com.yetanalytics.lrs-admin-ui.functions.reaction :as rfns]
+            [com.yetanalytics.lrs-reactions.path :as rpath]
             [com.yetanalytics.lrs-admin-ui.views.form :as form]
             [goog.string :refer [format]]
             [goog.string.format]))
@@ -20,7 +20,7 @@
          seg-val
          change-fn]
       (let [id (str (random-uuid))
-            {:keys [next-keys]} (rfns/analyze-path
+            {:keys [next-keys]} (rpath/analyze-path
                                  path-until)]
         [:div.path-input-segment-edit
          (if (= '[idx] next-keys)
@@ -74,7 +74,7 @@
   (let [{:keys [next-keys
                 leaf-type
                 complete?
-                valid?]} (rfns/analyze-path
+                valid?]} (rpath/analyze-path
                           path)]
     (-> [:div.path-input
          {:class (when (or (not spec-valid?)
@@ -131,7 +131,7 @@
 (comment
   ;; Testing helpers
   (defn- add-segment [path]
-    (let [{:keys [next-keys]} (rfns/analyze-path
+    (let [{:keys [next-keys]} (rpath/analyze-path
                                path)]
       (conj path
             (if (= '[idx] next-keys)
