@@ -684,6 +684,10 @@
         :edit "Edit Reaction"
         :new "New Reaction")]
      [reaction-actions mode id]
+     (when (and (contains? #{:edit :new} mode)
+                (some? @(subscribe [:reaction/edit-spec-errors])))
+       [:div.reaction-edit-invalid
+        "Reaction is invalid, see below."])
      [:div {:class "tenant-wrapper"}
       [:dl.reaction-view
        [:dt "Title"]
