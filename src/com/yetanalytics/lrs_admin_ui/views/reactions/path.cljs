@@ -71,9 +71,7 @@
            del-fn (fn [_] (println 'del))
            change-fn (fn [_] (println 'change))
            spec-valid? true}}]
-  (let [{:keys [next-keys
-                leaf-type
-                complete?
+  (let [{:keys [complete?
                 valid?]} (rpath/analyze-path
                           path)]
     (-> [:div.path-input

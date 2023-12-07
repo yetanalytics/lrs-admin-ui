@@ -3,8 +3,9 @@
             [com.yetanalytics.lrs-admin-ui.functions :as fns]
             [com.yetanalytics.lrs-admin-ui.views.form.dropdown
              :refer [make-key-down-fn
-                     select-input-top multi-select-input-top
-                     dropdown-items combo-box-dropdown]]
+                     select-input-top
+                     dropdown-items
+                     combo-box-dropdown]]
             [goog.string :refer [format]]
             [goog.string.format]))
 
@@ -31,7 +32,12 @@
    | `removable?`   | When true, a \"(None)\" option will appear as the first item in the dropdown; clicking it results in passing `nil` to `on-change`.
    | `remove-text`  | The dropdown label for `nil` when `removable?` is `true`. Default is \"(None)\"."
   [{:keys [id name on-change on-search value placeholder disabled custom-text?
-           options-fn tooltip err-sub err-match required removable? remove-text]
+           options-fn
+           #_:clj-kondo/ignore tooltip
+           #_:clj-kondo/ignore err-sub
+           #_:clj-kondo/ignore err-match
+           #_:clj-kondo/ignore required
+           removable? remove-text]
     :or {name        (random-uuid)
          id          (random-uuid)
          disabled    false
@@ -42,7 +48,7 @@
          options-fn  (constantly [])
          removable?  false
          remove-text "(None)"}}
-   & label]
+   & #_:clj-kondo/ignore label]
   (let [combo-box-ratom (r/atom {:current-value value
                                  :dropdown {:open? false
                                             :focus 0
@@ -114,7 +120,7 @@
                select-fn (fn [v] (println 'select v))
                icon-src "/images/icons/add.svg"}}]
       [:div.action-dropdown
-       {:on-blur (fn [e]
+       {:on-blur (fn [_]
                    ;; FIXME: Horrible hack, can't figure out how to stop the clobbering here
                    (js/setTimeout #(swap! state assoc :dropdown-open? false) 200))}
        [:div.action-dropdown-icon

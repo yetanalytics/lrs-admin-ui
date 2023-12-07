@@ -954,7 +954,7 @@
 (re-frame/reg-event-fx
  :reaction/new
  global-interceptors
- (fn [{:keys [db]} [_ reaction-id]]
+ (fn [{:keys [db]} _]
    (let [reaction {:title  (format "reaction_%s"
                                    (fns/rand-alpha-str 8))
                    :active true
@@ -1075,8 +1075,7 @@
 (re-frame/reg-event-fx
  :reaction/delete-success
  global-interceptors
- (fn [{{server-host       ::db/server-host
-        proxy-path        ::db/proxy-path} :db} _]
+ (fn [_ _]
    {:fx [[:dispatch [:reaction/load-reactions]]
          [:dispatch [:reaction/back-to-list]]
          [:dispatch [:notification/notify false
@@ -1128,7 +1127,7 @@
 (re-frame/reg-event-db
  :reaction/add-identity-path
  global-interceptors
- (fn [db [_ idx]]
+ (fn [db _]
    (update-in db
               [::db/editing-reaction :ruleset :identityPaths]
               conj
@@ -1272,10 +1271,10 @@
                  (-> clause
                      (dissoc :ref)
                      (assoc :val
-                            (case leaf-type
-                              nil "" ;; TODO: this might not work
-                              'json "" ;; or this
-                              (init-type leaf-type)))))
+                            (cond
+                              (nil? leaf-type) "" ;; FIXME: This might not work
+                              (= 'json leaf-type) "" ;; or this
+                              :else (init-type leaf-type)))))
        "ref"
        (assoc-in db
                  full-path

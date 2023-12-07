@@ -1,6 +1,5 @@
 (ns com.yetanalytics.lrs-admin-ui.views.dialog
-  (:require [reagent.core :as r]
-            [re-frame.core :as re-frame]))
+  (:require [re-frame.core :as re-frame]))
 
 (defn dialog
   []

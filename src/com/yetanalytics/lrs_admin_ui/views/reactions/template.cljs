@@ -1,6 +1,5 @@
 (ns com.yetanalytics.lrs-admin-ui.views.reactions.template
   (:require [com.yetanalytics.lrs-admin-ui.views.form.editor :as ed]
-            [reagent.core :as r]
             [re-frame.core :as re-frame]))
 
 (defn edit-template

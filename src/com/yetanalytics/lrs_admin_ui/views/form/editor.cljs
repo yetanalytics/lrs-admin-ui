@@ -1,7 +1,6 @@
 (ns com.yetanalytics.lrs-admin-ui.views.form.editor
   (:require [re-codemirror.core :as cm]
             [clojure.data :as data]
-            [clojure.string :as cstr]
             [reagent.core :as r]
             [com.yetanalytics.lrs-admin-ui.views.form.validation :as v]
             ["codemirror/mode/javascript/javascript"]

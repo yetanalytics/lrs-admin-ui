@@ -5,9 +5,7 @@
             [com.yetanalytics.lrs-reactions.path :as rpath]
             [com.yetanalytics.lrs-admin-ui.views.form :as form]
             [com.yetanalytics.lrs-admin-ui.views.reactions.path :as p]
-            [com.yetanalytics.lrs-admin-ui.views.reactions.template :as t]
-            [goog.string :refer [format]]
-            [goog.string.format]))
+            [com.yetanalytics.lrs-admin-ui.views.reactions.template :as t]))
 
 (defn- short-error
   [{:keys [type message]}]
@@ -89,13 +87,6 @@
     "boolean"
     (nil? val)
     "null"))
-
-(defn- render-val
-  [val]
-  [:div.val
-   (str (val-type val) ": ")
-   [:code (str val)]])
-
 
 (defn- render-or-edit-path
   [mode path-path path & {:keys [remove-fn
@@ -673,10 +664,10 @@
                 created
                 modified
                 error
-                ruleset] :as reaction} @(subscribe
-                                         (case mode
-                                           :focus [:reaction/focus]
-                                           [:reaction/editing]))]
+                ruleset]} @(subscribe
+                            (case mode
+                              :focus [:reaction/focus]
+                              [:reaction/editing]))]
     [:div {:class "left-content-wrapper"}
      [:h2 {:class "content-title"}
       (case mode
