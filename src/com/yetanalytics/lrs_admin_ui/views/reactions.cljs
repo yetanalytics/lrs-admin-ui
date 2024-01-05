@@ -3,6 +3,7 @@
             [com.yetanalytics.lrs-admin-ui.functions :as fns]
             [com.yetanalytics.lrs-admin-ui.functions.reaction :as rfns]
             [com.yetanalytics.lrs-reactions.path :as rpath]
+            [com.yetanalytics.lrs-admin-ui.functions.time :refer [iso8601->local-display]]
             [com.yetanalytics.lrs-admin-ui.views.form :as form]
             [com.yetanalytics.lrs-admin-ui.views.reactions.path :as p]
             [com.yetanalytics.lrs-admin-ui.views.reactions.template :as t]))
@@ -35,42 +36,48 @@
                        modified
                        active
                        error]} @(subscribe [:reaction/list])]
-           [:tr
+           [:tr {:class "reaction-row"
+                 :on-click #(dispatch [:reaction/set-focus id])}
             [:td {:data-label "ID"} id]
             [:td {:data-label "Title"} title]
-            [:td {:data-label "Created"} created]
-            [:td {:data-label "Modified"} modified]
+            [:td {:data-label "Created"} (iso8601->local-display created)]
+            [:td {:data-label "Modified"} (iso8601->local-display modified)]
             [:td {:data-label "Status"} (if (true? active) "Active" "Inactive")]
             [:td {:data-label "Error"} (if error (short-error error) "[None]")]
             [:td {:data-label "Action"}
-             [:a {:href "#!"
-                  :on-click (fn [e]
-                              (fns/ps-event e)
-                              (dispatch [:reaction/set-focus id]))}
-              "View"]
-             [:a {:href "#!"
-                  :on-click (fn [e]
-                              (fns/ps-event e)
-                              (dispatch [:reaction/edit id]))}
-              "Edit"]
-             [:a {:href "#!"
-                  :on-click (fn [e]
-                              (fns/ps-event e)
-                              (dispatch [:reaction/delete-confirm id]))}
-              "Delete"]]]))])
+             [:ul {:class "action-icon-list"}
+              [:li 
+               [:a {:href "#!"
+                    :class "icon-edit"
+                    :on-click (fn [e]
+                                (fns/ps-event e)
+                                (dispatch [:reaction/edit id]))}
+                "Edit"]]
+              [:li
+               [:a {:href "#!"
+                    :class "icon-delete"
+                    :on-click (fn [e]
+                                (fns/ps-event e)
+                                (dispatch [:reaction/delete-confirm id]))}
+                "Delete"]]]]]))])
 
 (defn- reactions-list
   []
   [:div {:class "left-content-wrapper"}
    [:h2 {:class "content-title"}
     "Reactions"]
-   [:a {:href "#"
-        :on-click (fn [e]
-                    (fns/ps-event e)
-                    (dispatch [:reaction/new]))}
-    "New"]
    [:div {:class "tenant-wrapper"}
-    [reactions-table]]])
+    [:div {:class "api-keys-table-actions"}
+     [:input {:type "button",
+              :class "btn-blue-bold",
+              :on-click #(dispatch [:reaction/new])
+              :value "ADD NEW REACTION"}]]
+    [reactions-table]
+    [:div {:class "api-keys-table-actions"}
+     [:input {:type "button",
+              :class "btn-blue-bold",
+              :on-click #(dispatch [:reaction/new])
+              :value "ADD NEW REACTION"}]]]])
 
 (defn- render-path
   [path]
@@ -598,38 +605,39 @@
     "None"))
 
 (defn- reaction-actions
-  [mode ?id]
-  [:div.reaction-actions
-   [:a {:href "#!"
-        :on-click (fn [e]
-                    (fns/ps-event e)
-                    (dispatch [:reaction/back-to-list]))}
-    "Back"]
+  [mode ?id error?]
+  [:<>
+   [:div {:class "api-keys-table-actions"}
+    [:input {:type "button",
+             :class "btn-blue-bold",
+             :on-click #(dispatch [:reaction/back-to-list])
+             :value "BACK"}]] 
    (when (= :focus mode)
-     [:a {:href "#!"
-          :on-click (fn [e]
-                      (fns/ps-event e)
-                      (dispatch [:reaction/edit ?id]))}
-      "Edit"])
+     [:div {:class "api-keys-table-actions"}
+      [:input {:type "button",
+               :class "btn-blue-bold",
+               :on-click #(dispatch [:reaction/edit ?id])
+               :value "EDIT"}]] )
    (when (and (= :edit mode)
               @(subscribe [:reaction/edit-dirty?]))
      [:<>
-      [:a {:href "#!"
-           :on-click (fn [e]
-                       (fns/ps-event e)
-                       (dispatch [:reaction/save-edit]))}
-       "Save"]
-      [:a {:href "#!"
-           :on-click (fn [e]
-                       (fns/ps-event e)
-                       (dispatch [:reaction/revert-edit]))}
-       "Revert Changes"]])
-   (when (= :new mode)
-     [:a {:href "#!"
-          :on-click (fn [e]
-                      (fns/ps-event e)
-                      (dispatch [:reaction/save-edit]))}
-      "Create"])])
+      (when (not error?)
+        [:div {:class "api-keys-table-actions"}
+         [:input {:type "button",
+                  :class "btn-blue-bold",
+                  :on-click #(dispatch [:reaction/save-edit])
+                  :value "SAVE"}]]) 
+      [:div {:class "api-keys-table-actions"}
+       [:input {:type "button",
+                :class "btn-blue-bold",
+                :on-click #(dispatch [:reaction/revert-edit])
+                :value "REVERT CHANGES"}]]])
+   (when (and (= :new mode) (not error?))
+         [:div {:class "api-keys-table-actions"}
+          [:input {:type "button",
+                   :class "btn-blue-bold",
+                   :on-click #(dispatch [:reaction/save-edit])
+                   :value "CREATE"}]])])
 
 (defn- edit-title
   [title]
@@ -667,19 +675,20 @@
                 ruleset]} @(subscribe
                             (case mode
                               :focus [:reaction/focus]
-                              [:reaction/editing]))]
+                              [:reaction/editing]))
+        error?  (and (contains? #{:edit :new} mode)
+                     (some? @(subscribe [:reaction/edit-spec-errors])))]
     [:div {:class "left-content-wrapper"}
      [:h2 {:class "content-title"}
       (case mode
         :focus "Reaction Details"
         :edit "Edit Reaction"
         :new "New Reaction")]
-     [reaction-actions mode id]
-     (when (and (contains? #{:edit :new} mode)
-                (some? @(subscribe [:reaction/edit-spec-errors])))
-       [:div.reaction-edit-invalid
-        "Reaction is invalid, see below."])
      [:div {:class "tenant-wrapper"}
+      [reaction-actions mode id error?]
+      (when error?
+        [:div.reaction-edit-invalid
+         "Reaction is invalid, see below."])
       [:dl.reaction-view
        [:dt "Title"]
        [:dd
@@ -710,7 +719,8 @@
           [:dd [render-error error]]])
 
        [:dt "Ruleset"]
-       [:dd [ruleset-view mode ruleset]]]]]))
+       [:dd [ruleset-view mode ruleset]]]
+      [reaction-actions mode id error?]]]))
 
 (defn reactions
   []

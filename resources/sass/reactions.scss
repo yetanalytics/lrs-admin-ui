@@ -164,3 +164,8 @@ ul.reaction-error-list {
 div.reaction-edit-invalid {
   background-color: pink;
 }
+
+tr.reaction-row:hover {
+  @extend .pointer;
+  background-color: #888;
+}
