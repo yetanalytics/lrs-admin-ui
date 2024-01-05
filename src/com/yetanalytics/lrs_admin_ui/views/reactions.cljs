@@ -687,8 +687,10 @@
           :focus title
           [edit-title title])]
 
-       [:dt "ID"]
-       [:dd (or id "[New]")]
+       (when (contains? #{:focus :edit} mode)
+         [:<>
+          [:dt "ID"]
+          [:dd id]])
 
        [:dt "Status"]
        [:dd
@@ -696,14 +698,16 @@
           :focus (if active "Active" "Inactive")
           [edit-status active])]
 
-       [:dt "Created"]
-       [:dd (or created "[New]")]
+       (when (contains? #{:focus :edit} mode)
+         [:<>
+          [:dt "Created"]
+          [:dd (or created "[New]")]
 
-       [:dt "Modified"]
-       [:dd (or modified "[New]")]
+          [:dt "Modified"]
+          [:dd (or modified "[New]")]
 
-       [:dt "Error"]
-       [:dd [render-error error]]
+          [:dt "Error"]
+          [:dd [render-error error]]])
 
        [:dt "Ruleset"]
        [:dd [ruleset-view mode ruleset]]]]]))
