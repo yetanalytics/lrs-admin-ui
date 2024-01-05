@@ -1425,6 +1425,12 @@
  (fn [db _]
    (dissoc db ::db/editing-reaction-template-json)))
 
+(re-frame/reg-event-db
+ :test/set-test-str
+ global-interceptors
+ (fn [db [_ v]]
+   (assoc db ::db/test-str v)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Dialog
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

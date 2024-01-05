@@ -174,6 +174,9 @@
   (s/keys :req-un [:dialog-data/prompt
                    :dialog-data/choices]))
 
+;; Testing scratch
+(s/def ::test-str string?)
+
 (s/def ::db (s/keys :req [::session
                           ::credentials
                           ::login
@@ -197,7 +200,8 @@
                           ::editing-reaction-template-errors
                           ::editing-reaction-template-json
                           ::dialog-ref
-                          ::dialog-data]))
+                          ::dialog-data
+                          ::test-str]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Continuous DB Validation

@@ -192,12 +192,13 @@
        "string"
        [:input
         {:type "text"
-         :value val
+         :value @(subscribe [:test/test-str])
          :on-change
          (fn [e]
-           (dispatch [:reaction/set-val
+           (dispatch [:test/set-test-str (fns/ps-event-val e)])
+           #_(dispatch [:reaction/set-val
                       val-path
-                      (fns/ps-event-val e)]))}])))
+                        (fns/ps-event-val e)]))}])))
 
 (defn- render-or-edit-val
   [mode val-path path val]

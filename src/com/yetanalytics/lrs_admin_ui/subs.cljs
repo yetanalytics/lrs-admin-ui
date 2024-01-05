@@ -464,6 +464,12 @@
  (fn [emap [_ in-path]]
    (get emap (rfns/fix-ruleset-in-path in-path))))
 
+;; Testing db edit
+(reg-sub
+ :test/test-str
+ (fn [db _]
+   (::db/test-str db)))
+
 ;; Dialog
 
 (reg-sub
