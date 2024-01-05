@@ -164,3 +164,7 @@ ul.reaction-error-list {
 div.reaction-edit-invalid {
   background-color: pink;
 }
+
+.val > input {
+  min-width: 20em;
+}

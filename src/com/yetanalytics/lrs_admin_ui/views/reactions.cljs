@@ -460,6 +460,7 @@
     or-clauses  :or
     not-clause  :not
     :as clause}]
+  ^{:key (pr-str reaction-path)}
   (cond
     and-clauses
     [render-and
