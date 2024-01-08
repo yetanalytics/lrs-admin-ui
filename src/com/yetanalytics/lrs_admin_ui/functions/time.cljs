@@ -1,5 +1,6 @@
 (ns com.yetanalytics.lrs-admin-ui.functions.time
-  (:require [goog.string :refer [format]]
+  (:require [clojure.string :refer [split]]
+            [goog.string :refer [format]]
             [goog.string.format]))
 
 (def tz-offset-mins
@@ -26,6 +27,13 @@
         local-date-ms (- date-ms (* 60000 tz-offset-mins))
         date (js/Date. local-date-ms)]
     (subs (.toISOString date) 0 19)))
+
+(defn iso8601->local-display
+  [iso8601-str]
+  (-> (js/Date iso8601-str)
+      (.toLocaleString)
+      (split #"GMT")
+      first))
 
 (defn- two-weeks-ago
   "Return a timestamp two weeks before the current time."
