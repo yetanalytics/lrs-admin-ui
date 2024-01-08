@@ -1310,23 +1310,25 @@
  global-interceptors
  (fn [db [_ old-name new-name]]
    (let [reaction (::db/editing-reaction db)
-         other-names (-> reaction
-                         :ruleset
-                         :conditions
-                         keys
-                         set
-                         (disj old-name))]
-     (if (contains? other-names new-name)
-       ;; TODO: maybe pop error
-       db
-       (let [condition-val (-> reaction
-                               :ruleset
-                               :conditions
-                               old-name)]
-         (assoc db ::db/editing-reaction
-                (-> reaction
-                    (update-in [:ruleset :conditions] dissoc old-name)
-                    (assoc-in [:ruleset :conditions new-name] condition-val))))))))
+         all-names (-> reaction
+                       :ruleset
+                       :conditions
+                       keys
+                       set)]
+     (if (contains? all-names old-name)
+       (let [other-names (disj all-names old-name)]
+         (if (contains? other-names new-name)
+           ;; TODO: maybe pop error
+           db
+           (let [condition-val (-> reaction
+                                   :ruleset
+                                   :conditions
+                                   old-name)]
+             (assoc db ::db/editing-reaction
+                    (-> reaction
+                        (update-in [:ruleset :conditions] dissoc old-name)
+                        (assoc-in [:ruleset :conditions new-name] condition-val))))))
+       db))))
 
 (re-frame/reg-event-db
  :reaction/delete-clause
