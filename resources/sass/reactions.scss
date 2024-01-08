@@ -165,7 +165,10 @@ div.reaction-edit-invalid {
   background-color: pink;
 }
 
-tr.reaction-row:hover {
+tr.reaction-row {
   @extend .pointer;
+}
+
+tr.reaction-row:hover, main:not(.page-list-manager) table tbody tr:nth-child(even).reaction-row:hover {
   background-color: #888;
 }

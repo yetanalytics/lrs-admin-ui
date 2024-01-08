@@ -611,33 +611,29 @@
     [:input {:type "button",
              :class "btn-blue-bold",
              :on-click #(dispatch [:reaction/back-to-list])
-             :value "BACK"}]] 
-   (when (= :focus mode)
-     [:div {:class "api-keys-table-actions"}
+             :value "BACK"}] 
+    (when (= :focus mode)
       [:input {:type "button",
                :class "btn-blue-bold",
                :on-click #(dispatch [:reaction/edit ?id])
-               :value "EDIT"}]] )
-   (when (and (= :edit mode)
-              @(subscribe [:reaction/edit-dirty?]))
-     [:<>
-      (when (not error?)
-        [:div {:class "api-keys-table-actions"}
+               :value "EDIT"}] )
+    (when (and (= :edit mode)
+               @(subscribe [:reaction/edit-dirty?]))
+      [:<>
+       (when (not error?)
          [:input {:type "button",
                   :class "btn-blue-bold",
                   :on-click #(dispatch [:reaction/save-edit])
-                  :value "SAVE"}]]) 
-      [:div {:class "api-keys-table-actions"}
+                  :value "SAVE"}]) 
        [:input {:type "button",
                 :class "btn-blue-bold",
                 :on-click #(dispatch [:reaction/revert-edit])
-                :value "REVERT CHANGES"}]]])
-   (when (and (= :new mode) (not error?))
-         [:div {:class "api-keys-table-actions"}
-          [:input {:type "button",
-                   :class "btn-blue-bold",
-                   :on-click #(dispatch [:reaction/save-edit])
-                   :value "CREATE"}]])])
+                :value "REVERT CHANGES"}]])
+    (when (and (= :new mode) (not error?))
+      [:input {:type "button",
+               :class "btn-blue-bold",
+               :on-click #(dispatch [:reaction/save-edit])
+               :value "CREATE"}])]])
 
 (defn- edit-title
   [title]
@@ -710,10 +706,10 @@
        (when (contains? #{:focus :edit} mode)
          [:<>
           [:dt "Created"]
-          [:dd (or created "[New]")]
+          [:dd (or (iso8601->local-display created) "[New]")]
 
           [:dt "Modified"]
-          [:dd (or modified "[New]")]
+          [:dd (or (iso8601->local-display modified) "[New]")]
 
           [:dt "Error"]
           [:dd [render-error error]]])

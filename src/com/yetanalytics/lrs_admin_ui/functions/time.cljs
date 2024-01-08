@@ -32,7 +32,8 @@
   [iso8601-str]
   (-> (js/Date iso8601-str)
       (.toLocaleString)
-      (split #"GMT")))
+      (split #"GMT")
+      first))
 
 (defn- two-weeks-ago
   "Return a timestamp two weeks before the current time."
