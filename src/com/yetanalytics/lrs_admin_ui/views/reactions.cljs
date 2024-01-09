@@ -6,7 +6,9 @@
             [com.yetanalytics.lrs-admin-ui.functions.time :refer [iso8601->local-display]]
             [com.yetanalytics.lrs-admin-ui.views.form :as form]
             [com.yetanalytics.lrs-admin-ui.views.reactions.path :as p]
-            [com.yetanalytics.lrs-admin-ui.views.reactions.template :as t]))
+            [com.yetanalytics.lrs-admin-ui.views.reactions.template :as t]
+            [goog.string :as gstr]
+            [goog.string.format]))
 
 (defn- short-error
   [{:keys [type message]}]
@@ -277,13 +279,15 @@
      (case type-key :and "AND" :or "OR" :not "NOT" ""))])
 
 (defn- delete-icon
-  [& {:keys [on-click]
-      :or {on-click (fn [] (println 'delete))}}]
+  [& {:keys [on-click to-delete-desc]
+      :or   {on-click       (fn [] (println 'delete))
+             to-delete-desc ""}}]
   [:div.delete-icon
    [:a {:href "#"
         :on-click (fn [e]
                     (fns/ps-event e)
                     (on-click))}
+    (gstr/format "Delete %s " to-delete-desc)
     [:img {:src "/images/icons/icon-delete-blue.svg"}]]])
 
 (defn- add-condition
@@ -293,11 +297,13 @@
         :on-click (fn [e]
                     (fns/ps-event e)
                     (dispatch [:reaction/add-condition]))}
+    "Add New Condition "
     [:img {:src "/images/icons/add.svg"}]]])
 
 (defn- add-clause
   [parent-path]
   [:div.add-clause
+   "Add Clause"
    [form/action-dropdown
     {:options [{:value :and
                 :label "AND"}
@@ -314,9 +320,19 @@
 
 (declare render-clause)
 
+(defn clause-nest-class
+  [reaction-path]
+  (if (-> (split-at 3 reaction-path)
+          second
+          count
+          (/ 2) even?)
+    "even" "odd"))
+
 (defn- render-and
   [mode reaction-path and-clauses]
   [:div.clause.boolean.and
+   {:class (clause-nest-class reaction-path)}
+   (println reaction-path)
    [clause-label mode reaction-path :and]
    (when (empty? and-clauses)
      [:ul.reaction-error-list
@@ -335,6 +351,7 @@
       [add-clause
        (conj reaction-path :and)]
       [delete-icon
+       :to-delete-desc "'AND' Clause"
        :on-click
        (fn []
          (dispatch
@@ -343,6 +360,8 @@
 (defn- render-or
   [mode reaction-path or-clauses]
   [:div.clause.boolean.or
+   {:class (clause-nest-class reaction-path)}
+   (println reaction-path)
    [clause-label mode reaction-path :or]
    (when (empty? or-clauses)
      [:ul.reaction-error-list
@@ -361,6 +380,7 @@
       [add-clause
        (conj reaction-path :or)]
       [delete-icon
+       :to-delete-desc "'OR' Clause"
        :on-click
        (fn []
          (dispatch
@@ -369,6 +389,8 @@
 (defn- render-not
   [mode reaction-path not-clause]
   [:div.clause.boolean.not
+   {:class (clause-nest-class reaction-path)}
+   (println reaction-path)
    [clause-label mode reaction-path :not]
    (when (nil? not-clause)
      [:ul.reaction-error-list
@@ -383,6 +405,7 @@
       (conj reaction-path :not)])
    (when (contains? #{:edit :new} mode)
      [delete-icon
+      :to-delete-desc "'NOT' Clause"
       :on-click
       (fn []
         (dispatch
@@ -409,6 +432,7 @@
   [mode reaction-path clause]
   (let [{:keys [path op val ref]} clause]
           [:div.clause.op
+           {:class (clause-nest-class reaction-path)}
            [clause-label mode reaction-path :logic]
            (when (contains? #{:edit :new} mode)
              [render-logic-errors
@@ -455,6 +479,7 @@
                          ref]]))
            (when (contains? #{:edit :new} mode)
              [delete-icon
+              :to-delete-desc "Logic Clause"
               :on-click
               (fn []
                 (dispatch
@@ -521,9 +546,11 @@
               [render-clause
                mode
                condition-path
-               condition])]
+               condition
+               1])]
            (when (contains? #{:edit :new} mode)
              [delete-icon
+              :to-delete-desc "Condition"
               :on-click
               (fn []
                 (dispatch [:reaction/delete-condition condition-name]))])
@@ -586,7 +613,7 @@
       [render-conditions-errors conditions])
     [render-conditions mode conditions]
     (when (contains? #{:edit :new} mode)
-      [add-condition])]
+      [add-condition :to-add-desc "Weeeee"])]
    [:dt "Template"]
    [:dd [t/render-or-edit-template mode template]]])
 
@@ -702,17 +729,17 @@
         (case mode
           :focus (if active "Active" "Inactive")
           [edit-status active])]
+       [:div {:class "reaction-info-panel"}
+        (when (contains? #{:focus :edit} mode)
+          [:<>
+           [:dt "Created"]
+           [:dd (or (iso8601->local-display created) "[New]")]
 
-       (when (contains? #{:focus :edit} mode)
-         [:<>
-          [:dt "Created"]
-          [:dd (or (iso8601->local-display created) "[New]")]
+           [:dt "Modified"]
+           [:dd (or (iso8601->local-display modified) "[New]")]
 
-          [:dt "Modified"]
-          [:dd (or (iso8601->local-display modified) "[New]")]
-
-          [:dt "Error"]
-          [:dd [render-error error]]])
+           [:dt "Error"]
+           [:dd [render-error error]]])]
 
        [:dt "Ruleset"]
        [:dd [ruleset-view mode ruleset]]]

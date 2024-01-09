@@ -3,7 +3,7 @@
 *********************************************/
 
 $dl-nesting-depth: 1em;
-$condition-padding: 0.5em;
+$condition-padding: 1em;
 
 dl.reaction-view > dd {
   padding-left: $dl-nesting-depth;
@@ -38,7 +38,8 @@ ul.identity-paths {
 
 div.reaction-conditions {
   > div.condition {
-    border-style: solid;
+    border-top: 1px dashed black;
+    background-color: #eee;
   }
 }
 
@@ -51,9 +52,17 @@ div.condition {
 }
 
 div.clause {
-  border-style: solid;
+  //border: 1px solid black;
   padding: $condition-padding;
   position: relative;
+}
+
+div.clause.even {
+  background-color: #ddd;
+}
+
+div.clause.odd {
+  background-color: #eee;
 }
 
 div.boolean {
@@ -70,14 +79,21 @@ div.boolean {
 
 div.delete-icon {
   position: absolute;
-  top: 0.25em;
-  right: 0.25em;
+  top: 1em;
+  color: black;
+  right: 1em;
   > a {
     > img {
       max-height: 1.4em;
     }
   }
 }
+
+div.add-clause {
+  float: right;
+  margin: 10px;
+}
+
 
 dl.op-list {
   margin: 0;
