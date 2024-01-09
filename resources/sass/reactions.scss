@@ -90,8 +90,13 @@ div.delete-icon {
 }
 
 div.add-clause {
+  width: 100%;
+  height: 20px;
+  padding-top: 5px;
+}
+
+div.add-clause div.action-dropdown {
   float: right;
-  margin: 10px;
 }
 
 
@@ -187,4 +192,9 @@ tr.reaction-row {
 
 tr.reaction-row:hover, main:not(.page-list-manager) table tbody tr:nth-child(even).reaction-row:hover {
   background-color: #888;
+}
+
+.reaction-info-panel {
+  float: right;
+  padding-right: 20%;
 }

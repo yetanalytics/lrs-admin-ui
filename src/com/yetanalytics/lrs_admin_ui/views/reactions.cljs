@@ -303,7 +303,6 @@
 (defn- add-clause
   [parent-path]
   [:div.add-clause
-   "Add Clause"
    [form/action-dropdown
     {:options [{:value :and
                 :label "AND"}
@@ -313,6 +312,8 @@
                 :label "NOT"}
                {:value :logic
                 :label "Logic"}]
+     :label    "Add Clause"
+     :label-left? true
      :select-fn (fn [v]
                   (dispatch [:reaction/add-clause
                              parent-path
@@ -713,6 +714,17 @@
         [:div.reaction-edit-invalid
          "Reaction is invalid, see below."])
       [:dl.reaction-view
+       [:div {:class "reaction-info-panel"}
+        (when (contains? #{:focus :edit} mode)
+          [:<>
+           [:dt "Created"]
+           [:dd (or (iso8601->local-display created) "[New]")]
+       
+           [:dt "Modified"]
+           [:dd (or (iso8601->local-display modified) "[New]")]
+       
+           [:dt "Error"]
+           [:dd [render-error error]]])]
        [:dt "Title"]
        [:dd
         (case mode
@@ -729,17 +741,6 @@
         (case mode
           :focus (if active "Active" "Inactive")
           [edit-status active])]
-       [:div {:class "reaction-info-panel"}
-        (when (contains? #{:focus :edit} mode)
-          [:<>
-           [:dt "Created"]
-           [:dd (or (iso8601->local-display created) "[New]")]
-
-           [:dt "Modified"]
-           [:dd (or (iso8601->local-display modified) "[New]")]
-
-           [:dt "Error"]
-           [:dd [render-error error]]])]
 
        [:dt "Ruleset"]
        [:dd [ruleset-view mode ruleset]]]
