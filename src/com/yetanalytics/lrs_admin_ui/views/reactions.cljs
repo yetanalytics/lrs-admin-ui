@@ -4,6 +4,7 @@
             [com.yetanalytics.lrs-admin-ui.functions.reaction :as rfns]
             [com.yetanalytics.lrs-reactions.path :as rpath]
             [com.yetanalytics.lrs-admin-ui.functions.time :refer [iso8601->local-display]]
+            [com.yetanalytics.lrs-admin-ui.functions.tooltip :refer [tooltip-info]]
             [com.yetanalytics.lrs-admin-ui.views.form :as form]
             [com.yetanalytics.lrs-admin-ui.views.reactions.path :as p]
             [com.yetanalytics.lrs-admin-ui.views.reactions.template :as t]
@@ -67,7 +68,10 @@
   []
   [:div {:class "left-content-wrapper"}
    [:h2 {:class "content-title"}
-    "Reactions"]
+    "Reactions"
+    [tooltip-info {:value "Reactions is a new functionality for SQL LRS that allows for the generation of custom xAPI statements triggered by other statements posted to the LRS. An administrator can configure rulesets that match one or more incoming xAPI statement(s), based on conditions, and generate a custom statement which is added to the LRS. -- This can be used for statement transformation (e.g. integration with systems expecting a certain statement format the provider does not make) and statement aggregation (e.g. generate summary statements or assertions about groups of statements)."}]
+    " (Beta)"]
+   [:p ]
    [:div {:class "tenant-wrapper"}
     [:div {:class "api-keys-table-actions"}
      [:input {:type "button",
@@ -144,21 +148,22 @@
 (defn- select-val-type
   [val-path path val]
   (let [{:keys [leaf-type]} (rpath/analyze-path path)]
-    (into [:select
-           {:value (rfns/val-type val)
-            :class "round short"
-            :on-change (fn [e]
-                         (dispatch [:reaction/set-val-type
-                                    val-path
-                                    (fns/ps-event-val e)]))}]
-          (for [t (if leaf-type
-                    (if (= 'json leaf-type)
-                      ["string" "number" "boolean" "null"]
-                      [(name leaf-type)])
-                    [(rfns/val-type val)])]
-            [:option
-             {:value t}
-             t]))))
+    (if (and leaf-type (not= 'json leaf-type))
+      (str (name leaf-type) ": ")
+      (into [:select
+             {:value (rfns/val-type val)
+              :class "round short"
+              :on-change (fn [e]
+                           (dispatch [:reaction/set-val-type
+                                      val-path
+                                      (fns/ps-event-val e)]))}]
+            (for [t (if leaf-type
+                      (when (= 'json leaf-type)
+                        ["string" "number" "boolean" "null"])
+                      [(rfns/val-type val)])]
+              [:option
+               {:value t}
+               t])))))
 
 (defn- val-input
   [val-path path val]
@@ -258,32 +263,41 @@
      (conj ref-path :path)
      path]]])
 
+(def clause-type-tooltips
+  {:and   "AND Clause: All sub-clauses must be true for the statement to match this clause. Requires at least 1 sub-clause."
+   :or    "OR Clause: One of the sub-clauses must be true for the statement to match this clause. Requires at leat 1 sub-clause."
+   :not   "NOT Clause: The single sub-clause must return false for the statement to match this clause. Requires one sub-clause."
+   :logic "Logic Clause: The comparison detailed in this clause must resolve to true for the statement to match this clause."})
+
 (defn- clause-label
   [mode
    reaction-path
    type-key]
   [:div.clause-type-label
    (if (contains? #{:edit :new} mode)
-     [:select
-      {:value (name type-key)
-       :class "round short"
-       :on-change
-       (fn [e]
-         (dispatch [:reaction/set-clause-type
-                    reaction-path
-                    (fns/ps-event-val e)]))}
-      [:option
-       {:value "and"}
-       "AND"]
-      [:option
-       {:value "or"}
-       "OR"]
-      [:option
-       {:value "not"}
-       "NOT"]
-      [:option
-       {:value "logic"}
-       "Logic"]]
+     [:<>
+      [:select
+       {:value (name type-key)
+        :class "round short"
+        :on-change
+        (fn [e]
+          (dispatch [:reaction/set-clause-type
+                     reaction-path
+                     (fns/ps-event-val e)]))}
+       [:option
+        {:value "and"}
+        "AND"]
+       [:option
+        {:value "or"}
+        "OR"]
+       [:option
+        {:value "not"}
+        "NOT"]
+       [:option
+        {:value "logic"}
+        "Logic"]]
+      [tooltip-info {:value (get clause-type-tooltips type-key)}]]
+     
      (case type-key :and "AND" :or "OR" :not "NOT" ""))])
 
 (defn- delete-icon
@@ -445,13 +459,15 @@
              [render-logic-errors
               reaction-path])
            (cond-> [:dl.op-list
-                    [:dt "Identity Path"]
+                    [:dt "Statement Path"
+                     [tooltip-info {:value "Path is how you identify which part of a matching statement you are comparing. For instance `$.object.id` means we are comparing the statement object's id field. These are limited to xAPI specification except for extensions where you can write in the variable part of the path directly."}]]
                     [:dd
                      [render-or-edit-path
                       mode
                       (conj reaction-path :path)
                       path]]
-                    [:dt "Operation"]
+                    [:dt "Operation"
+                     [tooltip-info {:value "Operation represents the method with which to compare the values. For instance `Equals` means the value at the statement path above must exactly match the Value or Reference below."}]]
                     [:dd [render-or-edit-op
                           mode
                           (conj reaction-path :op)
@@ -474,7 +490,8 @@
                          "Value"]]
                        (if ref
                          "Reference"
-                         "Value"))]]
+                         "Value"))
+                     [tooltip-info {:value "This field determines what kind of data we are comparing the statement field to. It can either be a literal `Value` manually entered here or a `Reference` to a field in another matching condition to produce interdependent conditions. For `Value` entries, the data type may be automatically assigned based on xAPI Specification."}]]]
              (not ref) (conj [:dd [render-or-edit-val
                                    mode
                                    (conj reaction-path :val)
@@ -526,7 +543,8 @@
        (fn [e]
          (dispatch [:reaction/set-condition-name
                     condition-name (keyword (fns/ps-event-val e))]))}]
-     condition-name)])
+     condition-name)
+   [tooltip-info {:value "This is the title of the Condition. It is given a generated name on creation but can be customized. It may be used in `Logic Clauses` to reference between Conditions."}]])
 
 (defn- render-condition-errors
   "Render individual condition errors."
@@ -571,7 +589,8 @@
 (defn- render-identity-paths
   [mode identity-paths]
   [:<>
-   [:dt "Identity Paths"]
+   [:dt "Identity Paths"
+    [tooltip-info {:value "Identity Paths are a method of grouping statements for which you are attempting to match conditions. Typically, Reactions may revolve around actor, e.g. `$.actor.mbox` or `$.actor.account.name` which is equivalent to saying \"For a given Actor, look for statements that match the Conditions below\". Alternative approaches to Identity Path may be used, for instance `$.context.registration` to group statements by learning session."}]]
    [:dd
     (into [:ul.identity-paths]
           (map-indexed
@@ -617,14 +636,16 @@
   [:dl.reaction-ruleset
    [render-identity-paths
     mode identityPaths]
-   [:dt "Conditions"]
+   [:dt "Conditions"
+    [tooltip-info {:value "This part of a ruleset controls the criteria for which statements match in a Reaction."}]]
    [:dd
     (when (contains? #{:edit :new} mode)
       [render-conditions-errors conditions])
     [render-conditions mode conditions]
     (when (contains? #{:edit :new} mode)
       [add-condition :to-add-desc "Weeeee"])]
-   [:dt "Template"]
+   [:dt "Template"
+    [tooltip-info {:value "This is where you design the custom statement to be generated and stored in the event of matching statements for this Reaction. Variables from the statements matching individual conditions can be injected into the custom statement."}]]
    [:dd [t/render-or-edit-template mode template]]])
 
 (defn- render-error
@@ -736,7 +757,8 @@
        
            [:dt "Error"]
            [:dd [render-error error]]])]
-       [:dt "Title"]
+       [:dt "Title"
+        [tooltip-info {:value "This is the title of the Reaction you are creating/editing. It has no effect on Reaction functionality."}]]
        [:dd
         (case mode
           :focus title
@@ -744,10 +766,12 @@
 
        (when (contains? #{:focus :edit} mode)
          [:<>
-          [:dt "ID"]
+          [:dt "ID"
+           [tooltip-info {:value "This is the system ID of the Reaction you are creating/editing. It has no effect on Reaction functionality, but may be useful for error tracing."}]]
           [:dd id]])
 
-       [:dt "Status"]
+       [:dt "Status"
+        [tooltip-info {:value "This field sets whether the Reaction is turned on or not. If set to Active it will generate statements based on the rulesets provided."}]]
        [:dd
         (case mode
           :focus (if active "Active" "Inactive")
