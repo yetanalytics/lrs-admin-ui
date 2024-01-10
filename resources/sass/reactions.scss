@@ -3,7 +3,7 @@
 *********************************************/
 
 $dl-nesting-depth: 1em;
-$condition-padding: 0.5em;
+$condition-padding: 1em;
 
 dl.reaction-view > dd {
   padding-left: $dl-nesting-depth;
@@ -11,6 +11,10 @@ dl.reaction-view > dd {
 
 dl.reaction-ruleset > dd {
   padding-left: $dl-nesting-depth;
+}
+
+dl.reaction-ruleset > dt {
+  padding-bottom: 8px;
 }
 
 span.add-identity-path {
@@ -38,7 +42,8 @@ ul.identity-paths {
 
 div.reaction-conditions {
   > div.condition {
-    border-style: solid;
+    border-top: 1px dashed black;
+    background-color: #eee;
   }
 }
 
@@ -51,9 +56,21 @@ div.condition {
 }
 
 div.clause {
-  border-style: solid;
+  //border: 1px solid black;
   padding: $condition-padding;
   position: relative;
+}
+
+div.clause.even {
+  background-color: #ddd;
+}
+
+div.clause.odd {
+  background-color: #eee;
+}
+
+div.clause-type-label {
+  padding-bottom:10px;
 }
 
 div.boolean {
@@ -70,14 +87,26 @@ div.boolean {
 
 div.delete-icon {
   position: absolute;
-  top: 0.25em;
-  right: 0.25em;
+  top: 1em;
+  color: black;
+  right: 1em;
   > a {
     > img {
       max-height: 1.4em;
     }
   }
 }
+
+div.add-clause {
+  width: 100%;
+  height: 20px;
+  padding-top: 5px;
+}
+
+div.add-clause div.action-dropdown {
+  float: right;
+}
+
 
 dl.op-list {
   margin: 0;
@@ -109,12 +138,12 @@ dl.ref {
   }
 }
 
-$path-input-border: 1px solid #6c757d;
+$path-input-border: 2px solid #137BCE;;
 $path-input-border-radius: 4px;
 
 div.path-input {
   display: flex;
-  padding: 8px;
+  color: #11375C !important;
   > div:first-child {
     border-radius: $path-input-border-radius 0px 0px $path-input-border-radius;
     border-left: $path-input-border;
@@ -159,6 +188,7 @@ div.path-input.invalid {
 
 ul.reaction-error-list {
   background-color: pink;
+  margin-top: 5px;
 }
 
 div.reaction-edit-invalid {
@@ -171,4 +201,9 @@ tr.reaction-row {
 
 tr.reaction-row:hover, main:not(.page-list-manager) table tbody tr:nth-child(even).reaction-row:hover {
   background-color: #888;
+}
+
+.reaction-info-panel {
+  float: right;
+  padding-right: 20%;
 }

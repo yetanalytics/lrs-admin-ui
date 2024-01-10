@@ -6,7 +6,9 @@
             [com.yetanalytics.lrs-admin-ui.functions.time :refer [iso8601->local-display]]
             [com.yetanalytics.lrs-admin-ui.views.form :as form]
             [com.yetanalytics.lrs-admin-ui.views.reactions.path :as p]
-            [com.yetanalytics.lrs-admin-ui.views.reactions.template :as t]))
+            [com.yetanalytics.lrs-admin-ui.views.reactions.template :as t]
+            [goog.string :as gstr]
+            [goog.string.format]))
 
 (defn- short-error
   [{:keys [type message]}]
@@ -115,34 +117,36 @@
      :spec-valid? spec-valid?]
     [render-path path]))
 
+(def ops {"eq"       "Equal"
+          "gt"       "Greater Than"
+          "lt"       "Less Than"
+          "gte"      "Greater Than or Equal"
+          "lte"      "Less Than or Equal"
+          "noteq"    "Not Equal"
+          "like"     "Like (String Matching)"
+          "contains" "Contains (Array Element)"})
+
 (defn- render-or-edit-op
   [mode op-path op]
   (if (contains? #{:edit :new} mode)
     (into [:select
            {:value op
+            :class "round"
             :on-change (fn [e]
                          (dispatch
                           [:reaction/set-op
                            op-path
-                           (fns/ps-event-val e)]))}]
-          (for [op ["gt"
-                    "lt"
-                    "gte"
-                    "lte"
-                    "eq"
-                    "noteq"
-                    "like"
-                    "contains"]]
-            [:option
-             {:value op}
-             op]))
-    [:code op]))
+                           (fns/ps-event-val e)]))}
+           (for [[k v] ops]
+             [:option {:value k} v])])
+    [:code (get ops op)]))
 
 (defn- select-val-type
   [val-path path val]
   (let [{:keys [leaf-type]} (rpath/analyze-path path)]
     (into [:select
            {:value (rfns/val-type val)
+            :class "round short"
             :on-change (fn [e]
                          (dispatch [:reaction/set-val-type
                                     val-path
@@ -169,10 +173,12 @@
        "null"
        [:input
         {:disabled true
+         :class "round"
          :value "null"}]
        "boolean"
        [:select
         {:value (str val)
+         :class "round"
          :on-change
          (fn [e]
            (dispatch [:reaction/set-val
@@ -190,6 +196,7 @@
        [:input
         {:type "number"
          :value val
+         :class "round"
          :on-change
          (fn [e]
            (dispatch [:reaction/set-val
@@ -199,6 +206,7 @@
        "string"
        [:input
         {:type "text"
+         :class "round"
          :value val
          :on-change
          (fn [e]
@@ -222,6 +230,7 @@
   (if (contains? #{:edit :new} mode)
     (into [:select
            {:value condition
+            :class "round"
             :on-change
             (fn [e]
               (dispatch [:reaction/set-ref-condition
@@ -253,10 +262,11 @@
   [mode
    reaction-path
    type-key]
-  [:div.boolean-label
+  [:div.clause-type-label
    (if (contains? #{:edit :new} mode)
      [:select
       {:value (name type-key)
+       :class "round short"
        :on-change
        (fn [e]
          (dispatch [:reaction/set-clause-type
@@ -277,13 +287,15 @@
      (case type-key :and "AND" :or "OR" :not "NOT" ""))])
 
 (defn- delete-icon
-  [& {:keys [on-click]
-      :or {on-click (fn [] (println 'delete))}}]
+  [& {:keys [on-click to-delete-desc]
+      :or   {on-click       (fn [] (println 'delete))
+             to-delete-desc ""}}]
   [:div.delete-icon
    [:a {:href "#"
         :on-click (fn [e]
                     (fns/ps-event e)
                     (on-click))}
+    (gstr/format "Delete %s " to-delete-desc)
     [:img {:src "/images/icons/icon-delete-blue.svg"}]]])
 
 (defn- add-condition
@@ -293,30 +305,43 @@
         :on-click (fn [e]
                     (fns/ps-event e)
                     (dispatch [:reaction/add-condition]))}
+    "Add New Condition "
     [:img {:src "/images/icons/add.svg"}]]])
 
 (defn- add-clause
   [parent-path]
   [:div.add-clause
    [form/action-dropdown
-    {:options [{:value :and
-                :label "AND"}
-               {:value :or
-                :label "OR"}
-               {:value :not
-                :label "NOT"}
-               {:value :logic
-                :label "Logic"}]
-     :select-fn (fn [v]
-                  (dispatch [:reaction/add-clause
-                             parent-path
-                             v]))}]])
+    {:options     [{:value :and
+                    :label "AND"}
+                   {:value :or
+                    :label "OR"}
+                   {:value :not
+                    :label "NOT"}
+                   {:value :logic
+                    :label "Logic"}]
+     :label       "Add Clause"
+     :label-left? true
+     :class       "round"
+     :select-fn   (fn [v]
+                    (dispatch [:reaction/add-clause
+                               parent-path
+                               v]))}]])
 
 (declare render-clause)
+
+(defn clause-nest-class
+  [reaction-path]
+  (if (-> (split-at 3 reaction-path)
+          second
+          count
+          (/ 2) even?)
+    "even" "odd"))
 
 (defn- render-and
   [mode reaction-path and-clauses]
   [:div.clause.boolean.and
+   {:class (clause-nest-class reaction-path)}
    [clause-label mode reaction-path :and]
    (when (empty? and-clauses)
      [:ul.reaction-error-list
@@ -335,6 +360,7 @@
       [add-clause
        (conj reaction-path :and)]
       [delete-icon
+       :to-delete-desc "'AND' Clause"
        :on-click
        (fn []
          (dispatch
@@ -343,6 +369,7 @@
 (defn- render-or
   [mode reaction-path or-clauses]
   [:div.clause.boolean.or
+   {:class (clause-nest-class reaction-path)}
    [clause-label mode reaction-path :or]
    (when (empty? or-clauses)
      [:ul.reaction-error-list
@@ -361,6 +388,7 @@
       [add-clause
        (conj reaction-path :or)]
       [delete-icon
+       :to-delete-desc "'OR' Clause"
        :on-click
        (fn []
          (dispatch
@@ -369,6 +397,7 @@
 (defn- render-not
   [mode reaction-path not-clause]
   [:div.clause.boolean.not
+   {:class (clause-nest-class reaction-path)} 
    [clause-label mode reaction-path :not]
    (when (nil? not-clause)
      [:ul.reaction-error-list
@@ -383,6 +412,7 @@
       (conj reaction-path :not)])
    (when (contains? #{:edit :new} mode)
      [delete-icon
+      :to-delete-desc "'NOT' Clause"
       :on-click
       (fn []
         (dispatch
@@ -409,18 +439,19 @@
   [mode reaction-path clause]
   (let [{:keys [path op val ref]} clause]
           [:div.clause.op
+           {:class (clause-nest-class reaction-path)}
            [clause-label mode reaction-path :logic]
            (when (contains? #{:edit :new} mode)
              [render-logic-errors
               reaction-path])
            (cond-> [:dl.op-list
-                    [:dt "Path"]
+                    [:dt "Identity Path"]
                     [:dd
                      [render-or-edit-path
                       mode
                       (conj reaction-path :path)
                       path]]
-                    [:dt "Op"]
+                    [:dt "Operation"]
                     [:dd [render-or-edit-op
                           mode
                           (conj reaction-path :op)
@@ -429,6 +460,7 @@
                      (if (contains? #{:edit :new} mode)
                        [:select
                         {:value (if ref "ref" "val")
+                         :class "round short"
                          :on-change
                          (fn [e]
                            (dispatch [:reaction/set-val-or-ref
@@ -436,13 +468,13 @@
                                       (fns/ps-event-val e)]))}
                         [:option
                          {:value "ref"}
-                         "Ref"]
+                         "Reference"]
                         [:option
                          {:value "val"}
-                         "Val"]]
+                         "Value"]]
                        (if ref
-                         "Ref"
-                         "Val"))]]
+                         "Reference"
+                         "Value"))]]
              (not ref) (conj [:dd [render-or-edit-val
                                    mode
                                    (conj reaction-path :val)
@@ -455,6 +487,7 @@
                          ref]]))
            (when (contains? #{:edit :new} mode)
              [delete-icon
+              :to-delete-desc "Logic Clause"
               :on-click
               (fn []
                 (dispatch
@@ -486,7 +519,8 @@
   [:div.condition-name
    (if (contains? #{:edit :new} mode)
      [:input
-      {:type "text"
+      {:type  "text"
+       :class "round"
        :value condition-name
        :on-change
        (fn [e]
@@ -521,9 +555,11 @@
               [render-clause
                mode
                condition-path
-               condition])]
+               condition
+               1])]
            (when (contains? #{:edit :new} mode)
              [delete-icon
+              :to-delete-desc "Condition"
               :on-click
               (fn []
                 (dispatch [:reaction/delete-condition condition-name]))])
@@ -535,14 +571,7 @@
 (defn- render-identity-paths
   [mode identity-paths]
   [:<>
-   [:dt "Identity Paths"
-    (when (contains? #{:edit :new} mode)
-      [:span.add-identity-path
-       [:a {:href "#"
-            :on-click (fn [e]
-                        (fns/ps-event e)
-                        (dispatch [:reaction/add-identity-path]))}
-        [:img {:src "/images/icons/add.svg"}]]])]
+   [:dt "Identity Paths"]
    [:dd
     (into [:ul.identity-paths]
           (map-indexed
@@ -561,7 +590,15 @@
                                  false
                                  true)
                                true)]))
-           identity-paths))]])
+           identity-paths))
+    (when (contains? #{:edit :new} mode)
+      [:span.add-identity-path
+       [:a {:href "#"
+            :on-click (fn [e]
+                        (fns/ps-event e)
+                        (dispatch [:reaction/add-identity-path]))}
+        "Add New Identity Path "
+        [:img {:src "/images/icons/add.svg"}]]])]])
 
 (defn- render-conditions-errors
   "Render out top-level conditions errors, currently there is only one, an empty
@@ -586,7 +623,7 @@
       [render-conditions-errors conditions])
     [render-conditions mode conditions]
     (when (contains? #{:edit :new} mode)
-      [add-condition])]
+      [add-condition :to-add-desc "Weeeee"])]
    [:dt "Template"]
    [:dd [t/render-or-edit-template mode template]]])
 
@@ -638,7 +675,8 @@
 (defn- edit-title
   [title]
   [:input
-   {:type "text"
+   {:type  "text"
+    :class "round"
     :value title
     :on-change (fn [e]
                  (dispatch
@@ -649,6 +687,7 @@
   [active]
   [:select
    {:value (if (true? active) "active" "inactive")
+    :class "round"
     :on-change (fn [e]
                  (dispatch
                   [:reaction/edit-status
@@ -686,6 +725,17 @@
         [:div.reaction-edit-invalid
          "Reaction is invalid, see below."])
       [:dl.reaction-view
+       [:div {:class "reaction-info-panel"}
+        (when (contains? #{:focus :edit} mode)
+          [:<>
+           [:dt "Created"]
+           [:dd (or (iso8601->local-display created) "[New]")]
+       
+           [:dt "Modified"]
+           [:dd (or (iso8601->local-display modified) "[New]")]
+       
+           [:dt "Error"]
+           [:dd [render-error error]]])]
        [:dt "Title"]
        [:dd
         (case mode
@@ -702,17 +752,6 @@
         (case mode
           :focus (if active "Active" "Inactive")
           [edit-status active])]
-
-       (when (contains? #{:focus :edit} mode)
-         [:<>
-          [:dt "Created"]
-          [:dd (or (iso8601->local-display created) "[New]")]
-
-          [:dt "Modified"]
-          [:dd (or (iso8601->local-display modified) "[New]")]
-
-          [:dt "Error"]
-          [:dd [render-error error]]])
 
        [:dt "Ruleset"]
        [:dd [ruleset-view mode ruleset]]]
