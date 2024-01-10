@@ -116,11 +116,13 @@
                  select-fn
                  label
                  label-left?
+                 class
                  icon-src]
           :or {options     []
                select-fn   (fn [v] (println 'select v))
                label-left? false
-               icon-src    "/images/icons/add.svg"}}]
+               icon-src    "/images/icons/add.svg"
+               class       ""}}]
       [:div.action-dropdown
        {:on-blur (fn [_]
                    ;; FIXME: Horrible hack, can't figure out how to stop the clobbering here
@@ -136,7 +138,7 @@
          (when (and label (not label-left?))
            [:span.action-dropdown-label (str " " label)])]]
        [:div.action-dropdown-list
-        {:class (if @dropdown-open? "dropdown-open" "")}
+        {:class (str class (if @dropdown-open? " dropdown-open" ""))}
         [dropdown-items
          {:id id
           :name id

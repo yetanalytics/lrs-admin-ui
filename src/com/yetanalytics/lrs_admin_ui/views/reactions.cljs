@@ -117,34 +117,36 @@
      :spec-valid? spec-valid?]
     [render-path path]))
 
+(def ops {"eq"       "Equal"
+          "gt"       "Greater Than"
+          "lt"       "Less Than"
+          "gte"      "Greater Than or Equal"
+          "lte"      "Less Than or Equal"
+          "noteq"    "Not Equal"
+          "like"     "Like (String Matching)"
+          "contains" "Contains (Array Element)"})
+
 (defn- render-or-edit-op
   [mode op-path op]
   (if (contains? #{:edit :new} mode)
     (into [:select
            {:value op
+            :class "round"
             :on-change (fn [e]
                          (dispatch
                           [:reaction/set-op
                            op-path
-                           (fns/ps-event-val e)]))}]
-          (for [op ["gt"
-                    "lt"
-                    "gte"
-                    "lte"
-                    "eq"
-                    "noteq"
-                    "like"
-                    "contains"]]
-            [:option
-             {:value op}
-             op]))
-    [:code op]))
+                           (fns/ps-event-val e)]))}
+           (for [[k v] ops]
+             [:option {:value k} v])])
+    [:code (get ops op)]))
 
 (defn- select-val-type
   [val-path path val]
   (let [{:keys [leaf-type]} (rpath/analyze-path path)]
     (into [:select
            {:value (rfns/val-type val)
+            :class "round short"
             :on-change (fn [e]
                          (dispatch [:reaction/set-val-type
                                     val-path
@@ -171,10 +173,12 @@
        "null"
        [:input
         {:disabled true
+         :class "round"
          :value "null"}]
        "boolean"
        [:select
         {:value (str val)
+         :class "round"
          :on-change
          (fn [e]
            (dispatch [:reaction/set-val
@@ -192,6 +196,7 @@
        [:input
         {:type "number"
          :value val
+         :class "round"
          :on-change
          (fn [e]
            (dispatch [:reaction/set-val
@@ -201,6 +206,7 @@
        "string"
        [:input
         {:type "text"
+         :class "round"
          :value val
          :on-change
          (fn [e]
@@ -224,6 +230,7 @@
   (if (contains? #{:edit :new} mode)
     (into [:select
            {:value condition
+            :class "round"
             :on-change
             (fn [e]
               (dispatch [:reaction/set-ref-condition
@@ -255,10 +262,11 @@
   [mode
    reaction-path
    type-key]
-  [:div.boolean-label
+  [:div.clause-type-label
    (if (contains? #{:edit :new} mode)
      [:select
       {:value (name type-key)
+       :class "round short"
        :on-change
        (fn [e]
          (dispatch [:reaction/set-clause-type
@@ -304,20 +312,21 @@
   [parent-path]
   [:div.add-clause
    [form/action-dropdown
-    {:options [{:value :and
-                :label "AND"}
-               {:value :or
-                :label "OR"}
-               {:value :not
-                :label "NOT"}
-               {:value :logic
-                :label "Logic"}]
-     :label    "Add Clause"
+    {:options     [{:value :and
+                    :label "AND"}
+                   {:value :or
+                    :label "OR"}
+                   {:value :not
+                    :label "NOT"}
+                   {:value :logic
+                    :label "Logic"}]
+     :label       "Add Clause"
      :label-left? true
-     :select-fn (fn [v]
-                  (dispatch [:reaction/add-clause
-                             parent-path
-                             v]))}]])
+     :class       "round"
+     :select-fn   (fn [v]
+                    (dispatch [:reaction/add-clause
+                               parent-path
+                               v]))}]])
 
 (declare render-clause)
 
@@ -333,7 +342,6 @@
   [mode reaction-path and-clauses]
   [:div.clause.boolean.and
    {:class (clause-nest-class reaction-path)}
-   (println reaction-path)
    [clause-label mode reaction-path :and]
    (when (empty? and-clauses)
      [:ul.reaction-error-list
@@ -362,7 +370,6 @@
   [mode reaction-path or-clauses]
   [:div.clause.boolean.or
    {:class (clause-nest-class reaction-path)}
-   (println reaction-path)
    [clause-label mode reaction-path :or]
    (when (empty? or-clauses)
      [:ul.reaction-error-list
@@ -390,8 +397,7 @@
 (defn- render-not
   [mode reaction-path not-clause]
   [:div.clause.boolean.not
-   {:class (clause-nest-class reaction-path)}
-   (println reaction-path)
+   {:class (clause-nest-class reaction-path)} 
    [clause-label mode reaction-path :not]
    (when (nil? not-clause)
      [:ul.reaction-error-list
@@ -439,13 +445,13 @@
              [render-logic-errors
               reaction-path])
            (cond-> [:dl.op-list
-                    [:dt "Path"]
+                    [:dt "Identity Path"]
                     [:dd
                      [render-or-edit-path
                       mode
                       (conj reaction-path :path)
                       path]]
-                    [:dt "Op"]
+                    [:dt "Operation"]
                     [:dd [render-or-edit-op
                           mode
                           (conj reaction-path :op)
@@ -454,6 +460,7 @@
                      (if (contains? #{:edit :new} mode)
                        [:select
                         {:value (if ref "ref" "val")
+                         :class "round short"
                          :on-change
                          (fn [e]
                            (dispatch [:reaction/set-val-or-ref
@@ -461,13 +468,13 @@
                                       (fns/ps-event-val e)]))}
                         [:option
                          {:value "ref"}
-                         "Ref"]
+                         "Reference"]
                         [:option
                          {:value "val"}
-                         "Val"]]
+                         "Value"]]
                        (if ref
-                         "Ref"
-                         "Val"))]]
+                         "Reference"
+                         "Value"))]]
              (not ref) (conj [:dd [render-or-edit-val
                                    mode
                                    (conj reaction-path :val)
@@ -512,7 +519,8 @@
   [:div.condition-name
    (if (contains? #{:edit :new} mode)
      [:input
-      {:type "text"
+      {:type  "text"
+       :class "round"
        :value condition-name
        :on-change
        (fn [e]
@@ -563,14 +571,7 @@
 (defn- render-identity-paths
   [mode identity-paths]
   [:<>
-   [:dt "Identity Paths"
-    (when (contains? #{:edit :new} mode)
-      [:span.add-identity-path
-       [:a {:href "#"
-            :on-click (fn [e]
-                        (fns/ps-event e)
-                        (dispatch [:reaction/add-identity-path]))}
-        [:img {:src "/images/icons/add.svg"}]]])]
+   [:dt "Identity Paths"]
    [:dd
     (into [:ul.identity-paths]
           (map-indexed
@@ -589,7 +590,15 @@
                                  false
                                  true)
                                true)]))
-           identity-paths))]])
+           identity-paths))
+    (when (contains? #{:edit :new} mode)
+      [:span.add-identity-path
+       [:a {:href "#"
+            :on-click (fn [e]
+                        (fns/ps-event e)
+                        (dispatch [:reaction/add-identity-path]))}
+        "Add New Identity Path "
+        [:img {:src "/images/icons/add.svg"}]]])]])
 
 (defn- render-conditions-errors
   "Render out top-level conditions errors, currently there is only one, an empty
@@ -666,7 +675,8 @@
 (defn- edit-title
   [title]
   [:input
-   {:type "text"
+   {:type  "text"
+    :class "round"
     :value title
     :on-change (fn [e]
                  (dispatch
@@ -677,6 +687,7 @@
   [active]
   [:select
    {:value (if (true? active) "active" "inactive")
+    :class "round"
     :on-change (fn [e]
                  (dispatch
                   [:reaction/edit-status

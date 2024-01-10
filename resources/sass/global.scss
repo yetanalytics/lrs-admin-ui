@@ -631,7 +631,7 @@ main:not(.page-list-manager) table tbody tr:nth-child(even) {
 # Nice Inputs
 **************************************************/
 
-input.round{
+input.round, select.round {
   -webkit-border-radius: 20px;
   -moz-border-radius: 20px;
   border-radius: 20px;
@@ -640,6 +640,10 @@ input.round{
   width: 250px;
   height: 30px;
   padding-left: 10px;
+}
+
+input.round.short, select.round.short {
+  width: unset;
 }
 
 input:focus.round {
