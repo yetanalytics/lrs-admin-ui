@@ -1,6 +1,5 @@
 (ns com.yetanalytics.lrs-admin-ui.functions.time
-  (:require [clojure.string :refer [split]]
-            [goog.string :refer [format]]
+  (:require [goog.string :refer [format]]
             [goog.string.format]))
 
 (def tz-offset-mins
