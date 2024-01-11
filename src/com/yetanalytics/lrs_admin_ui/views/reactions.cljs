@@ -592,7 +592,7 @@
   [mode identity-paths]
   (let [open? (r/atom false)
         edit? (contains? #{:edit :new} mode)]
-    (fn [mode identity-paths]
+    (fn [mode identity-paths edit?]
       [:<>
        [:dt 
         {:on-click #(swap! open? not)
