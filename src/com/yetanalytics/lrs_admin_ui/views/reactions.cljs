@@ -590,9 +590,9 @@
 
 (defn- render-identity-paths
   [mode identity-paths]
-  (let [open? (r/atom false)]
+  (let [open? (r/atom false)
+        edit? (contains? #{:edit :new} mode)]
     (fn [mode identity-paths]
-      
       [:<>
        [:dt 
         {:on-click #(swap! open? not)
@@ -606,28 +606,30 @@
                  (map-indexed
                   (fn [idx path]
                     (let [path-path [:ruleset :identityPaths idx]]
-                      [render-or-edit-path
-                       mode
-                       path-path
-                       path
-                       :remove-fn (fn []
-                                    (dispatch [:reaction/delete-identity-path idx]))
-                       :spec-valid? (if (contains? #{:edit :new} mode)
-                                      (if (not-empty
-                                           @(subscribe
-                                             [:reaction/edit-spec-errors-in path-path]))
-                                        false
-                                        true)
-                                      true)]))
+                      [:<>
+                       [render-or-edit-path
+                        mode
+                        path-path
+                        path
+                        :remove-fn (fn []
+                                     (dispatch [:reaction/delete-identity-path idx]))
+                        :spec-valid? (if (contains? #{:edit :new} mode)
+                                       (if (not-empty
+                                            @(subscribe
+                                              [:reaction/edit-spec-errors-in path-path]))
+                                         false
+                                         true)
+                                       true)]
+                       (when (not edit?) [:br])]))
                   identity-paths))
-           (when (contains? #{:edit :new} mode)
-             [:span.add-identity-path
-              [:a {:href "#"
-                   :on-click (fn [e]
-                               (fns/ps-event e)
-                               (dispatch [:reaction/add-identity-path]))}
-               "Add New Identity Path "
-               [:img {:src "/images/icons/add.svg"}]]])])]])))
+           (when edit?
+            [:span.add-identity-path
+             [:a {:href "#"
+                  :on-click (fn [e]
+                              (fns/ps-event e)
+                              (dispatch [:reaction/add-identity-path]))}
+              "Add New Identity Path "
+              [:img {:src "/images/icons/add.svg"}]]])])]])))
 
 (defn- render-conditions-errors
   "Render out top-level conditions errors, currently there is only one, an empty

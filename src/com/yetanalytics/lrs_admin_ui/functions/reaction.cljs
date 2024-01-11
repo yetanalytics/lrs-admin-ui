@@ -1,7 +1,6 @@
 (ns com.yetanalytics.lrs-admin-ui.functions.reaction
   (:require [goog.string :refer [format]]
-            [goog.string.format]
-            [clojure.pprint :refer [pprint]]))
+            [goog.string.format]))
 
 (defn path->string
   "Given a vector of keys and/or indices, return a JSONPath string suitable for
@@ -9,7 +8,6 @@
   ([path]
    (path->string path "$"))
   ([[seg & rpath] s]
-   (pprint [seg rpath s])
    (if seg
      (recur rpath
             (cond
