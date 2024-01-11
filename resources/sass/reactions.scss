@@ -40,6 +40,26 @@ ul.identity-paths {
   padding-left: 0;
 }
 
+dt.paths-collapse {
+  @extend .pointer;
+}
+
+dt.paths-collapse:after {
+  background: url('../images/icons/icon-expand-more.svg') no-repeat center center;
+  content: '';
+  display: inline-block;
+  vertical-align: top;
+  width: 20px;
+  height: 20px;
+  background-size: contain;
+  text-align: left;
+  margin: 4px 8px 0 0;
+}
+
+dt.paths-collapse.expanded:after {
+  background-image: url('../images/icons/icon-expand-less.svg');
+}
+
 div.reaction-conditions {
   > div.condition {
     border-top: 1px dashed black;

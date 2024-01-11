@@ -1,5 +1,6 @@
 (ns com.yetanalytics.lrs-admin-ui.views.reactions
-  (:require [re-frame.core :refer [dispatch subscribe]]
+  (:require [reagent.core :as r]
+            [re-frame.core :refer [dispatch subscribe]]
             [com.yetanalytics.lrs-admin-ui.functions :as fns]
             [com.yetanalytics.lrs-admin-ui.functions.reaction :as rfns]
             [com.yetanalytics.lrs-reactions.path :as rpath]
@@ -25,8 +26,8 @@
   [:table {:class "reactions-table"}
    [:thead {:class "bg-primary text-white"}
     [:tr
-     [:th {:scope "col"} "ID"]
      [:th {:scope "col"} "Title"]
+     [:th {:scope "col"} "# of Conditions"]
      [:th {:scope "col"} "Created"]
      [:th {:scope "col"} "Modified"]
      [:th {:scope "col"} "Status"]
@@ -38,11 +39,12 @@
                        created
                        modified
                        active
-                       error]} @(subscribe [:reaction/list])]
+                       error
+                       ruleset]} @(subscribe [:reaction/list])]
            [:tr {:class "reaction-row"
                  :on-click #(dispatch [:reaction/set-focus id])}
-            [:td {:data-label "ID"} id]
             [:td {:data-label "Title"} title]
+            [:td {:data-label "# of Conditions"} (count (:conditions ruleset))]
             [:td {:data-label "Created"} (iso8601->local-display created)]
             [:td {:data-label "Modified"} (iso8601->local-display modified)]
             [:td {:data-label "Status"} (if (true? active) "Active" "Inactive")]
@@ -588,36 +590,44 @@
 
 (defn- render-identity-paths
   [mode identity-paths]
-  [:<>
-   [:dt "Identity Paths"
-    [tooltip-info {:value "Identity Paths are a method of grouping statements for which you are attempting to match conditions. Typically, Reactions may revolve around actor, e.g. `$.actor.mbox` or `$.actor.account.name` which is equivalent to saying \"For a given Actor, look for statements that match the Conditions below\". Alternative approaches to Identity Path may be used, for instance `$.context.registration` to group statements by learning session."}]]
-   [:dd
-    (into [:ul.identity-paths]
-          (map-indexed
-           (fn [idx path]
-             (let [path-path [:ruleset :identityPaths idx]]
-               [render-or-edit-path
-                mode
-                path-path
-                path
-                :remove-fn (fn []
-                             (dispatch [:reaction/delete-identity-path idx]))
-                :spec-valid? (if (contains? #{:edit :new} mode)
-                               (if (not-empty
-                                    @(subscribe
-                                      [:reaction/edit-spec-errors-in path-path]))
-                                 false
-                                 true)
-                               true)]))
-           identity-paths))
-    (when (contains? #{:edit :new} mode)
-      [:span.add-identity-path
-       [:a {:href "#"
-            :on-click (fn [e]
-                        (fns/ps-event e)
-                        (dispatch [:reaction/add-identity-path]))}
-        "Add New Identity Path "
-        [:img {:src "/images/icons/add.svg"}]]])]])
+  (let [open? (r/atom false)]
+    (fn [mode identity-paths]
+      
+      [:<>
+       [:dt 
+        {:on-click #(swap! open? not)
+         :class (str "paths-collapse" (when @open? " expanded"))}
+        "Identity Paths (Advanced)"
+        [tooltip-info {:value "USE WITH CAUTION. Identity Paths are a method of grouping statements for which you are attempting to match conditions. Typically, Reactions may revolve around actor, e.g. `$.actor.mbox` or `$.actor.account.name` which is equivalent to saying \"For a given Actor, look for statements that match the Conditions below\". This is what the default is set to. Alternative approaches to Identity Path may be used by modifying this section, for instance `$.context.registration` to group statements by learning session."}]]
+       [:dd
+        (when @open?
+          [:<>
+           (into [:ul.identity-paths]
+                 (map-indexed
+                  (fn [idx path]
+                    (let [path-path [:ruleset :identityPaths idx]]
+                      [render-or-edit-path
+                       mode
+                       path-path
+                       path
+                       :remove-fn (fn []
+                                    (dispatch [:reaction/delete-identity-path idx]))
+                       :spec-valid? (if (contains? #{:edit :new} mode)
+                                      (if (not-empty
+                                           @(subscribe
+                                             [:reaction/edit-spec-errors-in path-path]))
+                                        false
+                                        true)
+                                      true)]))
+                  identity-paths))
+           (when (contains? #{:edit :new} mode)
+             [:span.add-identity-path
+              [:a {:href "#"
+                   :on-click (fn [e]
+                               (fns/ps-event e)
+                               (dispatch [:reaction/add-identity-path]))}
+               "Add New Identity Path "
+               [:img {:src "/images/icons/add.svg"}]]])])]])))
 
 (defn- render-conditions-errors
   "Render out top-level conditions errors, currently there is only one, an empty
@@ -634,8 +644,6 @@
            conditions
            template]}]
   [:dl.reaction-ruleset
-   [render-identity-paths
-    mode identityPaths]
    [:dt "Conditions"
     [tooltip-info {:value "This part of a ruleset controls the criteria for which statements match in a Reaction."}]]
    [:dd
@@ -646,7 +654,9 @@
       [add-condition :to-add-desc "Weeeee"])]
    [:dt "Template"
     [tooltip-info {:value "This is where you design the custom statement to be generated and stored in the event of matching statements for this Reaction. Variables from the statements matching individual conditions can be injected into the custom statement."}]]
-   [:dd [t/render-or-edit-template mode template]]])
+   [:dd [t/render-or-edit-template mode template]]
+   [render-identity-paths
+    mode identityPaths]])
 
 (defn- render-error
   [?error]

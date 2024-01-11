@@ -19,8 +19,7 @@
             goog.string.format
             [clojure.walk                                     :as w]
             [com.yetanalytics.lrs-admin-ui.spec.reaction      :as rs]
-            [com.yetanalytics.lrs-reactions.path              :as rpath]
-            [clojure.pprint :refer [pprint]]))
+            [com.yetanalytics.lrs-reactions.path              :as rpath]))
 
 (def global-interceptors
   [db/check-spec-interceptor])
@@ -960,9 +959,17 @@
                                    (fns/rand-alpha-str 8))
                    :active true
                    :ruleset
-                   {:identityPaths []
-                    :conditions     {}
-                    :template       {}}}]
+                   {:identityPaths [["actor" "mbox"]
+                                    ["actor" "openid"]
+                                    ["actor" "mbox_sha1sum"]
+                                    ["actor" "account" "homePage"]
+                                    ["actor" "account" "name"]]
+                    :conditions    {}
+                    :template      {"actor"
+                                    {"name" "Actor Example",
+                                     "mbox" "mailto:actor_example@yetanalytics.com"},
+                                    "object" {"id" "https://www.yetanalytics.com/xapi/activities/example_activity"},
+                                    "verb" {"id" "https://adlnet.gov/expapi/verbs/completed"}}}}]
      {:db (-> db
               (assoc ::db/editing-reaction reaction)
               prep-edit-reaction-template)
@@ -1005,7 +1012,6 @@
                ?reaction-id :id
                :as reaction} (some-> ?editing-reaction
                                      rfns/strip-condition-indices)]
-     (pprint ruleset)
      (if (valid? ::rs/new-reaction reaction)
        {:http-xhrio {:method          (if ?reaction-id :put :post)
                      :uri             (httpfn/serv-uri
