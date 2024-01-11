@@ -19,7 +19,8 @@
             goog.string.format
             [clojure.walk                                     :as w]
             [com.yetanalytics.lrs-admin-ui.spec.reaction      :as rs]
-            [com.yetanalytics.lrs-reactions.path              :as rpath]))
+            [com.yetanalytics.lrs-reactions.path              :as rpath]
+            [clojure.pprint :refer [pprint]]))
 
 (def global-interceptors
   [db/check-spec-interceptor])
@@ -1004,6 +1005,7 @@
                ?reaction-id :id
                :as reaction} (some-> ?editing-reaction
                                      rfns/strip-condition-indices)]
+     (pprint ruleset)
      (if (valid? ::rs/new-reaction reaction)
        {:http-xhrio {:method          (if ?reaction-id :put :post)
                      :uri             (httpfn/serv-uri
