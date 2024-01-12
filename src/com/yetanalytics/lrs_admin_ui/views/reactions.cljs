@@ -589,9 +589,9 @@
               condition-path])])))
 
 (defn- render-identity-paths
-  [mode identity-paths]
+  [_mode _identity-paths]
   (let [open? (r/atom false)]
-    (fn [mode identity-paths]
+    (fn [_mode _identity-paths]
       [:<>
        [:dt 
         {:on-click #(swap! open? not)
@@ -600,7 +600,7 @@
         [tooltip-info {:value "USE WITH CAUTION. Identity Paths are a method of grouping statements for which you are attempting to match conditions. Typically, Reactions may revolve around actor, e.g. `$.actor.mbox` or `$.actor.account.name` which is equivalent to saying \"For a given Actor, look for statements that match the Conditions below\". This is what the default is set to. Alternative approaches to Identity Path may be used by modifying this section, for instance `$.context.registration` to group statements by learning session."}]]
        [:dd
         (when @open?
-          (let [edit? (contains? #{:edit :new} mode)]
+          (let [edit? (contains? #{:edit :new} _mode)]
                [:<>
                 (into
                  [:ul.identity-paths]
@@ -609,12 +609,12 @@
                     (let [path-path [:ruleset :identityPaths idx]]
                       [:<>
                        [render-or-edit-path
-                        mode
+                        _mode
                         path-path
                         path
                         :remove-fn (fn []
                                      (dispatch [:reaction/delete-identity-path idx]))
-                        :spec-valid? (if (contains? #{:edit :new} mode)
+                        :spec-valid? (if (contains? #{:edit :new} _mode)
                                        (if (not-empty
                                             @(subscribe
                                               [:reaction/edit-spec-errors-in path-path]))
@@ -622,7 +622,7 @@
                                          true)
                                        true)]
                        (when (not edit?) [:br])]))
-                  identity-paths))
+                  _identity-paths))
                 (when edit?
                   [:span.add-identity-path
                    [:a {:href "#"
@@ -631,6 +631,12 @@
                                     (dispatch [:reaction/add-identity-path]))}
                     "Add New Identity Path "
                     [:img {:src "/images/icons/add.svg"}]]])]))]])))
+
+(defn some-outer-fn
+  [a b]
+  (let [flag (r/atom false)]
+    (fn [a b]
+      ...)))
 
 (defn- render-conditions-errors
   "Render out top-level conditions errors, currently there is only one, an empty
