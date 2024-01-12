@@ -144,6 +144,7 @@
                            op-path
                            (fns/ps-event-val e)]))}
            (for [[k v] ops]
+             ^{:key (gstr/format "condition-op-%s-%s" op-path k)}
              [:option {:value k} v])])
     [:code (get ops op)]))
 
@@ -601,42 +602,36 @@
        [:dd
         (when @open?
           (let [edit? (contains? #{:edit :new} _mode)]
-               [:<>
-                (into
-                 [:ul.identity-paths]
-                 (map-indexed
-                  (fn [idx path]
-                    (let [path-path [:ruleset :identityPaths idx]]
-                      [:<>
-                       [render-or-edit-path
-                        _mode
-                        path-path
-                        path
-                        :remove-fn (fn []
-                                     (dispatch [:reaction/delete-identity-path idx]))
-                        :spec-valid? (if (contains? #{:edit :new} _mode)
-                                       (if (not-empty
-                                            @(subscribe
-                                              [:reaction/edit-spec-errors-in path-path]))
-                                         false
-                                         true)
-                                       true)]
-                       (when (not edit?) [:br])]))
-                  _identity-paths))
-                (when edit?
-                  [:span.add-identity-path
-                   [:a {:href "#"
-                        :on-click (fn [e]
-                                    (fns/ps-event e)
-                                    (dispatch [:reaction/add-identity-path]))}
-                    "Add New Identity Path "
-                    [:img {:src "/images/icons/add.svg"}]]])]))]])))
-
-(defn some-outer-fn
-  [a b]
-  (let [flag (r/atom false)]
-    (fn [a b]
-      ...)))
+            [:<>
+             (into 
+              [:ul.identity-paths]
+              (map-indexed
+               (fn [idx path]
+                 (let [path-path [:ruleset :identityPaths idx]]
+                   [:<>
+                    [render-or-edit-path
+                     _mode
+                     path-path
+                     path
+                     :remove-fn (fn []
+                                  (dispatch [:reaction/delete-identity-path idx]))
+                     :spec-valid? (if (contains? #{:edit :new} _mode)
+                                    (if (not-empty
+                                         @(subscribe
+                                           [:reaction/edit-spec-errors-in path-path]))
+                                      false
+                                      true)
+                                    true)]
+                    (when (not edit?) [:br])]))
+               _identity-paths))
+             (when edit?
+               [:span.add-identity-path
+                [:a {:href "#"
+                     :on-click (fn [e]
+                                 (fns/ps-event e)
+                                 (dispatch [:reaction/add-identity-path]))}
+                 "Add New Identity Path "
+                 [:img {:src "/images/icons/add.svg"}]]])]))]])))
 
 (defn- render-conditions-errors
   "Render out top-level conditions errors, currently there is only one, an empty
