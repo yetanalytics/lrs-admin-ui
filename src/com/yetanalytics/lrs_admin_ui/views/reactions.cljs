@@ -598,7 +598,7 @@
         {:on-click #(swap! open? not)
          :class (str "paths-collapse" (when @open? " expanded"))}
         "Identity Paths (Advanced)"
-        [tooltip-info {:value "USE WITH CAUTION. Identity Paths are a method of grouping statements for which you are attempting to match conditions. Typically, Reactions may revolve around actor, e.g. `$.actor.mbox` or `$.actor.account.name` which is equivalent to saying \"For a given Actor, look for statements that match the Conditions below\". This is what the default is set to. Alternative approaches to Identity Path may be used by modifying this section, for instance `$.context.registration` to group statements by learning session."}]]
+        [tooltip-info {:value "USE WITH CAUTION. Identity Paths are a method of grouping statements for which you are attempting to match conditions. Typically, Reactions may revolve around actor, e.g. `$.actor.mbox` or `$.actor.account.name` which is equivalent to saying \"For a given Actor, look for statements that match the Conditions above\". This is what the default is set to. Alternative approaches to Identity Path may be used by modifying this section, for instance `$.context.registration` to group statements by learning session."}]]
        [:dd
         (when @open?
           (let [edit? (contains? #{:edit :new} _mode)]
