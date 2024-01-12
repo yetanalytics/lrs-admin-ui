@@ -959,9 +959,17 @@
                                    (fns/rand-alpha-str 8))
                    :active true
                    :ruleset
-                   {:identityPaths []
-                    :conditions     {}
-                    :template       {}}}]
+                   {:identityPaths [["actor" "mbox"]
+                                    ["actor" "openid"]
+                                    ["actor" "mbox_sha1sum"]
+                                    ["actor" "account" "homePage"]
+                                    ["actor" "account" "name"]]
+                    :conditions    {}
+                    :template      {"actor"
+                                    {"name" "Actor Example",
+                                     "mbox" "mailto:actor_example@yetanalytics.com"},
+                                    "object" {"id" "https://www.yetanalytics.com/xapi/activities/example_activity"},
+                                    "verb" {"id" "https://adlnet.gov/expapi/verbs/completed"}}}}]
      {:db (-> db
               (assoc ::db/editing-reaction reaction)
               prep-edit-reaction-template)
