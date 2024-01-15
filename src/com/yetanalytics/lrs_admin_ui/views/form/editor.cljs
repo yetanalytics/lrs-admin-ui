@@ -17,11 +17,12 @@
 (defn editor
   "Generic CodeMirror editor container. Accepts `display-settings` to override
    the default display settings and an `on-change` callback function."
-  [opts & {:keys [display-settings on-change]}]
+  [opts & {:keys [display-settings on-change on-cursor]}]
   (let [opts' (cond-> opts
                 on-change
-                (assoc :events (wrap-event "change"
-                                           on-change)))]
+                (assoc :events (wrap-event "change" on-change))
+                on-cursor
+                (assoc :events (wrap-event "cursorActivity" on-cursor)))]
     [:div {:id "cm-mount-safety-container"}
      [cm/codemirror
       (merge {:mode              "application/json"
@@ -116,15 +117,16 @@
 
    Additionally there is the `keywordize-keys?` kwarg; if `true`, all keys
    should be keywordized, otherwise they should be kept as strings."
-  [{:keys [buffer save error
-           set-json]}
-   & {:keys [keywordize-keys?]
-      :or   {keywordize-keys? true}}]
+  [{:keys [buffer save error set-json]}
+   & {:keys [keywordize-keys? on-cursor]
+      :or   {keywordize-keys? true
+             on-cursor        (fn [_])}}]
   (let [{:keys [json]} @buffer]
     [:div
      [validation-display
       {:buffer buffer}]
      [editor {:value json}
+      :on-cursor on-cursor
       :on-change
       (fn [edit-val]
         (try (set-json edit-val)
