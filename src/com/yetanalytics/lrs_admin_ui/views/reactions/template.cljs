@@ -9,8 +9,7 @@
             [reagent.core :as r]
             [re-frame.core :refer [subscribe dispatch]]
             [goog.string :as gstr]
-            [goog.string.format]
-            [clojure.pprint :refer [pprint]]))
+            [goog.string.format]))
 
 (defn- var-gen-condition
   [{:keys [on-change value]}]
@@ -38,7 +37,6 @@
   (vec (butlast path)))
 
 (defn- change-segment [path new-val]
-  (pprint [ path new-val])
   (assoc path (dec (count path)) new-val))
 
 (defn var-gen
