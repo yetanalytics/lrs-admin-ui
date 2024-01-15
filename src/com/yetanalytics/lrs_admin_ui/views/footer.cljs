@@ -11,6 +11,7 @@
    (format "%s2021-2023 " (unescapeEntities "&copy;"))
    [:a {:href "https://www.yetanalytics.com"
         :target "_blank"
+        :rel "noopener noreferrer"
         :class "text-white"}
     "Yet Analytics Inc."]])
 
@@ -49,9 +50,9 @@
    [:footer {:class "home-footer"}
     [:div {:class "footer-wrapper"}
      [yet-copy]"   |   "
-     [:a {:class "text-white", :href "https://github.com/yetanalytics/lrsql/blob/main/LICENSE"}
+     [:a {:class "text-white", :rel "noopener noreferrer" :href "https://github.com/yetanalytics/lrsql/blob/main/LICENSE"}
       "Licensed under the Apache 2.0 License"]"   |   "
-     [:a {:class "text-white", :href "https://github.com/yetanalytics/lrsql"}
+     [:a {:class "text-white", :rel "noopener noreferrer" :href "https://github.com/yetanalytics/lrsql"}
       "Contribute on "
       [:img {:src "images/icons/github.png"
              :alt "Github Logo"}]]
