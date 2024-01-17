@@ -19,8 +19,7 @@
             goog.string.format
             [clojure.walk                                     :as w]
             [com.yetanalytics.lrs-admin-ui.spec.reaction      :as rs]
-            [com.yetanalytics.lrs-reactions.path              :as rpath]
-            [com.yetanalytics.lrs-admin-ui.views.form.editor :as ed]))
+            [com.yetanalytics.lrs-reactions.path              :as rpath]))
 
 (def global-interceptors
   [db/check-spec-interceptor])
@@ -870,7 +869,7 @@
           :fx [timeline-control-fx]}
          (.log js/console
                "New timeline-until ignored, must be after timeline-since.")))
-     (catch js/Error e_
+     (catch js/Error _
        (.log js/console
              (str "Invalid timestamp " until-datetime-str " was ignored"))))))
 

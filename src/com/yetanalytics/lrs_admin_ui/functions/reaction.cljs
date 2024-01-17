@@ -92,7 +92,7 @@
     (let [result (xs/validate-statement-data raw-json)]
       result)
     ;; JSON errors handled by editor directly, ignore
-    (catch js/SyntaxError e)
+    (catch js/SyntaxError _)
     ;; Other exceptions will be spec errors
     (catch js/Error e
       (reduce
