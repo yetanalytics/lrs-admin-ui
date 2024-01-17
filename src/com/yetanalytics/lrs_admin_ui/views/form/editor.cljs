@@ -20,8 +20,7 @@
   [opts & {:keys [display-settings on-change]}]
   (let [opts' (cond-> opts
                 on-change
-                (assoc :events (wrap-event "change"
-                                           on-change)))]
+                (assoc :events (wrap-event "change" on-change)))]
     [:div {:id "cm-mount-safety-container"}
      [cm/codemirror
       (merge {:mode              "application/json"
@@ -116,8 +115,7 @@
 
    Additionally there is the `keywordize-keys?` kwarg; if `true`, all keys
    should be keywordized, otherwise they should be kept as strings."
-  [{:keys [buffer save error
-           set-json]}
+  [{:keys [buffer save error set-json]}
    & {:keys [keywordize-keys?]
       :or   {keywordize-keys? true}}]
   (let [{:keys [json]} @buffer]
