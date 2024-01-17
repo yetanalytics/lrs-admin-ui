@@ -12,7 +12,10 @@
                                                  [cljsjs/oidc-client
                                                   reagent/reagent
                                                   re-frame/re-frame]}
-        com.yetanalytics/xapi-schema            {:mvn/version "1.2.1"}
+        
+        com.yetanalytics/xapi-schema
+        {:git/url     "https://github.com/yetanalytics/xapi-schema.git"
+         :git/sha     "7a194ce57865062bb9cc1ab77b49fcea1392320b"}
         com.fasterxml.jackson.core/jackson-core {:mvn/version "2.11.4"}
         com.fasterxml.jackson.dataformat/jackson-dataformat-smile
         {:mvn/version "2.11.4"}

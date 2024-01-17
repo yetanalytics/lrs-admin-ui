@@ -19,7 +19,8 @@
             goog.string.format
             [clojure.walk                                     :as w]
             [com.yetanalytics.lrs-admin-ui.spec.reaction      :as rs]
-            [com.yetanalytics.lrs-reactions.path              :as rpath]))
+            [com.yetanalytics.lrs-reactions.path              :as rpath]
+            [com.yetanalytics.lrs-admin-ui.views.form.editor :as ed]))
 
 (def global-interceptors
   [db/check-spec-interceptor])
@@ -869,7 +870,7 @@
           :fx [timeline-control-fx]}
          (.log js/console
                "New timeline-until ignored, must be after timeline-since.")))
-     (catch js/Error _
+     (catch js/Error e_
        (.log js/console
              (str "Invalid timestamp " until-datetime-str " was ignored"))))))
 
@@ -1423,11 +1424,16 @@
  (fn [db _]
    (dissoc db ::db/editing-reaction-template-errors)))
 
-(re-frame/reg-event-db
+(re-frame/reg-event-fx
  :reaction/set-template-json
  global-interceptors
- (fn [db [_ json]]
-   (assoc db ::db/editing-reaction-template-json json)))
+ (fn [{:keys [db]} [_ json]]
+   (let [xapi-errors (rfns/validate-template-xapi json)
+         response-map
+         (cond-> {:db (assoc db ::db/editing-reaction-template-json json)}
+           (seq xapi-errors)
+           (assoc :fx [[:dispatch [:reaction/set-template-errors xapi-errors]]]))]
+     response-map)))
 
 (re-frame/reg-event-db
  :reaction/clear-template-json

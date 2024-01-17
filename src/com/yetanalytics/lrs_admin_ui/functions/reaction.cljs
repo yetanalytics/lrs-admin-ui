@@ -1,5 +1,6 @@
 (ns com.yetanalytics.lrs-admin-ui.functions.reaction
-  (:require [goog.string :refer [format]]
+  (:require [goog.string      :refer [format]]
+            [xapi-schema.core :as xs]
             [goog.string.format]))
 
 (defn path->string
@@ -82,3 +83,30 @@
   (if (and (= [:ruleset :conditions] [seg0 seg1]) seg2)
     (into [seg0 seg1 seg2 1] rest-seg)
     path))
+
+(defn validate-template-xapi
+  "Take raw JSON str of an xAPI Statement and issue a vec of error maps for 
+   any schema violations."
+  [raw-json]
+  (try
+    (let [result (xs/validate-statement-data raw-json)]
+      result)
+    ;; JSON errors handled by editor directly, ignore
+    (catch js/SyntaxError e)
+    ;; Other exceptions will be spec errors
+    (catch js/Error e
+      (reduce
+       (fn [agg {:keys [val path]}]
+         (cond-> agg
+           (not
+            (and (map? val)
+                 (seq val)
+                 (-> val keys first name (= "$templatePath"))))
+           (conj
+            (if (= path [])
+              ;; Top-level error (usually missing req key)
+              {:message "xAPI Validation: Missing or invalid root properties."}
+              ;; Errors inside a statement sub-object
+              {:message (format "xAPI Validation Error in: %s" path)}))))
+       []
+       (-> e ex-data :error :cljs.spec.alpha/problems)))))
