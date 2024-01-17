@@ -100,8 +100,7 @@
          (cond-> agg
            (not
             (and (map? val)
-                 (seq val)
-                 (-> val keys first name (= "$templatePath"))))
+                 (some #(= "$templatePath" (name %)) (keys val))))
            (conj
             (if (= path [])
               ;; Top-level error (usually missing req key)
