@@ -1428,12 +1428,10 @@
  :reaction/set-template-json
  global-interceptors
  (fn [{:keys [db]} [_ json]]
-   (let [xapi-errors (rfns/validate-template-xapi json)
-         response-map
-         (cond-> {:db (assoc db ::db/editing-reaction-template-json json)}
-           (seq xapi-errors)
-           (assoc :fx [[:dispatch [:reaction/set-template-errors xapi-errors]]]))]
-     response-map)))
+   (let [xapi-errors (rfns/validate-template-xapi json)]
+     (cond-> {:db (assoc db ::db/editing-reaction-template-json json)}
+       (seq xapi-errors)
+       (assoc :fx [[:dispatch [:reaction/set-template-errors xapi-errors]]])))))
 
 (re-frame/reg-event-db
  :reaction/clear-template-json
