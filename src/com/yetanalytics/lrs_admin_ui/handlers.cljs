@@ -1423,11 +1423,14 @@
  (fn [db _]
    (dissoc db ::db/editing-reaction-template-errors)))
 
-(re-frame/reg-event-db
+(re-frame/reg-event-fx
  :reaction/set-template-json
  global-interceptors
- (fn [db [_ json]]
-   (assoc db ::db/editing-reaction-template-json json)))
+ (fn [{:keys [db]} [_ json]]
+   (let [xapi-errors (rfns/validate-template-xapi json)]
+     (cond-> {:db (assoc db ::db/editing-reaction-template-json json)}
+       (seq xapi-errors)
+       (assoc :fx [[:dispatch [:reaction/set-template-errors xapi-errors]]])))))
 
 (re-frame/reg-event-db
  :reaction/clear-template-json

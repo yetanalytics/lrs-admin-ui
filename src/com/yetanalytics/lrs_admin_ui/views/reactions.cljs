@@ -747,7 +747,9 @@
                               :focus [:reaction/focus]
                               [:reaction/editing]))
         error?  (and (contains? #{:edit :new} mode)
-                     (some? @(subscribe [:reaction/edit-spec-errors])))]
+                     (or 
+                      (some? @(subscribe [:reaction/edit-spec-errors]))
+                      (seq @(subscribe [:reaction/edit-template-errors]))))]
     [:div {:class "left-content-wrapper"}
      [:h2 {:class "content-title"}
       (case mode
