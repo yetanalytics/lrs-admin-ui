@@ -26,7 +26,7 @@
                                                  [org.clojure/clojurescript
                                                   reagent/reagent
                                                   cljsjs/codemirror]}
-        com.yetanalytics/lrs-reactions          {:mvn/version "0.0.1-SNAPSHOT"
+        com.yetanalytics/lrs-reactions          {:mvn/version "0.0.1"
                                                  :exclusions
                                                  [org.clojure/clojure]}}
  :paths ["src" "resources"]
