@@ -588,7 +588,8 @@
               (fn []
                 (dispatch [:reaction/delete-condition condition-name]))])
            (when (and (contains? #{:edit :new} mode)
-                      (nil? condition))
+                      ;; when empty
+                      (-> condition keys (= [:sort-idx])))
              [add-clause
               condition-path])])))
 
