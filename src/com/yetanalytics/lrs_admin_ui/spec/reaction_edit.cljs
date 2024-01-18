@@ -23,13 +23,17 @@
 (s/def ::sort-idx nat-int?)
 
 (s/def ::top-level-condition
-  (s/merge ::condition
-           (s/keys :req-un [::sort-idx])))
+  (s/or
+   :indexed-condition
+   (s/merge ::condition
+            (s/keys :req-un [::sort-idx]))
+   :empty-condition
+   (s/keys :req-un [::sort-idx])))
 
 ;; Condition map vals are nilable
 (s/def ::conditions
   (s/map-of simple-keyword?
-            (s/nilable ::top-level-condition)
+            ::top-level-condition
             :gen-max 3))
 
 ;; :identityPaths is only checked for structure

@@ -519,6 +519,7 @@
    {and-clauses :and
     or-clauses  :or
     not-clause  :not
+    :keys [op sort-idx]
     :as clause}]
   (cond
     and-clauses
@@ -530,9 +531,11 @@
     (find clause :not)
     [render-not
      mode reaction-path not-clause]
-    :else
+    op
     [render-logic
-     mode reaction-path clause]))
+     mode reaction-path clause]
+    ;; if it is top-level & empty, do not render
+    sort-idx nil))
 
 (defn- render-or-edit-condition-name
   [mode condition-name]
@@ -585,7 +588,8 @@
               (fn []
                 (dispatch [:reaction/delete-condition condition-name]))])
            (when (and (contains? #{:edit :new} mode)
-                      (nil? condition))
+                      ;; when empty
+                      (-> condition keys (= [:sort-idx])))
              [add-clause
               condition-path])])))
 
