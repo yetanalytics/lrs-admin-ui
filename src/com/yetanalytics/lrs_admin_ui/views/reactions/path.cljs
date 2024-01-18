@@ -102,7 +102,7 @@
                  :on-click (fn [e]
                              (fns/ps-event e)
                              (del-fn))}
-             [:img {:src "/images/icons/minus.svg"}]]])
+             [:img {:src "images/icons/minus.svg"}]]])
           ;; Offer another segment if path is valid & not complete
           (and valid?
                (not complete?))
@@ -112,7 +112,7 @@
                  :on-click (fn [e]
                              (fns/ps-event e)
                              (add-fn))}
-             [:img {:src "/images/icons/add.svg"}]]])
+             [:img {:src "images/icons/add.svg"}]]])
           ;; If remove function is provided, add icon for that
           remove-fn
           (conj
@@ -121,7 +121,7 @@
                  :on-click (fn [e]
                              (fns/ps-event e)
                              (remove-fn))}
-             [:img {:src "/images/icons/icon-delete-blue.svg"}]]])
+             [:img {:src "images/icons/icon-delete-blue.svg"}]]])
           )
         ;; Indicate expected type?
         )))
