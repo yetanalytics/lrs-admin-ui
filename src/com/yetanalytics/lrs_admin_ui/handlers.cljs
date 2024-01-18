@@ -1365,7 +1365,9 @@
      (-> db
          (update-in
           [::db/editing-reaction :ruleset :conditions]
-          assoc k {:and []})
+          assoc k {:path []
+                   :op   "eq"
+                   :val  ""})
          (update
           ::db/editing-reaction
           rfns/index-conditions)))))
@@ -1390,12 +1392,12 @@
          full-path (into [::db/editing-reaction]
                          parent-path)
          new-clause (case clause-type
-                      :and {:and []}
-                      :or {:or []}
-                      :not {:not nil}
+                      :and   {:and []}
+                      :or    {:or []}
+                      :not   {:not nil}
                       :logic {:path []
-                              :op "eq"
-                              :val ""})]
+                              :op   "eq"
+                              :val  ""})]
      (-> (if (contains? #{:and :or} pkey)
            (update-in db full-path conj new-clause)
            (assoc-in db full-path new-clause))
