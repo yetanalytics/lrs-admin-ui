@@ -1352,9 +1352,9 @@
        (let [parent (get-in db parent-path)
              new-parent (remove-element parent k)]
          (assoc-in db parent-path new-parent))
-       ;; is at the root of a condition, nil it
+       ;; is at the root of a condition, remove everything but the sort
        (keyword? k)
-       (assoc-in db full-path nil)))))
+       (update-in db full-path select-keys [:sort-idx])))))
 
 (re-frame/reg-event-db
  :reaction/add-condition
