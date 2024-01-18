@@ -313,7 +313,7 @@
                     (fns/ps-event e)
                     (on-click))}
     (gstr/format "Delete %s " to-delete-desc)
-    [:img {:src "/images/icons/icon-delete-blue.svg"}]]])
+    [:img {:src "images/icons/icon-delete-blue.svg"}]]])
 
 (defn- add-condition
   []
@@ -323,7 +323,7 @@
                     (fns/ps-event e)
                     (dispatch [:reaction/add-condition]))}
     "Add New Condition "
-    [:img {:src "/images/icons/add.svg"}]]])
+    [:img {:src "images/icons/add.svg"}]]])
 
 (defn- add-clause
   [parent-path]
@@ -635,7 +635,7 @@
                                  (fns/ps-event e)
                                  (dispatch [:reaction/add-identity-path]))}
                  "Add New Identity Path "
-                 [:img {:src "/images/icons/add.svg"}]]])]))]])))
+                 [:img {:src "images/icons/add.svg"}]]])]))]])))
 
 (defn- render-conditions-errors
   "Render out top-level conditions errors, currently there is only one, an empty
