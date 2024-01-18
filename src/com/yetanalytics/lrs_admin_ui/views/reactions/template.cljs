@@ -50,7 +50,7 @@
                    :on-click #(swap! open? not)}
                "Dynamic Variables"
                [tooltip-info {:value "You can use this tool to create variable declarations referencing the statements which match the condition(s) above, and then use them in your template to create a dynamic xAPI Reaction Statement."}]
-               [:img {:src "/images/icons/code_generate.svg"}]]]
+               [:img {:src "images/icons/code_generate.svg"}]]]
        (when @open?
          [:div.var-gen-wrapper
           [:p [:em "Reactions templates can be made dynamic by the use of injectable variables. These variables must come from a statement matching one of the conditions above."]]
