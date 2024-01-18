@@ -350,7 +350,7 @@
 (defn clause-nest-class
   [reaction-path]
   (let [ops (filter keyword? (subvec reaction-path 3))]
-    (if (> (mod (count ops) 2) 0) "odd" "even")))
+    (if (even? (count ops)) "even" "odd")))
 
 (defn- render-and
   [mode reaction-path and-clauses]
