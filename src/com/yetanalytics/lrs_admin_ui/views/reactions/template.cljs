@@ -43,7 +43,7 @@
   []
   (let [open?     (r/atom false)
         condition (r/atom "")
-        path      (r/atom nil)]
+        path      (r/atom [""])]
     (fn []
       [:<>
        [:h5 [:a {:href "#!"
@@ -69,7 +69,8 @@
               @path
               :add-fn (fn [] (swap! path add-segment))
               :del-fn (fn [] (swap! path del-segment))
-              :change-fn (fn [new-val] (swap! path change-segment new-val))]
+              :change-fn (fn [new-val] (swap! path change-segment new-val))
+              :validate? false]
              (when (and (seq @condition) (seq @path))
                [:<>
                 [:hr]

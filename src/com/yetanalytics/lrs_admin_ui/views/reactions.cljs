@@ -105,9 +105,9 @@
 
 (defn- render-or-edit-path
   [mode path-path path & {:keys [remove-fn
-                                 spec-valid?
+                                 validate?
                                  open-next?]
-                          :or {spec-valid? true
+                          :or {validate? true
                                open-next?  false}}]
   (if (contains? #{:edit :new} mode)
     [p/path-input path
@@ -123,7 +123,7 @@
                              seg-val
                              open-next?]))
      :remove-fn remove-fn
-     :spec-valid? spec-valid?]
+     :validate? validate?]
     [render-path path]))
 
 (def ops {"eq"       "Equal"
@@ -340,11 +340,13 @@
                     :label "Boolean OR"}
                    {:value :not
                     :label "Boolean NOT"}]
-     :label       (gstr/format "Add sub-clause to `%s` clause"
+     :label       (gstr/format "Add %sclause to %s"
+                               (if (> (count parent-path) 3) "sub-" "")
                                (case (last parent-path)
-                                 :and   "Boolean AND"
-                                 :or    "Boolean OR"
-                                 :not   "Boolean NOT"))
+                                 :and   "`Boolean AND` clause"
+                                 :or    "`Boolean OR` clause"
+                                 :not   "`Boolean NOT` clause"
+                                 "condition"))
      :label-left? true
      :class       "round"
      :select-fn   (fn [v]
@@ -622,15 +624,9 @@
                      _mode
                      path-path
                      path
-                     :remove-fn (fn []
-                                  (dispatch [:reaction/delete-identity-path idx]))
-                     :spec-valid? (if (contains? #{:edit :new} _mode)
-                                    (if (not-empty
-                                         @(subscribe
-                                           [:reaction/edit-spec-errors-in path-path]))
-                                      false
-                                      true)
-                                    true)]
+                     :remove-fn  
+                     #(dispatch [:reaction/delete-identity-path idx])
+                     :open-next? true]
                     (when (not edit?) [:br])]))
                _identity-paths))
              (when edit?

@@ -1139,7 +1139,7 @@
    (update-in db
               [::db/editing-reaction :ruleset :identityPaths]
               conj
-              [])))
+              [""])))
 
 (defn- init-type
   [new-type]
@@ -1309,7 +1309,7 @@
                       "and" {:and (or or-clauses [])}
                       "or" {:or (or and-clauses [])}
                       "not" {:not nil}
-                      "logic" {:path []
+                      "logic" {:path [""]
                                :op "eq"
                                :val ""})))))))
 
@@ -1395,7 +1395,7 @@
                       :and   {:and []}
                       :or    {:or []}
                       :not   {:not nil}
-                      :logic {:path []
+                      :logic {:path [""]
                               :op   "eq"
                               :val  ""})]
      (-> (if (contains? #{:and :or} pkey)
