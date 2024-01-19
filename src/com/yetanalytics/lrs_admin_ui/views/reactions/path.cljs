@@ -71,9 +71,7 @@
            del-fn (fn [_] (println 'del))
            change-fn (fn [_] (println 'change))
            spec-valid? true}}]
-  (let [{:keys [complete?
-                valid?]} (rpath/analyze-path
-                          path)]
+  (let [{:keys [complete? valid?]} (rpath/analyze-path path)]
     (-> [:div.path-input
          {:class (when (or (not spec-valid?)
                            (not valid?))

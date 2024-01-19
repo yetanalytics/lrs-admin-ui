@@ -105,8 +105,10 @@
 
 (defn- render-or-edit-path
   [mode path-path path & {:keys [remove-fn
-                                 spec-valid?]
-                          :or {spec-valid? true}}]
+                                 spec-valid?
+                                 open-next?]
+                          :or {spec-valid? true
+                               open-next?  false}}]
   (if (contains? #{:edit :new} mode)
     [p/path-input path
      :add-fn (fn []
@@ -118,7 +120,8 @@
      :change-fn (fn [seg-val]
                   (dispatch [:reaction/change-path-segment
                              path-path
-                             seg-val]))
+                             seg-val
+                             open-next?]))
      :remove-fn remove-fn
      :spec-valid? spec-valid?]
     [render-path path]))
@@ -469,7 +472,8 @@
                      [render-or-edit-path
                       mode
                       (conj reaction-path :path)
-                      path]]
+                      path
+                      :open-next? true]]
                     [:dt "Operation"
                      [tooltip-info {:value "Operation represents the method with which to compare the values. For instance `Equals` means the value at the statement path above must exactly match the Value or Reference below."}]]
                     [:dd [render-or-edit-op
