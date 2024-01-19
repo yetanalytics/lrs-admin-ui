@@ -364,7 +364,7 @@
    (when (empty? and-clauses)
      [:ul.reaction-error-list
       [:li
-       "A `Boolean AND` clause must contain at least one sub-clause. Please add either Statement Criteria or a nested Boolean operation below."]])
+       "This `Boolean AND` clause must contain at least one sub-clause. Please add either Statement Criteria or a nested Boolean operation below."]])
    (into [:div.boolean-body]
          (map-indexed
           (fn [idx clause]
@@ -392,7 +392,7 @@
    (when (empty? or-clauses)
      [:ul.reaction-error-list
       [:li
-       "A `Boolean OR` clause must contain at least one sub-clause. Please add either Statement Criteria or a nested Boolean operation below."]])
+       "This `Boolean OR` clause must contain at least one sub-clause. Please add either Statement Criteria or a nested Boolean operation below."]])
    (into [:div.boolean-body]
          (map-indexed
           (fn [idx clause]
@@ -420,7 +420,7 @@
    (when (nil? not-clause)
      [:ul.reaction-error-list
       [:li
-       "A `Boolean NOT` clause must contain at least one sub-clause. Please add either Statement Criteria or a nested Boolean operation below."]])
+       "This `Boolean NOT` clause must contain at least one sub-clause. Please add either Statement Criteria or a nested Boolean operation below."]])
    [:div.boolean-body
     (when not-clause
       [render-clause mode (conj reaction-path :not) not-clause])]
