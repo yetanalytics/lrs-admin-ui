@@ -105,8 +105,10 @@
 
 (defn- render-or-edit-path
   [mode path-path path & {:keys [remove-fn
-                                 spec-valid?]
-                          :or {spec-valid? true}}]
+                                 validate?
+                                 open-next?]
+                          :or {validate? true
+                               open-next?  false}}]
   (if (contains? #{:edit :new} mode)
     [p/path-input path
      :add-fn (fn []
@@ -118,9 +120,10 @@
      :change-fn (fn [seg-val]
                   (dispatch [:reaction/change-path-segment
                              path-path
-                             seg-val]))
+                             seg-val
+                             open-next?]))
      :remove-fn remove-fn
-     :spec-valid? spec-valid?]
+     :validate? validate?]
     [render-path path]))
 
 (def ops {"eq"       "Equal"
@@ -270,7 +273,7 @@
   {:and   "AND Clause: All sub-clauses must be true for the statement to match this clause. Requires at least 1 sub-clause."
    :or    "OR Clause: One of the sub-clauses must be true for the statement to match this clause. Requires at leat 1 sub-clause."
    :not   "NOT Clause: The single sub-clause must return false for the statement to match this clause. Requires one sub-clause."
-   :logic "Logic Clause: The comparison detailed in this clause must resolve to true for the statement to match this clause."})
+   :logic "Statement Criteria Clause: The comparison detailed in this clause must resolve to true for the statement to match this clause."})
 
 (defn- clause-label
   [mode
@@ -288,17 +291,17 @@
                      reaction-path
                      (fns/ps-event-val e)]))}
        [:option
+        {:value "logic"}
+        "Statement Criteria"]
+       [:option
         {:value "and"}
-        "AND"]
+        "Boolean AND"]
        [:option
         {:value "or"}
-        "OR"]
+        "Boolean OR"]
        [:option
         {:value "not"}
-        "NOT"]
-       [:option
-        {:value "logic"}
-        "Logic"]]
+        "Boolean NOT"]]
       [tooltip-info {:value (get clause-type-tooltips type-key)}]]
      
      (case type-key :and "AND" :or "OR" :not "NOT" ""))])
@@ -329,15 +332,21 @@
   [parent-path]
   [:div.add-clause
    [form/action-dropdown
-    {:options     [{:value :and
-                    :label "AND"}
+    {:options     [{:value :logic
+                    :label "Statement Criteria"}
+                   {:value :and
+                    :label "Boolean AND"}
                    {:value :or
-                    :label "OR"}
+                    :label "Boolean OR"}
                    {:value :not
-                    :label "NOT"}
-                   {:value :logic
-                    :label "Logic"}]
-     :label       "Add Clause"
+                    :label "Boolean NOT"}]
+     :label       (gstr/format "Add %sclause to %s"
+                               (if (> (count parent-path) 3) "sub-" "")
+                               (case (last parent-path)
+                                 :and   "`Boolean AND` clause"
+                                 :or    "`Boolean OR` clause"
+                                 :not   "`Boolean NOT` clause"
+                                 "condition"))
      :label-left? true
      :class       "round"
      :select-fn   (fn [v]
@@ -360,7 +369,7 @@
    (when (empty? and-clauses)
      [:ul.reaction-error-list
       [:li
-       "AND must have at least one clause."]])
+       "This `Boolean AND` clause must contain at least one sub-clause. Please add either Statement Criteria or a nested Boolean operation below."]])
    (into [:div.boolean-body]
          (map-indexed
           (fn [idx clause]
@@ -374,7 +383,7 @@
       [add-clause
        (conj reaction-path :and)]
       [delete-icon
-       :to-delete-desc "'AND' Clause"
+       :to-delete-desc "'Boolean AND' clause"
        :on-click
        (fn []
          (dispatch
@@ -388,7 +397,7 @@
    (when (empty? or-clauses)
      [:ul.reaction-error-list
       [:li
-       "OR must have at least one clause."]])
+       "This `Boolean OR` clause must contain at least one sub-clause. Please add either Statement Criteria or a nested Boolean operation below."]])
    (into [:div.boolean-body]
          (map-indexed
           (fn [idx clause]
@@ -402,7 +411,7 @@
       [add-clause
        (conj reaction-path :or)]
       [delete-icon
-       :to-delete-desc "'OR' Clause"
+       :to-delete-desc "'Boolean OR' clause"
        :on-click
        (fn []
          (dispatch
@@ -416,7 +425,7 @@
    (when (nil? not-clause)
      [:ul.reaction-error-list
       [:li
-       "NOT must specify a clause."]])
+       "This `Boolean NOT` clause must contain at least one sub-clause. Please add either Statement Criteria or a nested Boolean operation below."]])
    [:div.boolean-body
     (when not-clause
       [render-clause mode (conj reaction-path :not) not-clause])]
@@ -426,7 +435,7 @@
       (conj reaction-path :not)])
    (when (contains? #{:edit :new} mode)
      [delete-icon
-      :to-delete-desc "'NOT' Clause"
+      :to-delete-desc "'Boolean NOT' clause"
       :on-click
       (fn []
         (dispatch
@@ -465,7 +474,8 @@
                      [render-or-edit-path
                       mode
                       (conj reaction-path :path)
-                      path]]
+                      path
+                      :open-next? true]]
                     [:dt "Operation"
                      [tooltip-info {:value "Operation represents the method with which to compare the values. For instance `Equals` means the value at the statement path above must exactly match the Value or Reference below."}]]
                     [:dd [render-or-edit-op
@@ -504,7 +514,7 @@
                          ref]]))
            (when (contains? #{:edit :new} mode)
              [delete-icon
-              :to-delete-desc "Logic Clause"
+              :to-delete-desc "Statement Criteria"
               :on-click
               (fn []
                 (dispatch
@@ -614,15 +624,9 @@
                      _mode
                      path-path
                      path
-                     :remove-fn (fn []
-                                  (dispatch [:reaction/delete-identity-path idx]))
-                     :spec-valid? (if (contains? #{:edit :new} _mode)
-                                    (if (not-empty
-                                         @(subscribe
-                                           [:reaction/edit-spec-errors-in path-path]))
-                                      false
-                                      true)
-                                    true)]
+                     :remove-fn  
+                     #(dispatch [:reaction/delete-identity-path idx])
+                     :open-next? true]
                     (when (not edit?) [:br])]))
                _identity-paths))
              (when edit?
@@ -650,7 +654,7 @@
            template]}]
   [:dl.reaction-ruleset
    [:dt "Conditions"
-    [tooltip-info {:value "This part of a ruleset controls the criteria for which statements match in a Reaction."}]]
+    [tooltip-info {:value "This part of a ruleset controls the criteria for which statements match in a Reaction. An easy way to think about it is each `Condition` should match one expected xAPI Statement. Each condition can have as much criteria and logic as is required to identify the correct kind of statement."}]]
    [:dd
     (when (contains? #{:edit :new} mode)
       [render-conditions-errors conditions])

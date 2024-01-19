@@ -66,17 +66,15 @@
              del-fn
              change-fn
              remove-fn
-             spec-valid?]
+             validate?]
       :or {add-fn (fn [_] (println 'add))
            del-fn (fn [_] (println 'del))
            change-fn (fn [_] (println 'change))
-           spec-valid? true}}]
-  (let [{:keys [complete?
-                valid?]} (rpath/analyze-path
-                          path)]
+           validate? true}}]
+  (let [{:keys [complete? valid?]} (rpath/analyze-path path)]
     (-> [:div.path-input
-         {:class (when (or (not spec-valid?)
-                           (not valid?))
+         {:class (when (and validate? 
+                            (or (not valid?) (not complete?)))
                    "invalid")}
          [:div.path-input-root
           "$"]]

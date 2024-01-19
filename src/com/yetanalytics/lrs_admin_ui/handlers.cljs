@@ -1139,7 +1139,7 @@
    (update-in db
               [::db/editing-reaction :ruleset :identityPaths]
               conj
-              [])))
+              [""])))
 
 (defn- init-type
   [new-type]
@@ -1176,7 +1176,7 @@
 (re-frame/reg-event-db
  :reaction/add-path-segment
  global-interceptors
- (fn [db [_ path-path]]
+ (fn [db [_ path-path]] 
    (let [full-path (into [::db/editing-reaction]
                          path-path)
          path-before (get-in db full-path)
@@ -1184,15 +1184,12 @@
                               path-before)
          parent-path (butlast full-path)]
      (-> db
-         (update-in full-path
-                    conj
-                    (if (= '[idx] next-keys)
-                      0
-                      (or (first next-keys)
-                          "")))
-         (update-in
-          parent-path
-          ensure-val-type)))))
+       (update-in full-path
+                  conj
+                  (if (= '[idx] next-keys) 0 ""))
+       (update-in
+        parent-path
+        ensure-val-type)))))
 
 (re-frame/reg-event-db
  :reaction/del-path-segment
@@ -1209,21 +1206,24 @@
           parent-path
           ensure-val-type)))))
 
-(re-frame/reg-event-db
+(re-frame/reg-event-fx
  :reaction/change-path-segment
  global-interceptors
- (fn [db [_ path-path new-seg-val]]
-   (let [full-path (into [::db/editing-reaction]
-                         path-path)
-         path-before (get-in db full-path)
-         path-after (conj (vec (butlast path-before))
-                          new-seg-val)
-         parent-path (butlast full-path)]
-     (-> db
-         (assoc-in full-path path-after)
-         (update-in
-          parent-path
-          ensure-val-type)))))
+ (fn [{:keys [db]} [_ path-path new-seg-val open-next?]]
+   (let [full-path           (into [::db/editing-reaction]
+                                   path-path)
+         path-before         (get-in db full-path)
+         path-after          (conj (vec (butlast path-before))
+                                   new-seg-val)
+         {:keys [complete?]} (rpath/analyze-path path-after)
+         parent-path         (butlast full-path)]
+     (cond-> {:db (-> db
+                      (assoc-in full-path path-after)
+                      (update-in
+                       parent-path
+                       ensure-val-type))}
+       (and (not complete?) open-next?)
+       (assoc :fx [[:dispatch [:reaction/add-path-segment path-path]]])))))
 
 (re-frame/reg-event-db
  :reaction/set-op
@@ -1309,7 +1309,7 @@
                       "and" {:and (or or-clauses [])}
                       "or" {:or (or and-clauses [])}
                       "not" {:not nil}
-                      "logic" {:path []
+                      "logic" {:path [""]
                                :op "eq"
                                :val ""})))))))
 
@@ -1365,7 +1365,9 @@
      (-> db
          (update-in
           [::db/editing-reaction :ruleset :conditions]
-          assoc k {:and []})
+          assoc k {:path [""]
+                   :op   "eq"
+                   :val  ""})
          (update
           ::db/editing-reaction
           rfns/index-conditions)))))
@@ -1390,12 +1392,12 @@
          full-path (into [::db/editing-reaction]
                          parent-path)
          new-clause (case clause-type
-                      :and {:and []}
-                      :or {:or []}
-                      :not {:not nil}
-                      :logic {:path []
-                              :op "eq"
-                              :val ""})]
+                      :and   {:and []}
+                      :or    {:or []}
+                      :not   {:not nil}
+                      :logic {:path [""]
+                              :op   "eq"
+                              :val  ""})]
      (-> (if (contains? #{:and :or} pkey)
            (update-in db full-path conj new-clause)
            (assoc-in db full-path new-clause))
