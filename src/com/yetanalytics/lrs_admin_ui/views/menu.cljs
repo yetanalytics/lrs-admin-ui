@@ -21,4 +21,6 @@
     (when @(subscribe [:status/enabled?])
       [menu-item {:name "LRS Monitor" :page :status}])
     (when (some identity [@(subscribe [:delete-actor/enabled?])])
-      [menu-item {:name "Data Management" :page :data-management}])]])
+      [menu-item {:name "Data Management" :page :data-management}])
+    (when @(subscribe [:reaction/enabled?])
+      [menu-item {:name "Reactions" :page :reactions}])]])

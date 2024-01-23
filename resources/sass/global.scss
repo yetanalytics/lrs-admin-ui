@@ -395,7 +395,7 @@ h4 {
 }
 
 h5 {
-  font-size: 1.5rem;
+  font-size: 1rem;
 }
 
 @media only screen and (max-width: 768px) {
@@ -419,6 +419,7 @@ h5 {
 p {
   font-size: 1em;
   margin: 0;
+  margin-bottom: 10px;
 }
 
 /**************************************************
@@ -631,15 +632,19 @@ main:not(.page-list-manager) table tbody tr:nth-child(even) {
 # Nice Inputs
 **************************************************/
 
-input.round{
-  -webkit-border-radius: 20px;
-  -moz-border-radius: 20px;
-  border-radius: 20px;
+input.round, select.round {
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
   border: 2px solid #137BCE;
   color: #11375C !important;
   width: 250px;
   height: 30px;
   padding-left: 10px;
+}
+
+input.round.short, select.round.short {
+  width: unset;
 }
 
 input:focus.round {
@@ -1265,6 +1270,9 @@ span.tooltip-info {
   background: url('../images/icons/info_blue_48.svg') no-repeat top left;
   display: inline-block;
   background-size: 15px;
+  line-height: 1.35;
+  font-family: "Roboto";
+  font-weight: normal;
   vertical-align: text-top;
 }
 

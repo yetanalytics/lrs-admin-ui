@@ -1,0 +1,464 @@
+div.form-input-container {
+  display: block;
+}
+
+.form-input-label {
+  margin-top: 12px;
+  font-size: 0.9em;
+  font-weight: bolder;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.form-text-input {
+  padding: 8px;
+  font-size: 17px;
+  width: 100%;
+  border: none;
+  font-family: RobotoCondensed;
+  background-color: #e8e8e8;
+  display: block;
+  border-radius: 4px;
+}
+
+.form-text-input.language-code {
+  width: 120px;
+}
+
+.form-datalist-input {
+  @extend .form-text-input;
+}
+
+// Toggle
+
+/* The switch - the box around the slider */
+.toggle {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+/* The slider */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+  border-radius: 34px;
+}
+
+.slider::before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+div.toggle.checked span.slider {
+  background-color: #137BCE;
+}
+
+div.toggle:focus + .slider {
+  box-shadow: 0 0 1px #137BCE;
+}
+
+div.toggle.checked .slider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
+
+// Select and Combo Boxes
+
+.form-select-input {
+  @extend .form-text-input;
+}
+
+.form-custom-select-input {
+  position: relative;
+}
+
+// Combo Box Top
+
+.form-select-top {
+  @extend .form-text-input;
+  overflow: auto;
+  max-height: 100px;
+}
+
+.form-select-top.opened {
+  border-radius: 4px 4px 0px 0px;
+  border-top: 1px solid #909090;
+  border-left: 1px solid #909090;
+  border-right: 1px solid #909090;
+}
+
+.form-select-top.disabled {
+  // Match browser defaults
+  // hex 666666 = rgb(84, 84, 84)
+  color: #666666;
+}
+
+span.form-select-top-left {
+  float: left;
+}
+
+span.form-select-top-right {
+  float: right;
+}
+
+// Combo Box Top (Multiple Select)
+
+.form-multi-select-top {
+  @extend .form-select-top;
+}
+
+.form-multi-select-top-left {
+  display: inline;
+  float: left;
+  width: 95%;
+}
+
+.form-multi-select-top-right {
+  display: inline;
+  float: right;
+}
+
+.form-multi-select-array-item {
+  background-color: lightgray;
+  padding: 2px 7px;
+  border-radius: 25px;
+  margin: 1px;
+  margin-bottom: 4px;
+  display: inline-block;
+  img {
+    height: 15px;
+    width: 15px;
+    margin-left: 4px;
+    cursor: pointer;
+  }
+}
+
+// Combo Box Dropdown
+
+.form-select-dropdown {
+  border-left: 1px solid #909090;
+  border-right: 1px solid #909090;
+  border-bottom: 1px solid #909090;
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+  // Ensure that the dropdown covers other elements
+  z-index: 1000;
+  position: absolute;
+  background: white;
+  // Match sides to that of the top of the combo box
+  left: 0;
+  right: 0;
+}
+
+// Combo Box Dropdown Search Box
+
+.form-select-dropdown-search-label {
+  margin: 8px;
+}
+
+.form-select-dropdown-search-box {
+  margin: 8px;
+  overflow: auto;
+}
+
+.form-text-input-with-side-button {
+  @extend .form-text-input;
+  width: 85%;
+  float: left;
+}
+
+span.side-button {
+  float: right;
+  display: flex;
+  align-items: center;
+  font-family: RobotoCondensed;
+  font-size: 20px;
+  cursor: pointer;
+  img {
+    margin-right: 4px;
+    height: 30px;
+    width: 30px;
+  }
+}
+
+// Combo Box Dropdown Item List
+
+.form-select-dropdown-items {
+  // Replace default list settings with those that match other components
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+  text-transform: none;
+  font-family: RobotoCondensed;
+  font-size: 17px;
+  font-weight: normal;
+  // Don't want the dropdown to be overly huge
+  max-height: 200px;
+  overflow-y: scroll;
+}
+
+.form-select-dropdown-item {
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.form-select-dropdown-item.selected {
+  background-color: #ddd;
+}
+
+span.error-icon {
+  width: 15px;
+  height: 15px;
+  margin-left: 4px;
+  background: url(/images/icons/error-icon.svg) no-repeat top left;
+  display: inline-block;
+  background-size: 15px;
+  vertical-align: text-top;
+}
+
+span.general-form-error {
+  color: red;
+}
+
+span.required-asterisk {
+  color: red;
+}
+
+/* Maps */
+
+div.form-coll-wrapper {
+  padding: 12px 12px;
+  border: 1px solid black;
+  width: 100%;
+  border-radius: 4px;
+}
+
+div.form-coll-wrapper table {
+  table-layout: fixed;
+}
+
+div.form-coll-wrapper thead tr {
+  height: 30px;
+}
+
+div.form-coll-wrapper thead tr th {
+  padding: 0px 12px;
+  font-size: 0.9em;
+  font-weight: bolder;
+  text-transform: uppercase;
+  font-family: roboto;
+}
+
+div.form-coll-wrapper tbody tr td {
+  vertical-align: top;
+  padding: 3px 12px;
+}
+
+div.form-coll-wrapper tbody tr td.side-button {
+  padding-top: 12px; // Match padding of form labels
+}
+
+div.form-coll-wrapper th.key {
+  width: 20%;
+}
+
+div.form-coll-wrapper th.value {
+  width: 80%;
+}
+
+div.form-coll-wrapper-equal {
+  @extend .form-coll-wrapper;
+}
+
+div.form-coll-wrapper-equal th.key {
+  width: 50%;
+}
+
+div.form-coll-wrapper-equal th.value {
+  width: 50%;
+}
+
+div.form-coll-wrapper th.main {
+  width: 100%;
+}
+
+div.form-coll-wrapper th.up-down {
+  width: 60px;
+}
+
+div.form-coll-wrapper th.up-down-delete {
+  width: 192px;
+}
+
+div.form-coll-wrapper th.delete {
+  width: 72px;
+}
+
+main:not(.page-list-manager) div.form-coll-wrapper table tbody td span.coll-input-container {
+  width: 100%;
+}
+
+// Overwrite principal tr:nth-child(even) rule
+main:not(.page-list-manager) div.form-coll-wrapper tr:nth-child(even) {
+  background-color: white;
+}
+
+@media screen and (max-width: 1200px) {
+  main:not(.page-list-manager) div.form-coll-wrapper table tbody td {
+    width: 100%;
+  }
+  main:not(.page-list-manager) div.form-coll-wrapper table tbody td.key {
+    width: 100%;
+  }
+  main:not(.page-list-manager) div.form-coll-wrapper table tbody td span.coll-input-container {
+    width: 60%;
+  }
+}
+
+div.form-coll-wrapper a.title-button {
+  margin-left: 12px;
+}
+
+// Action Dropdown
+
+div.action-dropdown {
+  position: relative;
+  div.action-dropdown-list {
+    border: 1px solid #909090;
+    border-radius: 4px;
+    // Ensure that the dropdown covers other elements
+    z-index: 1000;
+    position: absolute;
+    background: white;
+    display: none;
+  }
+  div.action-dropdown-list.dropdown-open {
+    display: inline-block;
+  }
+}
+
+// Validation
+
+/** JSON Validation **/
+
+span.validation-status img {
+  width: 15px;
+  height: 15px;
+  vertical-align: top;
+  margin-top: 3px;
+  margin-right: 5px;
+}
+
+div.validation-display-wrapper {
+  margin-bottom: 5px;
+}
+
+div.validation-display {
+  background-color: #eeffed;
+  padding: 5px;
+  border-radius: 5px;
+  border-bottom-left-radius: 0px;
+  border-bottom-right-radius: 0px;
+}
+
+div.validation-display.warning {
+  background-color: #ffffe8;
+}
+
+div.validation-display.invalid {
+  background-color: #fff2f2;
+}
+
+div.validation-display.loading {
+  background-color: #f0f0f0;
+}
+
+div.validation-error-wrapper {
+  position: absolute;
+  z-index: 99999;
+  width: 100%;
+}
+
+div.validation-errors {
+  padding: 5px;
+  background-color: #FaFaFa;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  border-top-left-radius: 0px;
+  border-top-right-radius: 0px;
+  width: 85%;
+  // Don't let the validation errors clip past the page
+  max-height: 400px;
+  overflow: auto;
+}
+
+div.validation-errors p i {
+  font-size: 13.5px;
+  font-style: italic;
+}
+
+div.validation-errors ul {
+  list-style: none;
+  text-transform: none;
+  margin: 0px;
+  padding-left: 0px;
+  width: 100%;
+}
+
+div.validation-errors ul li {
+  padding: 5px;
+  width: 100%;
+  background-color: #ffffff;
+  font-weight: normal;
+
+  border: solid 1px #ddd;
+  color: #595959;
+  margin-top: 5px;
+  font-size: 15px;
+}
+
+div.validation-errors ul li p img {
+  height: 15px;
+  width: 15px;
+  margin-right: 6px;
+}
+
+
+p.validation-details {
+  white-space: pre-line;
+  word-break: break-word;
+  font-family: monospace;
+}
+
+p.validation-details textarea {
+  width: 100%;
+  border-radius: 5px;
+  background-color: #ededed;
+  font-size: 12.5px;
+  height: 150px;
+  border: none;
+  resize: none;
+  color: #504e4e;
+  padding: 5px;
+  margin: 2px;
+  margin-top: 11px;
+}

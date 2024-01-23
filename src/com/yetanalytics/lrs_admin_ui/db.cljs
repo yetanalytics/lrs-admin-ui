@@ -1,7 +1,9 @@
 (ns com.yetanalytics.lrs-admin-ui.db
-  (:require [cljs.spec.alpha  :as s :include-macros true]
-            [re-frame.core    :as re-frame]
-            [xapi-schema.spec :as xs]))
+  (:require [cljs.spec.alpha :as s :include-macros true]
+            [re-frame.core :as re-frame]
+            [xapi-schema.spec :as xs]
+            [com.yetanalytics.lrs-admin-ui.spec.reaction :as rs]
+            [com.yetanalytics.lrs-admin-ui.spec.reaction-edit :as rse]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Spec to define the db
@@ -144,6 +146,34 @@
             :status/params
             :status/loading]))
 
+(s/def ::enable-reactions boolean?)
+(s/def ::reactions (s/every ::rs/reaction))
+(s/def ::reaction-focus ::rs/id)
+(s/def ::editing-reaction ::rse/reaction)
+
+(s/def :reaction-template-error/message string?)
+(s/def ::reaction-template-error
+  (s/keys :req-un [:reaction-template-error/message]))
+
+(s/def ::editing-reaction-template-errors
+  (s/every ::reaction-template-error))
+(s/def ::editing-reaction-template-json string?)
+
+(s/def ::dialog-ref any?)
+
+(s/def :dialog-choice/label string?)
+(s/def :dialog-choice/dispatch vector?)
+(s/def ::dialog-choice
+  (s/keys :req-un [:dialog-choice/label
+                   :dialog-choice/dispatch]))
+
+(s/def :dialog-data/prompt string?)
+(s/def :dialog-data/choices
+  (s/every ::dialog-choice :min-count 1))
+(s/def ::dialog-data
+  (s/keys :req-un [:dialog-data/prompt
+                   :dialog-data/choices]))
+
 (s/def ::db (s/keys :req [::session
                           ::credentials
                           ::login
@@ -159,7 +189,15 @@
                           ::oidc-enable-local-admin
                           ::enable-admin-status
                           ::status
-                          ::update-password]))
+                          ::update-password
+                          ::enable-reactions
+                          ::reactions]
+                    :opt [::reaction-focus
+                          ::editing-reaction
+                          ::editing-reaction-template-errors
+                          ::editing-reaction-template-json
+                          ::dialog-ref
+                          ::dialog-data]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Continuous DB Validation

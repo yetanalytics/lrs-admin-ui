@@ -27,6 +27,11 @@
         date (js/Date. local-date-ms)]
     (subs (.toISOString date) 0 19)))
 
+(defn iso8601->local-display
+  [iso8601-str]
+  (let [date (js/Date. (.parse js/Date iso8601-str))]
+    (format "%s, %s" (.toLocaleDateString date) (.toLocaleTimeString date))))
+
 (defn- two-weeks-ago
   "Return a timestamp two weeks before the current time."
   []
