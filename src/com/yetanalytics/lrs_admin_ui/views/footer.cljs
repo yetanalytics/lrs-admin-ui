@@ -8,7 +8,7 @@
 (defn yet-copy []
   [:span {:class "text-white"}
    ;; Unescape needed to render special chars.
-   (format "%s2021-2023 " (unescapeEntities "&copy;"))
+   (format "%s2021-2024 " (unescapeEntities "&copy;"))
    [:a {:href "https://www.yetanalytics.com"
         :target "_blank"
         :rel "noopener noreferrer"
