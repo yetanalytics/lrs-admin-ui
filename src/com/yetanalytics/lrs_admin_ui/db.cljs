@@ -174,6 +174,8 @@
   (s/keys :req-un [:dialog-data/prompt
                    :dialog-data/choices]))
 
+(s/def ::no-val-logout-url string?)
+
 (s/def ::db (s/keys :req [::session
                           ::credentials
                           ::login
@@ -197,7 +199,8 @@
                           ::editing-reaction-template-errors
                           ::editing-reaction-template-json
                           ::dialog-ref
-                          ::dialog-data]))
+                          ::dialog-data
+                          ::no-val-logout-url]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Continuous DB Validation

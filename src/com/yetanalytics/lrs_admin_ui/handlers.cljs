@@ -83,20 +83,24 @@
                                           enable-admin-status
                                           enable-reactions
                                           no-val?
+                                          no-val-logout-url
                                           enable-admin-delete-actor]
                        ?oidc             :oidc
                        ?oidc-local-admin :oidc-enable-local-admin}]]
-   (merge {:db (assoc db
-                      ::db/xapi-prefix url-prefix
-                      ::db/proxy-path proxy-path
-                      ::db/enable-statement-html enable-stmt-html
-                      ::db/oidc-enable-local-admin (or ?oidc-local-admin false)
-                      ::db/enable-admin-status enable-admin-status
-                      ::db/enable-reactions enable-reactions
-                      ::db/enable-admin-delete-actor enable-admin-delete-actor)}
-          (when (or ?oidc no-val?)
-            {:fx [(when ?oidc [:dispatch [:oidc/init ?oidc]])
-                  (when no-val? [:dispatch [:session/proxy-token-init]])]}))))
+   {:db (cond-> (assoc db
+                       ::db/xapi-prefix url-prefix
+                       ::db/proxy-path proxy-path
+                       ::db/enable-statement-html enable-stmt-html
+                       ::db/oidc-enable-local-admin (or ?oidc-local-admin false)
+                       ::db/enable-admin-status enable-admin-status
+                       ::db/enable-reactions enable-reactions
+                       ::db/enable-admin-delete-actor enable-admin-delete-actor)
+          (and no-val?
+               (not-empty no-val-logout-url))
+          (assoc ::db/no-val-logout-url no-val-logout-url))
+    :fx (cond-> []
+          ?oidc (conj [:dispatch [:oidc/init ?oidc]])
+          no-val? (conj [:dispatch [:session/proxy-token-init]]))}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Login / Auth
@@ -246,14 +250,22 @@
 (re-frame/reg-event-fx
  :session/logout
  (fn [{:keys [db]} _]
-   {:fx [[:dispatch [:session/set-token nil]]
-         [:dispatch [:session/set-username nil]]
-         [:dispatch
-          ;; For OIDC logouts, which contain a redirect, notification is
-          ;; triggered by logout success
-          (if (oidc/logged-in? db)
-            [::re-oidc/logout]
-            [:notification/notify false "You have logged out."])]]}))
+   (let [{?no-val-logout-url ::db/no-val-logout-url} db]
+     {:fx [[:dispatch [:session/set-token nil]]
+           [:dispatch [:session/set-username nil]]
+           ;; For OIDC logouts, which contain a redirect, notification is
+           ;; triggered by logout success
+           (cond
+             (oidc/logged-in? db) [:dispatch [::re-oidc/logout]]
+             ?no-val-logout-url [:session/no-val-logout-redirect
+                                 {:logout-url ?no-val-logout-url}]
+             :else
+             [:dispatch [:notification/notify false "You have logged out."]])]})))
+
+(re-frame/reg-fx
+ :session/no-val-logout-redirect
+ (fn [{:keys [logout-url]}]
+   (set! (.-location js/window) logout-url)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Notifications / Alert Bar
