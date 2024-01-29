@@ -9,6 +9,8 @@
 ;; Credential scopes to allow the browser to use (those which can read)
 (def read-scopes #{"all"
                    "all/read"
+                   "activities_profile"
+                   "agents_profile"
                    "state"
                    "statements/read"
                    "statements/read/mine"})

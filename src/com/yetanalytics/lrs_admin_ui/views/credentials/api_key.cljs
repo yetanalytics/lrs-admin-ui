@@ -9,6 +9,8 @@
 (def scope-list
   ["all"
    "all/read"
+   "activities_profile"
+   "agents_profile"
    "state"
    "statements/read"
    "statements/read/mine"
