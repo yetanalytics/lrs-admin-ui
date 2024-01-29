@@ -2,9 +2,9 @@
   (:require
    [reagent.core :as r]
    [re-frame.core :as re-frame :refer [dispatch subscribe]]
-   [com.yetanalytics.lrs-admin-ui.functions.copy  :refer [copy-text]]
-   [com.yetanalytics.lrs-admin-ui.functions.scope :refer [scope-list has-scope? toggle-scope]]
-   [com.yetanalytics.lrs-admin-ui.functions       :refer [ps-event]]))
+   [com.yetanalytics.lrs-admin-ui.functions.copy   :refer [copy-text]]
+   [com.yetanalytics.lrs-admin-ui.functions.scopes :refer [scope-list has-scope? toggle-scope]]
+   [com.yetanalytics.lrs-admin-ui.functions        :refer [ps-event]]))
 
 (defn api-key
   [{:keys [idx]}]
