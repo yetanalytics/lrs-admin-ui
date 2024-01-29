@@ -4,16 +4,8 @@
    [re-frame.core :refer [subscribe dispatch]]
    [com.yetanalytics.lrs-admin-ui.functions :as fns]
    [com.yetanalytics.lrs-admin-ui.functions.http :as httpfn]
+   [com.yetanalytics.lrs-admin-ui.functions.scopes :as scopes]
    [clojure.string :refer [blank?]]))
-
-;; Credential scopes to allow the browser to use (those which can read)
-(def read-scopes #{"all"
-                   "all/read"
-                   "activities_profile"
-                   "agents_profile"
-                   "state"
-                   "statements/read"
-                   "statements/read/mine"})
 
 (defn process-click
   "Extract the pertinent parts of an element from an event and instrument links
@@ -33,7 +25,7 @@
     (fn []
       (let [content @(subscribe [:browser/get-content])
             ;;filter out credentials that can't read the LRS
-            read-credentials (filter #(some read-scopes (:scopes %))
+            read-credentials (filter scopes/has-lrs-scopes?
                                      @(subscribe [:db/get-credentials]))]
         [:div {:class "left-content-wrapper"}
          [:h2 {:class "content-title"}
