@@ -236,7 +236,9 @@
  :server-error
  (fn [_ [_ {:keys [response status]}]]
    ;;extract the error and present it in a notification. If 401 or 0, log out.
-   (let [err (response "error")
+   (let [err (get response "error"
+                  ;; If no error is provided, pass status
+                  (format "Unknown Error, status: %s" status))
          message (cond (= status 0)
                        "Could not connect to LRS!"
                        (and err (< (count err) 100))
