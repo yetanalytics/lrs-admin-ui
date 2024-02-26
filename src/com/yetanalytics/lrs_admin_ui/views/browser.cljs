@@ -25,7 +25,7 @@
     (fn []
       (let [content @(subscribe [:browser/get-content])
             ;;filter out credentials that can't read the LRS
-            read-credentials (filter scopes/has-lrs-scopes?
+            read-credentials (filter scopes/has-statement-read-scopes?
                                      @(subscribe [:db/get-credentials]))]
         [:div {:class "left-content-wrapper"}
          [:h2 {:class "content-title"}

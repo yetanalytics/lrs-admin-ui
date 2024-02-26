@@ -10,8 +10,11 @@
    "statements/read/mine"
    "statements/write"])
 
-(def scope-set
-  (set scope-list))
+(def statement-read-scope-set
+  #{"all"
+    "all/read"
+    "statements/read"
+    "statements/read/mine"})
 
 (defn has-scope?
   "Does `scope-coll` include `scope`?"
@@ -26,7 +29,7 @@
     (remove #(= scope %) scope-coll)
     (conj scope-coll scope)))
 
-(defn has-lrs-scopes?
+(defn has-statement-read-scopes?
   "Does the credential have scopes that can read the LRS?"
   [{:keys [scopes] :as _credential}]
-  (some scope-set scopes))
+  (some statement-read-scope-set scopes))
