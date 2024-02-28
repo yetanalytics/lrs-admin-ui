@@ -2,27 +2,9 @@
   (:require
    [reagent.core :as r]
    [re-frame.core :as re-frame :refer [dispatch subscribe]]
-   [com.yetanalytics.lrs-admin-ui.functions.copy :refer [copy-text]]
-   [com.yetanalytics.lrs-admin-ui.functions      :refer [ps-event]]))
-
-;; XXX: This is one of the UI features not yet supported in third/cloud lrs
-(def scope-list
-  ["all"
-   "all/read"
-   "state"
-   "statements/read"
-   "statements/read/mine"
-   "statements/write"])
-
-(defn has-scope
-  [list scope]
-  (some? (some #{scope} list)))
-
-(defn toggle-scope
-  [scope list]
-  (if (has-scope list scope)
-    (remove #(= scope %) list)
-    (conj list scope)))
+   [com.yetanalytics.lrs-admin-ui.functions.copy   :refer [copy-text]]
+   [com.yetanalytics.lrs-admin-ui.functions.scopes :refer [scope-list has-scope? toggle-scope]]
+   [com.yetanalytics.lrs-admin-ui.functions        :refer [ps-event]]))
 
 (defn api-key
   [{:keys [idx]}]
@@ -94,11 +76,11 @@
                           [:input {:type "checkbox",
                                    :name "scopes",
                                    :value scope
-                                   :checked (has-scope scopes scope)
+                                   :checked (has-scope? scopes scope)
                                    :on-change #(dispatch [:credentials/update-credential
                                                           idx
                                                           (assoc credential :scopes
-                                                                 (toggle-scope scope scopes))])}]
+                                                                 (toggle-scope scopes scope))])}]
                           [:label {:for "scopes"} (str " " scope)]])
                        scope-list)]
                  [:ul {:class "action-icon-list"}
