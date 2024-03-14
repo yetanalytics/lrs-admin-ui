@@ -23,6 +23,23 @@
    (::db/proxy-path db)))
 
 (reg-sub
+ :db/language
+ (fn [db _]
+   (::db/language db)))
+
+(reg-sub
+ :db/pref-lang
+ (fn [db _]
+   (::db/pref-lang db)))
+
+(reg-sub
+ :lang/get
+ :<- [:db/language]
+ :<- [:db/pref-lang]
+ (fn [[language pref-lang] [_ key]]
+   (get-in language [key pref-lang])))
+
+(reg-sub
  :session/get-page
  (fn [_ _]
    (subscribe [:db/get-session]))

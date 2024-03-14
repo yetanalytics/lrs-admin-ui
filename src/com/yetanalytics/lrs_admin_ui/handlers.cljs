@@ -19,6 +19,7 @@
             goog.string.format
             [clojure.walk                                     :as w]
             [com.yetanalytics.lrs-admin-ui.spec.reaction      :as rs]
+            [com.yetanalytics.lrs-admin-ui.language           :as lang]
             [com.yetanalytics.lrs-reactions.path              :as rpath]))
 
 (def global-interceptors
@@ -45,6 +46,8 @@
          ::db/server-host (or server-host "")
          ::db/xapi-prefix "/xapi"
          ::db/proxy-path  nil
+         ::db/language lang/language
+         ::db/pref-lang :en-US
          ::db/enable-admin-delete-actor false
          ::db/enable-statement-html true
          ::db/notifications []
