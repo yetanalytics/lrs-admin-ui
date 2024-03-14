@@ -36,7 +36,7 @@
 (defn refresh-button
   []
   [:div.status-refresh-button
-   [:input.btn-blue-bold
+   [:input.btn-brand-bold
     {:type "button"
      :value "REFRESH"
      :on-click #(dispatch [:status/get-all-data])}]])

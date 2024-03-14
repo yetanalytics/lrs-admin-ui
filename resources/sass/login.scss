@@ -139,7 +139,7 @@ form#login-form div.form-group:not(:first-child) {
 }
 
 .login-button {
-  @extend .btn-custom, .btn-blue, .font-condensed-bold, .mb-5;
+  @extend .btn-custom, .btn-brand, .font-condensed-bold, .mb-5;
 }
 
 .login-error {

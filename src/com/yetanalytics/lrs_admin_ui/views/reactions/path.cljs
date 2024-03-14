@@ -73,7 +73,7 @@
            validate? true}}]
   (let [{:keys [complete? valid?]} (rpath/analyze-path path)]
     (-> [:div.path-input
-         {:class (when (and validate? 
+         {:class (when (and validate?
                             (or (not valid?) (not complete?)))
                    "invalid")}
          [:div.path-input-root
@@ -119,7 +119,7 @@
                  :on-click (fn [e]
                              (fns/ps-event e)
                              (remove-fn))}
-             [:img {:src "images/icons/icon-delete-blue.svg"}]]])
+             [:img {:src "images/icons/icon-delete-brand.svg"}]]])
           )
         ;; Indicate expected type?
         )))

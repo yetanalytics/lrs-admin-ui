@@ -9,6 +9,6 @@
            {:ref #(re-frame/dispatch [:dialog/set-ref %])}
            [:p prompt]]
           (for [{:keys [label dispatch]} choices]
-            [:button.btn-blue-bold
+            [:button.btn-brand-bold
              {:on-click #(re-frame/dispatch [:dialog/dispatch dispatch])}
              label]))))

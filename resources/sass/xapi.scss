@@ -191,25 +191,25 @@ div.json {
   white-space: nowrap;
 }
 
-.white-on-blue {
+.white-on-brand {
   background-color: #11375C;
   color: white;
 }
 
 div.json-array[data-path="statements"] > div.json-array-element > div.json-map > div.json-map-entry[data-entry-key-name="id"] > div.json-map-entry-key {
-  @extend .white-on-blue;
+  @extend .white-on-brand;
 }
 
 div.json-map-entry[data-entry-key-name="statements"] > div.json-map-entry-key {
-  @extend .white-on-blue;
+  @extend .white-on-brand;
 }
 
 div.json-map-entry[data-entry-key-name="more"] > div.json-map-entry-key {
-  @extend .white-on-blue;
+  @extend .white-on-brand;
 }
 
 div.browser > div.json-map > div.json-map-entry[data-entry-key-name="id"] > div.json.json-map-entry-key {
-  @extend .white-on-blue;
+  @extend .white-on-brand;
 }
 
 div.json-map-entry-key {
@@ -221,7 +221,7 @@ div.browser a:hover {
 }
 
 .action-icon-list li a.icon-clear-filters {
-  background: url('../images/icons/icon-close-blue.svg') no-repeat left center;
+  background: url('../images/icons/icon-close-brand.svg') no-repeat left center;
   padding: 8px;
   padding-left: 38px;
   margin-top: 10px;
