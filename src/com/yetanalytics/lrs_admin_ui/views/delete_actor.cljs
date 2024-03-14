@@ -22,7 +22,7 @@
         ifi-type (r/atom (first ifi-types))
         input (r/atom nil)]
     (fn []
-      [:div 
+      [:div
        [:h4 {:class "content-title"}
         "Delete Actor"]
        [:div.section-pad (into [:select {:on-change #(do
@@ -30,13 +30,13 @@
                                          (reset! ifi-type (fns/ps-event-val %)))}]
                  (for [k ifi-types]
                    [:option {:value k :key k} k]))]
-       
+
        (case @ifi-type "account"
              [:<>
               [labeled-input "name" (r/cursor input [:name])]
               [labeled-input "homePage" (r/cursor input [:home-page])]]
              [labeled-input (name @ifi-type) input])
        [:div.section-pad [:input {:type "button",
-                    :class "btn-blue-bold",
+                    :class "btn-brand-bold",
                     :on-click  #(dispatch-sync [:delete-actor/delete-actor (inp->ifi @ifi-type @input)])
                     :value "DELETE"}]]])))
