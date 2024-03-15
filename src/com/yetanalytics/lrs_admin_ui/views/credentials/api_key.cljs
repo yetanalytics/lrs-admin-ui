@@ -24,7 +24,7 @@
         [:li {:class "mb-2"}
          [:div {:class "accordion-container"}
           [:div {:class "api-key-row"
-                 :aria-label "Show/Hide Api Key Details"
+                 :aria-label (subscribe [:lang/get :notification.key.aria])
                  :on-click #(swap! expanded not)}
            [:div {:class "api-key-col"}
             [:span {:class (str "collapse-sign"
@@ -34,15 +34,16 @@
                       :read-only true}]
              [copy-text
               {:text (:api-key credential)
-               :on-copy #(dispatch [:notification/notify false "Copied API Key!"])}
+               :on-copy #(dispatch [:notification/notify false 
+                                    @(subscribe [:lang/get :notification.credentials.key-copied])])}
               [:a {:class "icon-copy"
                    :on-click #(ps-event %)}]]]]
-           [:div {:class "api-key-col"} "Permissions: " scope-display]]
+           [:div {:class "api-key-col"} @(subscribe [:lang/get :credentials.key.permissions]) scope-display]]
           (when @expanded
             [:div {:class "api-key-expand"}
              [:div {:class "api-key-col"}
               [:p {:class "api-key-col-header"}
-               "API Key Secret"]
+               @(subscribe [:lang/get :credentials.key.secret])]
               [:div {:class "action-row"}
                (when @show-secret
                  [:div {:class "action-label-wide"}
@@ -52,7 +53,8 @@
                             :read-only true}]
                    [copy-text
                     {:text (:secret-key credential)
-                     :on-copy #(dispatch [:notification/notify false "Copied Secret Key!"])}
+                     :on-copy #(dispatch [:notification/notify false 
+                                          @(subscribe [:lang/get :notification.credentials.secret-copied])])}
                     [:a {:class "icon-copy pointer"}]]]])
                [:ul {:class "action-icon-list"}
                 [:li
@@ -60,11 +62,11 @@
                       :class "icon-secret"
                       :on-click #(swap! show-secret not)}
                   (str (cond
-                         @show-secret "Hide"
-                         :else "Show Secret Key"))]]]]]
+                         @show-secret @(subscribe [:lang/get :credentials.key.hide])
+                         :else @(subscribe [:lang/get :credentials.key.show])))]]]]]
              [:div {:class "api-key-col"}
               [:p {:class "api-key-col-header"}
-               "Permissions"]
+               @(subscribe [:lang/get :credentials.key.permissions])]
               (cond
                 @edit
                 [:div {:class "action-row"}
@@ -89,13 +91,13 @@
                         :on-click (fn []
                                     (swap! edit not)
                                     (dispatch [:credentials/save-credential credential]))
-                        :class "icon-save"} "Save"]]
+                        :class "icon-save"} @(subscribe [:lang/get :credentials.key.permissions.save])]]
                   [:li
                    [:a {:href "#!",
                         :on-click (fn []
                                     (swap! edit not)
                                     (dispatch [:credentials/load-credentials]))
-                        :class "icon-close"} "Cancel"]]]]
+                        :class "icon-close"} @(subscribe [:lang/get :credentials.key.permissions.cancel])]]]]
                 :else
                 [:div {:class "action-row"}
                  [:div {:class "action-label"}
@@ -104,10 +106,10 @@
                   [:li
                    [:a {:href "#!",
                         :on-click #(swap! edit not)
-                        :class "icon-edit"} "Edit"]]
+                        :class "icon-edit"} @(subscribe [:lang/get :credentials.key.edit])]]
                   (if @delete-confirm
                     [:li
-                     [:span "Are you sure?"]
+                     [:span @(subscribe [:lang/get :credentials.key.delete.confirm])]
                      [:a {:href "#!",
                           :on-click #(do (dispatch [:credentials/delete-credential credential])
                                          (swap! delete-confirm not))
@@ -121,4 +123,4 @@
                      [:a {:href "#!"
                           :on-click #(swap! delete-confirm not)
                           :class "icon-delete"}
-                      "Delete"]])]])]])]]))))
+                      @(subscribe [:lang/get :credentials.key.delete])]])]])]])]]))))

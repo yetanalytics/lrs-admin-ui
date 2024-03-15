@@ -5,7 +5,7 @@
 (defn username []
   (let [display-name @(subscribe [:session/get-display-name])]
     [:div {:class "user-name"}
-     [:span "Welcome, "]
+     [:span @(subscribe [:lang/get :header.welcome])]
      (if @(subscribe [:oidc/enabled?])
        [:span display-name]
        [:a {:class "fg-primary"
@@ -29,4 +29,4 @@
            :on-click (fn [e]
                        (fns/ps-event e)
                        (dispatch-sync [:session/logout]))}
-       "Logout"]]]]])
+       @(subscribe [:lang/get :header.logout])]]]]])

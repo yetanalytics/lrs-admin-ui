@@ -10,12 +10,12 @@
       [:input {:type "button",
                :class "btn-blue-bold",
                :on-click #(dispatch [:credentials/create-credential {:scopes ["all"]}])
-               :value "ADD NEW CREDENTIALS"}]]
+               :value @(subscribe [:lang/get :credentials.tenant.add])}]]
      [:div {:class "credential-details"}
       [:div {:class "tenant-count-wrapper"}
-       [:span {:class "fg-secondary"} "Number of Credentials: "]
+       [:span {:class "fg-secondary"} @(subscribe [:lang/get :credentials.tenant.number])]
        [:span (count credentials)]]]
-     [:div {:class "api-keys-table-header"} "API Key"]
+     [:div {:class "api-keys-table-header"} @(subscribe [:lang/get :credentials.tenant.key])]
      [:ol {:class "api-keys-list accordion"}
       ;;will repeat for each key
       (map-indexed
@@ -26,4 +26,4 @@
       [:input {:type "button",
                :class "btn-blue-bold",
                :on-click #(dispatch [:credentials/create-credential {:scopes ["all"]}])
-               :value "ADD NEW CREDENTIALS"}]]]))
+               :value @(subscribe [:lang/get :credentials.tenant.add])}]]]))

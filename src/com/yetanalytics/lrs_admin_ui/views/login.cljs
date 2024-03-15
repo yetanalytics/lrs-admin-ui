@@ -20,7 +20,7 @@
            [:div {:class "form-group"}
             [:label {:class "field-label",
                      :for "username"}
-             "Username"]
+             @(subscribe [:lang/get :login.username])]
             [:input {:type "text",
                      :class "form-control",
                      :name "username",
@@ -31,7 +31,7 @@
            [:div {:class "form-group"}
             [:label {:class "field-label",
                      :for "password"}
-             "Password"]
+             @(subscribe [:lang/get :login.password])]
             [:input {:type "password",
                      :class "form-control",
                      :name "password",
@@ -45,12 +45,12 @@
             [:button {:class "login-button"
                       :on-click (fn [e]
                                   (fns/ps-event e)
-                                  (dispatch [:session/authenticate]))} "LOGIN"]])
+                                  (dispatch [:session/authenticate]))} @(subscribe [:lang/get :login.login-button])]])
          (when show-oidc-login?
            [:div
             [:button {:class "login-button"
                       :on-click (fn [e]
                                   (fns/ps-event e)
                                   (dispatch [:com.yetanalytics.re-oidc/login]))}
-             "OIDC LOGIN"]])
-         [:p {:class "login-separator"} "Trouble logging in? See provided documentation about account management or contact your system administrator."]]]]]]))
+             @(subscribe [:lang/get :login.oidc-button])]])
+         [:p {:class "login-separator"} @(subscribe [:lang/get :login.trouble])]]]]]]))

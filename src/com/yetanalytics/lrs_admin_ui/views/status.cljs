@@ -38,7 +38,7 @@
   [:div.status-refresh-button
    [:input.btn-blue-bold
     {:type "button"
-     :value "REFRESH"
+     :value @(subscribe [:lang/get :monitor.refresh])
      :on-click #(dispatch [:status/get-all-data])}]])
 
 (defn title-loading-spinner
@@ -62,8 +62,8 @@
         data @(subscribe [:status.data/platform-frequency])
         loading? @(subscribe [:status/loading? vis-key])]
     [:div.vis-bar
-     [:h4 "PLATFORMS"
-      [tooltip-info {:value "This metric requires proper use of the “context.platform” field in associated xAPI Statements. If you do not see your connected system represented here, it is possible that it is posting statements that are not using this field."}]
+     [:h4 @(subscribe [:lang/get :monitor.platform.title])
+      [tooltip-info {:value @(subscribe [:lang/get :monitor.platform.tooltip])}]
       [title-loading-spinner vis-key]]
      (cond
        (not-empty data)
@@ -91,9 +91,8 @@
           :orientation "bottom"}]]
        loading?
        [:div]
-
        :else
-       [:div.no-data "No Statement Data"])]))
+       [:div.no-data @(subscribe [:lang/get :monitor.no-data])])]))
 
 (defn timeline-select-unit
   []
@@ -101,7 +100,7 @@
     [:div.vis-timeline-controls-select-unit
      [:label
       {:for "timeline-select-unit"}
-      "Time Unit"]
+      @(subscribe [:lang/get :monitor.timeline.unit])]
      (into [:select
             {:id "timeline-select-unit"
              :value current-unit
@@ -141,7 +140,7 @@
   []
   [pick-datetime
    "timeline-pick-since"
-   "Since"
+   @(subscribe [:lang/get :monitor.timeline.since])
    @(subscribe [:status.params/timeline-since-local])
    #(dispatch [:status/set-timeline-since
                (fns/ps-event-val %)])
@@ -152,7 +151,7 @@
   []
   [pick-datetime
    "timeline-pick-until"
-   "Until"
+   @(subscribe [:lang/get :monitor.timeline.until])
    @(subscribe [:status.params/timeline-until-local])
    #(dispatch [:status/set-timeline-until
                (fns/ps-event-val %)])
@@ -223,7 +222,7 @@
 (defn timeline
   []
   [:div.vis-timeline
-   [:h4 "TIMELINE"
+   [:h4 @(subscribe [:lang/get :monitor.timeline.title])
     [title-loading-spinner "timeline"]]
    [timeline-controls]
    [timeline-chart]])
@@ -232,21 +231,21 @@
   []
   [:div {:class "left-content-wrapper"}
    [:h2 {:class "content-title"}
-    "LRS Monitor"]
+    @(subscribe [:lang/get :monitor.title])]
    [refresh-button]
    [:div.status-vis-row
     [big-number
      "statement-count"
-     "STATEMENTS"
+     @(subscribe [:lang/get :monitor.statements.title])
      [:status.data/statement-count]]
     [big-number
      "actor-count"
-     "ACTORS"
+     @(subscribe [:lang/get :monitor.actors.title])
      [:status.data/actor-count]]]
    [:div.status-vis-row
     [timestamp
      "last-statement-stored"
-     "LAST STATEMENT AT"
+     @(subscribe [:lang/get :monitor.last-statement.title])
      [:status.data/last-statement-stored-locale]
      "-"]]
    [:div.status-vis-row

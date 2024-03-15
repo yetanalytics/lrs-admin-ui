@@ -1,5 +1,5 @@
-(ns com.yetanalytics.lrs-admin-ui.views.delete-actor
-  (:require [re-frame.core :refer [dispatch-sync]]
+(ns com.yetanalytics.lrs-admin-ui.views.data-management.delete-actor
+  (:require [re-frame.core :refer [dispatch-sync subscribe]]
             [com.yetanalytics.lrs-admin-ui.functions :as fns]
             [reagent.core :as r]))
 
@@ -24,7 +24,7 @@
     (fn []
       [:div 
        [:h4 {:class "content-title"}
-        "Delete Actor"]
+        @(subscribe [:lang/get :datamgmt.delete.title])]
        [:div.section-pad (into [:select {:on-change #(do
                                          (reset! input nil)
                                          (reset! ifi-type (fns/ps-event-val %)))}]
@@ -37,6 +37,6 @@
               [labeled-input "homePage" (r/cursor input [:home-page])]]
              [labeled-input (name @ifi-type) input])
        [:div.section-pad [:input {:type "button",
-                    :class "btn-blue-bold",
-                    :on-click  #(dispatch-sync [:delete-actor/delete-actor (inp->ifi @ifi-type @input)])
-                    :value "DELETE"}]]])))
+                                  :class "btn-blue-bold",
+                                  :on-click  #(dispatch-sync [:delete-actor/delete-actor (inp->ifi @ifi-type @input)])
+                                  :value @(subscribe [:lang/get :datamgmt.delete.button])}]]])))

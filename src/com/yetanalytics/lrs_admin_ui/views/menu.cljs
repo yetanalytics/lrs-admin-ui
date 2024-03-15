@@ -13,14 +13,14 @@
 (defn menu []
   [:div {:class "banner-link-box"}
    [:ul
-    [menu-item {:name "Credentials Management" :page :credentials}]
+    [menu-item {:name @(subscribe [:lang/get :header.nav.credentials]) :page :credentials}]
     (when @(subscribe [:oidc/show-account-nav?])
-      [menu-item {:name "Account Management" :page :accounts}])
+      [menu-item {:name @(subscribe [:lang/get :header.nav.accounts]) :page :accounts}])
     (when @(subscribe [:db/get-stmt-html-enabled])
-      [menu-item {:name "Statement Browser" :page :browser}])
+      [menu-item {:name @(subscribe [:lang/get :header.nav.browser]) :page :browser}])
     (when @(subscribe [:status/enabled?])
-      [menu-item {:name "LRS Monitor" :page :status}])
+      [menu-item {:name @(subscribe [:lang/get :header.nav.monitor]) :page :status}])
     (when (some identity [@(subscribe [:delete-actor/enabled?])])
-      [menu-item {:name "Data Management" :page :data-management}])
+      [menu-item {:name @(subscribe [:lang/get :header.nav.data]) :page :data-management}])
     (when @(subscribe [:reaction/enabled?])
-      [menu-item {:name "Reactions" :page :reactions}])]])
+      [menu-item {:name @(subscribe [:lang/get :header.nav.reactions]) :page :reactions}])]])
