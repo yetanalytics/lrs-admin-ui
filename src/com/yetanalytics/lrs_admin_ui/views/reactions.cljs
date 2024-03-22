@@ -71,7 +71,7 @@
   [:div {:class "left-content-wrapper"}
    [:h2 {:class "content-title"}
     @(subscribe [:lang/get :reactions.title])
-    [tooltip-info {:value "Reactions is a new functionality for SQL LRS that allows for the generation of custom xAPI statements triggered by other statements posted to the LRS. An administrator can configure rulesets that match one or more incoming xAPI statement(s), based on conditions, and generate a custom statement which is added to the LRS. -- This can be used for statement transformation (e.g. integration with systems expecting a certain statement format the provider does not make) and statement aggregation (e.g. generate summary statements or assertions about groups of statements)."}]
+    [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.title])}]
     @(subscribe [:lang/get :reactions.title.beta])]
    [:p ]
    [:div {:class "tenant-wrapper"}
@@ -269,11 +269,12 @@
      (conj ref-path :path)
      path]]])
 
-(def clause-type-tooltips
-  {:and   "AND Clause: All sub-clauses must be true for the statement to match this clause. Requires at least 1 sub-clause."
-   :or    "OR Clause: One of the sub-clauses must be true for the statement to match this clause. Requires at leat 1 sub-clause."
-   :not   "NOT Clause: The single sub-clause must return false for the statement to match this clause. Requires one sub-clause."
-   :logic "Statement Criteria Clause: The comparison detailed in this clause must resolve to true for the statement to match this clause."})
+(defn clause-type-tooltips [key]
+  (get {:and   @(subscribe [:lang/get :tooltip.reactions.clause-type.and])
+        :or    @(subscribe [:lang/get :tooltip.reactions.clause-type.or])
+        :not   @(subscribe [:lang/get :tooltip.reactions.clause-type.not])
+        :logic @(subscribe [:lang/get :tooltip.reactions.clause-type.logic])}
+       key))
 
 (defn- clause-label
   [mode
@@ -302,7 +303,7 @@
        [:option
         {:value "not"}
         "Boolean NOT"]]
-      [tooltip-info {:value (get clause-type-tooltips type-key)}]]
+      [tooltip-info {:value (clause-type-tooltips type-key)}]]
      
      (case type-key :and "AND" :or "OR" :not "NOT" ""))])
 
@@ -469,7 +470,7 @@
               reaction-path])
            (cond-> [:dl.op-list
                     [:dt @(subscribe [:lang/get :reactions.details.conditions.statement-path])
-                     [tooltip-info {:value "Path is how you identify which part of a matching statement you are comparing. For instance `$.object.id` means we are comparing the statement object's id field. These are limited to xAPI specification except for extensions where you can write in the variable part of the path directly."}]]
+                     [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.statement-path])}]]
                     [:dd
                      [render-or-edit-path
                       mode
@@ -477,7 +478,7 @@
                       path
                       :open-next? true]]
                     [:dt @(subscribe [:lang/get :reactions.details.conditions.operation])
-                     [tooltip-info {:value "Operation represents the method with which to compare the values. For instance `Equals` means the value at the statement path above must exactly match the Value or Reference below."}]]
+                     [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.operation])}]]
                     [:dd [render-or-edit-op
                           mode
                           (conj reaction-path :op)
@@ -501,7 +502,7 @@
                        (if ref
                          @(subscribe [:lang/get :reactions.details.conditions.reference])
                          @(subscribe [:lang/get :reactions.details.conditions.value])))
-                     [tooltip-info {:value "This field determines what kind of data we are comparing the statement field to. It can either be a literal `Value` manually entered here or a `Reference` to a field in another matching condition to produce interdependent conditions. For `Value` entries, the data type may be automatically assigned based on xAPI Specification."}]]]
+                     [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.comparator])}]]]
              (not ref) (conj [:dd [render-or-edit-val
                                    mode
                                    (conj reaction-path :val)
@@ -557,7 +558,7 @@
          (dispatch [:reaction/set-condition-name
                     condition-name (keyword (fns/ps-event-val e))]))}]
      condition-name)
-   [tooltip-info {:value "This is the title of the Condition. It is given a generated name on creation but can be customized. It may be used in `Logic Clauses` to reference between Conditions."}]])
+   [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.condition-title])}]])
 
 (defn- render-condition-errors
   "Render individual condition errors."
@@ -608,7 +609,7 @@
         {:on-click #(swap! open? not)
          :class (str "paths-collapse" (when @open? " expanded"))}
         @(subscribe [:lang/get :reactions.identity-paths])
-        [tooltip-info {:value "USE WITH CAUTION. Identity Paths are a method of grouping statements for which you are attempting to match conditions. Typically, Reactions may revolve around actor, e.g. `$.actor.mbox` or `$.actor.account.name` which is equivalent to saying \"For a given Actor, look for statements that match the Conditions above\". This is what the default is set to. Alternative approaches to Identity Path may be used by modifying this section, for instance `$.context.registration` to group statements by learning session."}]]
+        [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.identity-path])}]]
        [:dd
         (when @open?
           (let [edit? (contains? #{:edit :new} _mode)]
@@ -652,15 +653,15 @@
            template]}]
   [:dl.reaction-ruleset
    [:dt @(subscribe [:lang/get :reactions.details.ruleset.conditions])
-    [tooltip-info {:value "This part of a ruleset controls the criteria for which statements match in a Reaction. An easy way to think about it is each `Condition` should match one expected xAPI Statement. Each condition can have as much criteria and logic as is required to identify the correct kind of statement."}]]
+    [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.ruleset.conditions])}]]
    [:dd
     (when (contains? #{:edit :new} mode)
       [render-conditions-errors conditions])
     [render-conditions mode conditions]
     (when (contains? #{:edit :new} mode)
-      [add-condition :to-add-desc "Weeeee"])]
+      [add-condition :to-add-desc ""])]
    [:dt @(subscribe [:lang/get :reactions.template.title])
-    [tooltip-info {:value "This is where you design the custom statement to be generated and stored in the event of matching statements for this Reaction. Variables from the statements matching individual conditions can be injected into the custom statement."}]]
+    [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.template])}]]
    [:dd [t/render-or-edit-template mode template]]
    [render-identity-paths
     mode identityPaths]])
@@ -777,7 +778,7 @@
            [:dt @(subscribe [:lang/get :reactions.details.error])]
            [:dd [render-error error]]])]
        [:dt @(subscribe [:lang/get :reactions.details.title])
-        [tooltip-info {:value "This is the title of the Reaction you are creating/editing. It has no effect on Reaction functionality."}]]
+        [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.reaction-title])}]]
        [:dd
         (case mode
           :focus title
@@ -786,11 +787,11 @@
        (when (contains? #{:focus :edit} mode)
          [:<>
           [:dt @(subscribe [:lang/get :reactions.details.id])
-           [tooltip-info {:value "This is the system ID of the Reaction you are creating/editing. It has no effect on Reaction functionality, but may be useful for error tracing."}]]
+           [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.reaction-id])}]]
           [:dd id]])
 
        [:dt @(subscribe [:lang/get :reactions.details.status])
-        [tooltip-info {:value "This field sets whether the Reaction is turned on or not. If set to Active it will generate statements based on the rulesets provided."}]]
+        [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.reaction-status])}]]
        [:dd
         (case mode
           :focus (if active "Active" "Inactive")

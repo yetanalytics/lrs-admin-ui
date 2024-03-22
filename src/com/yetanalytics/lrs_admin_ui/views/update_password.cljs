@@ -15,7 +15,8 @@
       (let [new-password @(subscribe [:update-password/new-password])]
         [:div {:class "update-password-inputs"}
          [:div {:class "row"}
-          [:label {:for "old-password-input"} "Old Password:"]
+          [:label {:for "old-password-input"} 
+           @(subscribe [:lang/get :account-mgmt.update-password.password.old])]
           [:input {:value @(subscribe [:update-password/old-password])
                    :class "new-password round"
                    :id "old-password-input"
@@ -23,7 +24,8 @@
                    :on-change #(dispatch [:update-password/set-old-password
                                           (fns/ps-event-val %)])}]]
          [:div {:class "row pt-2"}
-          [:label {:for "new-password-input"} "New Password:"]
+          [:label {:for "new-password-input"}
+           @(subscribe [:lang/get :account-mgmt.update-password.password.new])]
           [:input (cond-> {:value new-password
                            :class "new-password round"
                            :id "new-password-input"
@@ -36,16 +38,18 @@
                  :class "icon-secret pointer"
                  :on-click #(swap! hide-pass not)}
              (str (cond
-                    @hide-pass "Show"
-                    :else "Hide"))]]
+                    @hide-pass @(subscribe [:lang/get :account-mgmt.update-password.password.show])
+                    :else @(subscribe [:lang/get :account-mgmt.update-password.password.hide])))]]
            [:li
             [copy-text
              {:text new-password
               :on-copy #(dispatch [:notification/notify false
-                                   "Copied New Password!"])}
-             [:a {:class "icon-copy pointer"} "Copy"]]]]]
+                                   @(subscribe 
+                                     [:lang/get
+                                      :notification.account-mgmt.copied-password])])}
+             [:a {:class "icon-copy pointer"} @(subscribe [:lang/get :account-mgmt.update-password.password.copy])]]]]]
          [:span {:class "password-note"}
-          (format "New password must be different from old password and be %d or more characters and contain uppercase, lowercase, numbers, and special characters (%s). Be sure to note or copy the new password as it will not be accessible after creation."
+          (format @(subscribe [:lang/get :account-mgmt.update-password.guidelines])
                   p-min-len
                   (apply str pass/special-chars))]
          [:div {:class "row"}
@@ -53,19 +57,19 @@
            [:li
             [:a {:href "#!",
                  :on-click #(dispatch [:update-password/generate-password])
-                 :class "icon-gen"} [:i "Generate Password"]]]]]]))))
+                 :class "icon-gen"} [:i @(subscribe [:lang/get :account-mgmt.update-password.password.generate])]]]]]]))))
 
 (defn update-password []
   [:div {:class "left-content-wrapper"}
    [:h2 {:class "content-title"}
-    "Update Password"]
+    @(subscribe [:lang/get :account-mgmt.update-password.title])]
    [form]
    [:div {:class "update-password-actions"}
     [:input {:type "button",
              :class "btn-blue-bold",
              :on-click #(dispatch [:session/set-page :accounts])
-             :value "CANCEL"}]
+             :value @(subscribe [:lang/get :account-mgmt.update-password.cancel])}]
     [:input {:type "button",
              :class "btn-blue-bold",
              :on-click #(dispatch [:update-password/update-password!])
-             :value "UPDATE"}]]])
+             :value @(subscribe [:lang/get :account-mgmt.update-password.update])}]]])

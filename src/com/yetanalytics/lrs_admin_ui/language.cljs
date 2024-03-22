@@ -136,22 +136,50 @@
    :reactions.template.dynamic.step3 {:en-US "Step 3: Copy Variable Code##"}
    :reactions.template.dynamic.step3-text {:en-US "Use the copy button to get the variable declaration and paste it where you want it in the statement Template. You can also build these declarations yourself using the syntax shown.##"}
 
-   
-   
-
-
-
    :reactions.errors.incomplete-path {:en-US "Incomplete path.##"}
    :reactions.errors.like-string {:en-US "The 'like' op only supports string values.##"}
    :reactions.errors.invalid {:en-US "Reaction is invalid see below.##"}
    :reactions.errors.one-condition {:en-US "Ruleset must specify at least one condition.##"}
    :reactions.errors.one-clause {:en-US "Condition must have at least one clause.##"}
 
+   ;;Account Management
+   :account-mgmt.update-password.title {:en-US "Update Password##"}
+   :account-mgmt.update-password.cancel {:en-US "CANCEL##"}
+   :account-mgmt.update-password.update {:en-US "UPDATE##"}
+   :account-mgmt.update-password.guidelines {:en-US "New password must be different from old password and be %d or more characters and contain uppercase, lowercase, numbers, and special characters (%s). Be sure to note or copy the new password as it will not be accessible after creation.##"}
+   :account-mgmt.update-password.password.show {:en-US "Show##"}
+   :account-mgmt.update-password.password.hide {:en-US "Hide##"}
+   :account-mgmt.update-password.password.old {:en-US "Old Password##"}
+   :account-mgmt.update-password.password.new {:en-US "New Password##"}
+   :account-mgmt.update-password.password.copy {:en-US "Copy##"}
+   :account-mgmt.update-password.password.generate {:en-US "Generate Password##"}
+   
 
+   ;;Tooltips
+   :tooltip.reactions.title {:en-US "Reactions is a new functionality for SQL LRS that allows for the generation of custom xAPI statements triggered by other statements posted to the LRS. An administrator can configure rulesets that match one or more incoming xAPI statement(s), based on conditions, and generate a custom statement which is added to the LRS. -- This can be used for statement transformation (e.g. integration with systems expecting a certain statement format the provider does not make) and statement aggregation (e.g. generate summary statements or assertions about groups of statements).##"}
+   :tooltip.reactions.statement-path {:en-US "Path is how you identify which part of a matching statement you are comparing. For instance `$.object.id` means we are comparing the statement object's id field. These are limited to xAPI specification except for extensions where you can write in the variable part of the path directly.##"}
+   :tooltip.reactions.operation {:en-US "Operation represents the method with which to compare the values. For instance `Equals` means the value at the statement path above must exactly match the Value or Reference below.##"}
+   :tooltip.reactions.comparator {:en-US "This field determines what kind of data we are comparing the statement field to. It can either be a literal `Value` manually entered here or a `Reference` to a field in another matching condition to produce interdependent conditions. For `Value` entries, the data type may be automatically assigned based on xAPI Specification.##"}
+   :tooltip.reactions.condition-title {:en-US "This is the title of the Condition. It is given a generated name on creation but can be customized. It may be used in `Logic Clauses` to reference between Conditions.##"}
+   :tooltip.reactions.identity-path {:en-US "USE WITH CAUTION. Identity Paths are a method of grouping statements for which you are attempting to match conditions. Typically, Reactions may revolve around actor, e.g. `$.actor.mbox` or `$.actor.account.name` which is equivalent to saying \"For a given Actor, look for statements that match the Conditions above\". This is what the default is set to. Alternative approaches to Identity Path may be used by modifying this section, for instance `$.context.registration` to group statements by learning session.##"}
+   :tooltip.reactions.ruleset.conditions {:en-US "This part of a ruleset controls the criteria for which statements match in a Reaction. An easy way to think about it is each `Condition` should match one expected xAPI Statement. Each condition can have as much criteria and logic as is required to identify the correct kind of statement.##"}
+   :tooltip.reactions.template {:en-US "This is where you design the custom statement to be generated and stored in the event of matching statements for this Reaction. Variables from the statements matching individual conditions can be injected into the custom statement.##"}
+   :tooltip.reactions.reaction-title {:en-US "This is the title of the Reaction you are creating/editing. It has no effect on Reaction functionality.##"}
+   :tooltip.reactions.reaction-id {:en-US "This is the system ID of the Reaction you are creating/editing. It has no effect on Reaction functionality, but may be useful for error tracing.##"}
+   :tooltip.reactions.reaction-status {:en-US "This field sets whether the Reaction is turned on or not. If set to Active it will generate statements based on the rulesets provided.##"}
+
+   :tooltip.reactions.template.dynamic {:en-US "You can use this tool to create variable declarations referencing the statements which match the condition(s) above, and then use them in your template to create a dynamic xAPI Reaction Statement.##"}
+   :tooltip.reactions.template.json {:en-US "The following is the JSON template which will be used to create the Reaction statement if the above conditions are met. You can customize this statement template to produce any valid xAPI Statement. Invalid xAPI will cause a Reaction error upon firing.##"}
+
+   :tooltip.reactions.clause-type.and   {:en-US "AND Clause: All sub-clauses must be true for the statement to match this clause. Requires at least 1 sub-clause.##"}
+   :tooltip.reactions.clause-type.or    {:en-US "OR Clause: One of the sub-clauses must be true for the statement to match this clause. Requires at leat 1 sub-clause.##"}
+   :tooltip.reactions.clause-type.not   {:en-US "NOT Clause: The single sub-clause must return false for the statement to match this clause. Requires one sub-clause.##"}
+   :tooltip.reactions.clause-type.logic {:en-US "Statement Criteria Clause: The comparison detailed in this clause must resolve to true for the statement to match this clause.##"}
 
    ;;Notifications
    :notification.credentials.key-copied {:en-US "Copied API Key!##"}
    :notification.credentials.secret-copied {:en-US "Copied Secret Key!##"}
    :notification.accounts.password-copied {:en-US "Copied New Password!##"}
-   :notification.reactions.copied-template-var {:en-US "Copied Template Variable to Clipboard!##"}})
+   :notification.reactions.copied-template-var {:en-US "Copied Template Variable to Clipboard!##"}
+   :notification.account-mgmt.copied-password {:en-US "Copied New Password!"}})
 

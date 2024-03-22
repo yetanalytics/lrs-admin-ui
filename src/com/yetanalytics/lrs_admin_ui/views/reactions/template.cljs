@@ -50,7 +50,7 @@
         {:on-click #(swap! open? not)
          :class (str "paths-collapse" (when @open? " expanded"))}
         @(subscribe [:lang/get :reactions.template.dynamic])
-        [tooltip-info {:value "You can use this tool to create variable declarations referencing the statements which match the condition(s) above, and then use them in your template to create a dynamic xAPI Reaction Statement."}]]
+        [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.template.dynamic])}]]
        (when @open?
          [:div.var-gen-wrapper
           [:p [:em @(subscribe [:lang/get :reactions.template.dynamic.instruction1])]]
@@ -91,7 +91,7 @@
   [:<>
    [var-gen]
    [:h5 [:b @(subscribe [:lang/get :reactions.template.template-json])]
-    [tooltip-info {:value "The following is the JSON template which will be used to create the Reaction statement if the above conditions are met. You can customize this statement template to produce any valid xAPI Statement. Invalid xAPI will cause a Reaction error upon firing."}]]
+    [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.template.json])}]]
    [ed/buffered-json-editor
     {:buffer   (subscribe [:reaction/edit-template-buffer])
      :set-json #(dispatch [:reaction/set-template-json %])
