@@ -26,13 +26,13 @@
   [:table {:class "reactions-table"}
    [:thead {:class "bg-primary text-white"}
     [:tr
-     [:th {:scope "col"} "Title"]
-     [:th {:scope "col"} "# of Conditions"]
-     [:th {:scope "col"} "Created"]
-     [:th {:scope "col"} "Modified"]
-     [:th {:scope "col"} "Status"]
-     [:th {:scope "col"} "Error"]
-     [:th {:scope "col" :class "action"} "Action"]]]
+     [:th {:scope "col"} @(subscribe [:lang/get :reactions.col.title])]
+     [:th {:scope "col"} @(subscribe [:lang/get :reactions.col.conds])]
+     [:th {:scope "col"} @(subscribe [:lang/get :reactions.col.created])]
+     [:th {:scope "col"} @(subscribe [:lang/get :reactions.col.modified])]
+     [:th {:scope "col"} @(subscribe [:lang/get :reactions.col.status])]
+     [:th {:scope "col"} @(subscribe [:lang/get :reactions.col.error])]
+     [:th {:scope "col" :class "action"} @(subscribe [:lang/get :reactions.col.action])]]]
    (into [:tbody]
          (for [{:keys [id
                        title
@@ -43,13 +43,13 @@
                        ruleset]} @(subscribe [:reaction/list])]
            [:tr {:class "reaction-row"
                  :on-click #(dispatch [:reaction/set-focus id])}
-            [:td {:data-label "Title"} title]
-            [:td {:data-label "# of Conditions"} (count (:conditions ruleset))]
-            [:td {:data-label "Created"} (iso8601->local-display created)]
-            [:td {:data-label "Modified"} (iso8601->local-display modified)]
-            [:td {:data-label "Status"} (if (true? active) "Active" "Inactive")]
-            [:td {:data-label "Error"} (if error (short-error error) "[None]")]
-            [:td {:data-label "Action"}
+            [:td {:data-label @(subscribe [:lang/get :reactions.col.title])} title]
+            [:td {:data-label @(subscribe [:lang/get :reactions.col.conds])} (count (:conditions ruleset))]
+            [:td {:data-label @(subscribe [:lang/get :reactions.col.created])} (iso8601->local-display created)]
+            [:td {:data-label @(subscribe [:lang/get :reactions.col.modified])} (iso8601->local-display modified)]
+            [:td {:data-label @(subscribe [:lang/get :reactions.col.status])} (if (true? active) "Active" "Inactive")]
+            [:td {:data-label @(subscribe [:lang/get :reactions.col.error])} (if error (short-error error) "[None]")]
+            [:td {:data-label @(subscribe [:lang/get :reactions.col.action])}
              [:ul {:class "action-icon-list"}
               [:li 
                [:a {:href "#!"
@@ -57,35 +57,35 @@
                     :on-click (fn [e]
                                 (fns/ps-event e)
                                 (dispatch [:reaction/edit id]))}
-                "Edit"]]
+                @(subscribe [:lang/get :reactions.action.edit])]]
               [:li
                [:a {:href "#!"
                     :class "icon-delete"
                     :on-click (fn [e]
                                 (fns/ps-event e)
                                 (dispatch [:reaction/delete-confirm id]))}
-                "Delete"]]]]]))])
+                @(subscribe [:lang/get :reactions.action.delete])]]]]]))])
 
 (defn- reactions-list
   []
   [:div {:class "left-content-wrapper"}
    [:h2 {:class "content-title"}
-    "Reactions"
+    @(subscribe [:lang/get :reactions.title])
     [tooltip-info {:value "Reactions is a new functionality for SQL LRS that allows for the generation of custom xAPI statements triggered by other statements posted to the LRS. An administrator can configure rulesets that match one or more incoming xAPI statement(s), based on conditions, and generate a custom statement which is added to the LRS. -- This can be used for statement transformation (e.g. integration with systems expecting a certain statement format the provider does not make) and statement aggregation (e.g. generate summary statements or assertions about groups of statements)."}]
-    " (Beta)"]
+    @(subscribe [:lang/get :reactions.title.beta])]
    [:p ]
    [:div {:class "tenant-wrapper"}
     [:div {:class "api-keys-table-actions"}
      [:input {:type "button",
               :class "btn-blue-bold",
               :on-click #(dispatch [:reaction/new])
-              :value "ADD NEW REACTION"}]]
+              :value @(subscribe [:lang/get :reactions.add])}]]
     [reactions-table]
     [:div {:class "api-keys-table-actions"}
      [:input {:type "button",
               :class "btn-blue-bold",
               :on-click #(dispatch [:reaction/new])
-              :value "ADD NEW REACTION"}]]]])
+              :value @(subscribe [:lang/get :reactions.add])}]]]])
 
 (defn- render-path
   [path]
@@ -315,7 +315,9 @@
         :on-click (fn [e]
                     (fns/ps-event e)
                     (on-click))}
-    (gstr/format "Delete %s " to-delete-desc)
+    (gstr/format 
+     @(subscribe [:lang/get :reactions.details.conditions.delete-button]) 
+     to-delete-desc)
     [:img {:src "images/icons/icon-delete-blue.svg"}]]])
 
 (defn- add-condition
@@ -325,7 +327,7 @@
         :on-click (fn [e]
                     (fns/ps-event e)
                     (dispatch [:reaction/add-condition]))}
-    "Add New Condition "
+    @(subscribe [:lang/get :reactions.details.conditions.add-condition])
     [:img {:src "images/icons/add.svg"}]]])
 
 (defn- add-clause
@@ -340,13 +342,14 @@
                     :label "Boolean OR"}
                    {:value :not
                     :label "Boolean NOT"}]
-     :label       (gstr/format "Add %sclause to %s"
-                               (if (> (count parent-path) 3) "sub-" "")
-                               (case (last parent-path)
-                                 :and   "`Boolean AND` clause"
-                                 :or    "`Boolean OR` clause"
-                                 :not   "`Boolean NOT` clause"
-                                 "condition"))
+     :label       (gstr/format
+                   @(subscribe [:lang/get :reactions.details.conditions.add-clause])
+                   (if (> (count parent-path) 3) "sub-" "")
+                   (case (last parent-path)
+                     :and   "`Boolean AND` clause"
+                     :or    "`Boolean OR` clause"
+                     :not   "`Boolean NOT` clause"
+                     "condition"))
      :label-left? true
      :class       "round"
      :select-fn   (fn [v]
@@ -368,8 +371,7 @@
    [clause-label mode reaction-path :and]
    (when (empty? and-clauses)
      [:ul.reaction-error-list
-      [:li
-       "This `Boolean AND` clause must contain at least one sub-clause. Please add either Statement Criteria or a nested Boolean operation below."]])
+      [:li @(subscribe [:lang/get :reactions.details.conditions.and-instructions])]])
    (into [:div.boolean-body]
          (map-indexed
           (fn [idx clause]
@@ -396,8 +398,7 @@
    [clause-label mode reaction-path :or]
    (when (empty? or-clauses)
      [:ul.reaction-error-list
-      [:li
-       "This `Boolean OR` clause must contain at least one sub-clause. Please add either Statement Criteria or a nested Boolean operation below."]])
+      [:li @(subscribe [:lang/get :reactions.details.conditions.or-instructions])]])
    (into [:div.boolean-body]
          (map-indexed
           (fn [idx clause]
@@ -424,8 +425,7 @@
    [clause-label mode reaction-path :not]
    (when (nil? not-clause)
      [:ul.reaction-error-list
-      [:li
-       "This `Boolean NOT` clause must contain at least one sub-clause. Please add either Statement Criteria or a nested Boolean operation below."]])
+      [:li @(subscribe [:lang/get :reactions.details.conditions.not-instructions])]])
    [:div.boolean-body
     (when not-clause
       [render-clause mode (conj reaction-path :not) not-clause])]
@@ -452,11 +452,11 @@
          'com.yetanalytics.lrs-reactions.spec/valid-clause-path?)
         (conj
          [:li
-          "Incomplete path."])
+          @(subscribe [:lang/get :reactions.errors.incomplete-path])])
         (pred-set
          'com.yetanalytics.lrs-reactions.spec/valid-like-val?)
         (conj [:li
-               "The 'like' op only supports string values."])))))
+               @(subscribe [:lang/get :reactions.errors.like-string])])))))
 
 (defn- render-logic
   [mode reaction-path clause]
@@ -468,7 +468,7 @@
              [render-logic-errors
               reaction-path])
            (cond-> [:dl.op-list
-                    [:dt "Statement Path"
+                    [:dt @(subscribe [:lang/get :reactions.details.conditions.statement-path])
                      [tooltip-info {:value "Path is how you identify which part of a matching statement you are comparing. For instance `$.object.id` means we are comparing the statement object's id field. These are limited to xAPI specification except for extensions where you can write in the variable part of the path directly."}]]
                     [:dd
                      [render-or-edit-path
@@ -476,7 +476,7 @@
                       (conj reaction-path :path)
                       path
                       :open-next? true]]
-                    [:dt "Operation"
+                    [:dt @(subscribe [:lang/get :reactions.details.conditions.operation])
                      [tooltip-info {:value "Operation represents the method with which to compare the values. For instance `Equals` means the value at the statement path above must exactly match the Value or Reference below."}]]
                     [:dd [render-or-edit-op
                           mode
@@ -494,13 +494,13 @@
                                       (fns/ps-event-val e)]))}
                         [:option
                          {:value "ref"}
-                         "Reference"]
+                         @(subscribe [:lang/get :reactions.details.conditions.reference])]
                         [:option
                          {:value "val"}
-                         "Value"]]
+                         @(subscribe [:lang/get :reactions.details.conditions.value])]]
                        (if ref
-                         "Reference"
-                         "Value"))
+                         @(subscribe [:lang/get :reactions.details.conditions.reference])
+                         @(subscribe [:lang/get :reactions.details.conditions.value])))
                      [tooltip-info {:value "This field determines what kind of data we are comparing the statement field to. It can either be a literal `Value` manually entered here or a `Reference` to a field in another matching condition to produce interdependent conditions. For `Value` entries, the data type may be automatically assigned based on xAPI Specification."}]]]
              (not ref) (conj [:dd [render-or-edit-val
                                    mode
@@ -564,8 +564,7 @@
   [condition]
   (when (empty? (select-keys condition [:and :or :not :path]))
     [:ul.reaction-error-list
-     [:li
-      "Condition must have at least one clause."]]))
+     [:li @(subscribe [:lang/get :reactions.errors.one-clause])]]))
 
 (defn- render-conditions
   [mode conditions]
@@ -608,7 +607,7 @@
        [:dt 
         {:on-click #(swap! open? not)
          :class (str "paths-collapse" (when @open? " expanded"))}
-        "Identity Paths (Advanced)"
+        @(subscribe [:lang/get :reactions.identity-paths])
         [tooltip-info {:value "USE WITH CAUTION. Identity Paths are a method of grouping statements for which you are attempting to match conditions. Typically, Reactions may revolve around actor, e.g. `$.actor.mbox` or `$.actor.account.name` which is equivalent to saying \"For a given Actor, look for statements that match the Conditions above\". This is what the default is set to. Alternative approaches to Identity Path may be used by modifying this section, for instance `$.context.registration` to group statements by learning session."}]]
        [:dd
         (when @open?
@@ -635,7 +634,7 @@
                      :on-click (fn [e]
                                  (fns/ps-event e)
                                  (dispatch [:reaction/add-identity-path]))}
-                 "Add New Identity Path "
+                 @(subscribe [:lang/get :reactions.identity-paths.add])
                  [:img {:src "images/icons/add.svg"}]]])]))]])))
 
 (defn- render-conditions-errors
@@ -644,8 +643,7 @@
   [conditions]
   (when (empty? conditions)
     [:ul.reaction-error-list
-     [:li
-      "Ruleset must specify at least one condition."]]))
+     [:li @(subscribe [:lang/get :reactions.errors.one-condition])]]))
 
 (defn- ruleset-view
   [mode
@@ -653,7 +651,7 @@
            conditions
            template]}]
   [:dl.reaction-ruleset
-   [:dt "Conditions"
+   [:dt @(subscribe [:lang/get :reactions.details.ruleset.conditions])
     [tooltip-info {:value "This part of a ruleset controls the criteria for which statements match in a Reaction. An easy way to think about it is each `Condition` should match one expected xAPI Statement. Each condition can have as much criteria and logic as is required to identify the correct kind of statement."}]]
    [:dd
     (when (contains? #{:edit :new} mode)
@@ -688,12 +686,12 @@
     [:input {:type "button",
              :class "btn-blue-bold",
              :on-click #(dispatch [:reaction/back-to-list])
-             :value "BACK"}] 
+             :value @(subscribe [:lang/get :reactions.buttons.back])}] 
     (when (= :focus mode)
       [:input {:type "button",
                :class "btn-blue-bold",
                :on-click #(dispatch [:reaction/edit ?id])
-               :value "EDIT"}] )
+               :value @(subscribe [:lang/get :reactions.buttons.edit])}] )
     (when (and (= :edit mode)
                @(subscribe [:reaction/edit-dirty?]))
       [:<>
@@ -701,16 +699,16 @@
          [:input {:type "button",
                   :class "btn-blue-bold",
                   :on-click #(dispatch [:reaction/save-edit])
-                  :value "SAVE"}]) 
+                  :value @(subscribe [:lang/get :reactions.buttons.save])}]) 
        [:input {:type "button",
                 :class "btn-blue-bold",
                 :on-click #(dispatch [:reaction/revert-edit])
-                :value "REVERT CHANGES"}]])
+                :value @(subscribe [:lang/get :reactions.buttons.revert])}]])
     (when (and (= :new mode) (not error?))
       [:input {:type "button",
                :class "btn-blue-bold",
                :on-click #(dispatch [:reaction/save-edit])
-               :value "CREATE"}])]])
+               :value @(subscribe [:lang/get :reactions.buttons.create])}])]])
 
 (defn- edit-title
   [title]
@@ -758,27 +756,27 @@
     [:div {:class "left-content-wrapper"}
      [:h2 {:class "content-title"}
       (case mode
-        :focus "Reaction Details"
-        :edit "Edit Reaction"
-        :new "New Reaction")]
+        :focus @(subscribe [:lang/get :reactions.focus.title])
+        :edit  @(subscribe [:lang/get :reactions.edit.title])
+        :new   @(subscribe [:lang/get :reactions.new.title]))]
      [:div {:class "tenant-wrapper"}
       [reaction-actions mode id error?]
       (when error?
         [:div.reaction-edit-invalid
-         "Reaction is invalid, see below."])
+         @(subscribe [:lang/get :reactions.errors.invalid])])
       [:dl.reaction-view
        [:div {:class "reaction-info-panel"}
         (when (contains? #{:focus :edit} mode)
           [:<>
-           [:dt "Created"]
+           [:dt @(subscribe [:lang/get :reactions.details.created])]
            [:dd (or (iso8601->local-display created) "[New]")]
        
-           [:dt "Modified"]
+           [:dt @(subscribe [:lang/get :reactions.details.modified])]
            [:dd (or (iso8601->local-display modified) "[New]")]
        
-           [:dt "Error"]
+           [:dt @(subscribe [:lang/get :reactions.details.error])]
            [:dd [render-error error]]])]
-       [:dt "Title"
+       [:dt @(subscribe [:lang/get :reactions.details.title])
         [tooltip-info {:value "This is the title of the Reaction you are creating/editing. It has no effect on Reaction functionality."}]]
        [:dd
         (case mode
@@ -787,18 +785,18 @@
 
        (when (contains? #{:focus :edit} mode)
          [:<>
-          [:dt "ID"
+          [:dt @(subscribe [:lang/get :reactions.details.id])
            [tooltip-info {:value "This is the system ID of the Reaction you are creating/editing. It has no effect on Reaction functionality, but may be useful for error tracing."}]]
           [:dd id]])
 
-       [:dt "Status"
+       [:dt @(subscribe [:lang/get :reactions.details.status])
         [tooltip-info {:value "This field sets whether the Reaction is turned on or not. If set to Active it will generate statements based on the rulesets provided."}]]
        [:dd
         (case mode
           :focus (if active "Active" "Inactive")
           [edit-status active])]
 
-       [:dt "Ruleset"]
+       [:dt @(subscribe [:lang/get :reactions.details.ruleset])]
        [:dd [ruleset-view mode ruleset]]]
       [reaction-actions mode id error?]]]))
 

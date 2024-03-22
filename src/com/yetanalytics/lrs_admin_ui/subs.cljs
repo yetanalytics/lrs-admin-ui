@@ -37,7 +37,10 @@
  :<- [:db/language]
  :<- [:db/pref-lang]
  (fn [[language pref-lang] [_ key]]
-   (get-in language [key pref-lang])))
+   (let [langmap (get language key)]
+     (or (get langmap pref-lang)
+         (get langmap :en-US)
+         (get langmap (-> langmap keys first))))))
 
 (reg-sub
  :session/get-page

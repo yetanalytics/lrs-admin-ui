@@ -87,7 +87,9 @@
                                           enable-reactions
                                           no-val?
                                           no-val-logout-url
-                                          enable-admin-delete-actor]
+                                          enable-admin-delete-actor
+                                          admin-language-code
+                                          custom-language]
                        ?oidc             :oidc
                        ?oidc-local-admin :oidc-enable-local-admin}]]
    {:db (cond-> (assoc db
@@ -97,7 +99,9 @@
                        ::db/oidc-enable-local-admin (or ?oidc-local-admin false)
                        ::db/enable-admin-status enable-admin-status
                        ::db/enable-reactions enable-reactions
-                       ::db/enable-admin-delete-actor enable-admin-delete-actor)
+                       ::db/enable-admin-delete-actor enable-admin-delete-actor
+                       ::db/pref-lang (keyword admin-language-code)
+                       ::db/language (merge lang/language custom-language))
           (and no-val?
                (not-empty no-val-logout-url))
           (assoc ::db/no-val-logout-url no-val-logout-url))
