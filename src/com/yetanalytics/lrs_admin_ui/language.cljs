@@ -124,8 +124,23 @@
    :reactions.buttons.create {:en-US "CREATE##"}
    :reactions.buttons.back {:en-US "BACK##"}
    :reactions.buttons.revert {:en-US "REVERT CHANGES##"}
+
+   :reactions.template.title {:en-US "Template##"}
+   :reactions.template.template-json {:en-US "Template JSON##"}
+   :reactions.template.dynamic {:en-US "Dynamic Variables##"}
+   :reactions.template.dynamic.instruction1 {:en-US "Reactions templates can be made dynamic by the use of injectable variables. These variables must come from a statement matching one of the conditions above.##"}
+   :reactions.template.dynamic.instruction2 {:en-US "Variables use a syntax with a JSON object containing a key of `$templatePath` and an array of the path in the statement of the value to extract, starting with which condition. For instance:##"}
+   :reactions.template.dynamic.instruction3 {:en-US "The above example will retrieve (if it exists) the value of `$.result.success` from the statement matching `condition_XYZ` if the Reaction is successfully fired.##"}
+   :reactions.template.dynamic.step1 {:en-US "Step 1: Select Condition##"}
+   :reactions.template.dynamic.step2 {:en-US "Step 2: Select Path##"}
+   :reactions.template.dynamic.step3 {:en-US "Step 3: Copy Variable Code##"}
+   :reactions.template.dynamic.step3-text {:en-US "Use the copy button to get the variable declaration and paste it where you want it in the statement Template. You can also build these declarations yourself using the syntax shown.##"}
+
    
    
+
+
+
    :reactions.errors.incomplete-path {:en-US "Incomplete path.##"}
    :reactions.errors.like-string {:en-US "The 'like' op only supports string values.##"}
    :reactions.errors.invalid {:en-US "Reaction is invalid see below.##"}
@@ -137,4 +152,6 @@
    ;;Notifications
    :notification.credentials.key-copied {:en-US "Copied API Key!##"}
    :notification.credentials.secret-copied {:en-US "Copied Secret Key!##"}
-   :notification.accounts.password-copied {:en-US "Copied New Password!##"}})
+   :notification.accounts.password-copied {:en-US "Copied New Password!##"}
+   :notification.reactions.copied-template-var {:en-US "Copied Template Variable to Clipboard!##"}})
+

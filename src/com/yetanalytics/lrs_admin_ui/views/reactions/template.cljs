@@ -49,22 +49,22 @@
        [:dt
         {:on-click #(swap! open? not)
          :class (str "paths-collapse" (when @open? " expanded"))}
-        "Dynamic Variables"
+        @(subscribe [:lang/get :reactions.template.dynamic])
         [tooltip-info {:value "You can use this tool to create variable declarations referencing the statements which match the condition(s) above, and then use them in your template to create a dynamic xAPI Reaction Statement."}]]
        (when @open?
          [:div.var-gen-wrapper
-          [:p [:em "Reactions templates can be made dynamic by the use of injectable variables. These variables must come from a statement matching one of the conditions above."]]
-          [:p [:em "Variables use a syntax with a JSON object containing a key of `$templatePath` and an array of the path in the statement of the value to extract, starting with which condition. For instance:"]]
+          [:p [:em @(subscribe [:lang/get :reactions.template.dynamic.instruction1])]]
+          [:p [:em @(subscribe [:lang/get :reactions.template.dynamic.instruction2])]]
           [:p [:code "{\"$templatePath\": [\"condition_XYZ\", \"result\", \"success\"]}"]]
-          [:p [:em "The above example will retrieve (if it exists) the value of `$.result.success` from the statement matching `condition_XYZ` if the Reaction is successfully fired."]]
+          [:p [:em @(subscribe [:lang/get :reactions.template.dynamic.instruction3])]]
           [:hr]
-          [:p [:b "Step 1: Select Condition"]]
+          [:p [:b @(subscribe [:lang/get :reactions.template.dynamic.step1])]]
           [var-gen-condition {:value     @condition
                               :on-change #(reset! condition %)}]
           (when (seq @condition)
             [:<>
              [:hr]
-             [:p [:b "Step 2: Select Path"]]
+             [:p [:b @(subscribe [:lang/get :reactions.template.dynamic.step2])]]
              [p/path-input
               @path
               :add-fn (fn [] (swap! path add-segment))
@@ -74,15 +74,15 @@
              (when (and (seq @condition) (seq @path))
                [:<>
                 [:hr]
-                [:p [:b "Step 3: Copy Variable Code"]]
-                [:p "Use the copy button to get the variable declaration and paste it where you want it in the statement Template. You can also build these declarations yourself using the syntax shown."]
+                [:p [:b @(subscribe [:lang/get :reactions.template.dynamic.step3])]]
+                [:p @(subscribe [:lang/get :reactions.template.dynamic.step3-text])]
                 (let [path-string (join "\", \"" @path)
                       var-string  (gstr/format "{\"$templatePath\": [\"%s\", \"%s\"]}" @condition path-string)]
                   [:<>
                    [:code var-string]
                    [copy-text
                     {:text var-string
-                     :on-copy #(dispatch [:notification/notify false "Copied Template Variable to Clipboard!"])}
+                     :on-copy #(dispatch [:notification/notify false @(subscribe [:lang/get :notification.reactions.copied-template-var])])}
                     [:a {:class "icon-copy"
                          :on-click #(fns/ps-event %)}]]])])])])])))
 
@@ -90,7 +90,7 @@
   []
   [:<>
    [var-gen]
-   [:h5 [:b "Template JSON"]
+   [:h5 [:b @(subscribe [:lang/get :reactions.template.template-json])]
     [tooltip-info {:value "The following is the JSON template which will be used to create the Reaction statement if the above conditions are met. You can customize this statement template to produce any valid xAPI Statement. Invalid xAPI will cause a Reaction error upon firing."}]]
    [ed/buffered-json-editor
     {:buffer   (subscribe [:reaction/edit-template-buffer])

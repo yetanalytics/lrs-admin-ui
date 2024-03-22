@@ -659,7 +659,7 @@
     [render-conditions mode conditions]
     (when (contains? #{:edit :new} mode)
       [add-condition :to-add-desc "Weeeee"])]
-   [:dt "Template"
+   [:dt @(subscribe [:lang/get :reactions.template.title])
     [tooltip-info {:value "This is where you design the custom statement to be generated and stored in the event of matching statements for this Reaction. Variables from the statements matching individual conditions can be injected into the custom statement."}]]
    [:dd [t/render-or-edit-template mode template]]
    [render-identity-paths
