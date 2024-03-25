@@ -78,21 +78,24 @@
    :credentials.key.delete.confirm {:en-US "Are you sure?"
                                     :zh-CN "确认？"}
    ;;Accounts Page
-   :accounts.title {:en-US "Account Management"}
-   :accounts.table-header {:en-US "Account"}
+   :accounts.title {:en-US "Account Management"
+                    :zh-CN "账户管理"}
+   :accounts.table-header {:en-US "Account"
+                           :zh-CN "账户"}
    :accounts.delete {:en-US "Delete"
                      :zh-CN "删除"}
    :accounts.delete.confirm {:en-US "Are you sure?"
                              :zh-CN "确认？"}
    :accounts.password.update {:en-US "Update Password"
                               :zh-CN "编辑密码"}
-   :accounts.new.subtitle {:en-US "Create New Account"}
+   :accounts.new.subtitle {:en-US "Create New Account"
+                           :zh-CN "创建新账户"}
    :accounts.new.username {:en-US "Username:"
-                           :zh-CN "账号"}
+                           :zh-CN "账号："}
    :accounts.new.username.note {:en-US "Username must be %d or more alphanumeric characters"
                                 :zh-CN "账号需要有%d以上字符"}
    :accounts.new.password {:en-US "Password:"
-                           :zh-CN "密码"}
+                           :zh-CN "密码："}
    :accounts.new.password.note {:en-US "Password must be %d or more characters and contain uppercase, lowercase, numbers, and special characters (%s). Be sure to note or copy the new password as it will not be accessible after creation."
                                 :zh-CN "密码需要有%d以上字号而包含大写、小写、数字、特别字符（%s）"}
    :accounts.new.password.hide {:en-US "Hide"
@@ -109,9 +112,9 @@
    :browser.title {:en-US "DATA BROWSER"
                    :zh-CN "数据浏览"}
    :browser.credentials {:en-US "Credentials to Use:"
-                         :zh-CN "使用的凭证"}
+                         :zh-CN "使用的凭证："}
    :browser.query {:en-US "Current Query:"
-                   :zh-CN "现在的查询"}
+                   :zh-CN "现在的查询："}
    :browser.key-note {:en-US "Please Choose an API Key Above to Browse LRS Data"
                       :zh-CN "使用为LRS数据监视的API密钥"}
    ;;Monitor
@@ -156,7 +159,7 @@
    :reactions.title.beta {:en-US " (Beta)"
                           :zh-CN " （测试版）"}
    :reactions.add {:en-US "ADD NEW REACTION"
-                   :zh-CN "加入新反应"}
+                   :zh-CN "加入反应"}
    :reactions.col.title {:en-US "Title"
                          :zh-CN "标题"}
    :reactions.col.conds {:en-US "# of Conditions"
