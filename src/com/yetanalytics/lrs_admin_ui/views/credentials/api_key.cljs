@@ -24,7 +24,7 @@
         [:li {:class "mb-2"}
          [:div {:class "accordion-container"}
           [:div {:class "api-key-row"
-                 :aria-label (subscribe [:lang/get :notification.key.aria])
+                 :aria-label @(subscribe [:lang/get :notification.key.aria])
                  :on-click #(swap! expanded not)}
            [:div {:class "api-key-col"}
             [:span {:class (str "collapse-sign"

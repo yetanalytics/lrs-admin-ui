@@ -80,7 +80,8 @@
              {:text (:password new-account)
               :on-copy #(dispatch [:notification/notify false
                                    @(subscribe [:lang/get :notification.accounts.password-copied])])}
-             [:a {:class "icon-copy pointer"} @(subscribe [:lang/get :accounts.new.password.copy])]]]]]
+             [:a {:class "icon-copy pointer"} 
+              @(subscribe [:lang/get :accounts.new.password.copy])]]]]]
          [:span {:class "password-note"}
           (format @(subscribe [:lang/get :accounts.new.password.note])
                   p-min-len
