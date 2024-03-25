@@ -98,10 +98,10 @@
   (let [accounts @(subscribe [:db/get-accounts])]
     [:div {:class "left-content-wrapper"}
      [:h2 {:class "content-title"}
-      "Account Management"]
+      @(subscribe [:lang/get :accounts.title])]
      ;; this will be looped for all tenants if tenant mode is enabled (third)
      [:div {:class "tenant-wrapper"}
-      [:div {:class "accounts-table-header"} "Account"]
+      [:div {:class "accounts-table-header"} @(subscribe [:lang/get :accounts.table-header])]
       [:ol {:class "accounts-list accordion"}
        ;; will repeat for each key
        (map
@@ -110,7 +110,7 @@
                     :key (format "account-item-%s" account-id)}])
         accounts)]
       [:div {:class "h-divider"}]
-      [:h3 {:class "content-title"} "Create New Account"]
+      [:h3 {:class "content-title"} @(subscribe [:lang/get :accounts.new.subtitle])]
       [new-account]
       [:div {:class "accounts-table-actions"}
        [:input {:type "button",

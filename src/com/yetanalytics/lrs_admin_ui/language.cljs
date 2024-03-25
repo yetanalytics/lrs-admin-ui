@@ -42,9 +42,12 @@
    :credentials.key.delete {:en-US "Delete"}
    :credentials.key.delete.confirm {:en-US "Are you sure?"}
    ;;Accounts Page
+   :accounts.title {:en-US "Account Management"}
+   :accounts.table-header {:en-US "Account"}
    :accounts.delete {:en-US "Delete"}
    :accounts.delete.confirm {:en-US "Are you sure?"}
    :accounts.password.update {:en-US "Update Password"}
+   :accounts.new.subtitle {:en-US "Create New Account"}
    :accounts.new.username {:en-US "Username:"}
    :accounts.new.username.note {:en-US "Username must be %d or more alphanumeric characters"}
    :accounts.new.password {:en-US "Password:"}
