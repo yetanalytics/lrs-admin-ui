@@ -104,7 +104,7 @@
    :reactions.details.created {:en-US "Created"}
    :reactions.details.modified {:en-US "Modified"}
    :reactions.details.error {:en-US "Error"}
-   :reactions.details.title {:en-US "Error"}
+   :reactions.details.title {:en-US "Title"}
    :reactions.details.id {:en-US "ID"}
    :reactions.details.status {:en-US "Status"}
    :reactions.details.ruleset {:en-US "Ruleset"}
