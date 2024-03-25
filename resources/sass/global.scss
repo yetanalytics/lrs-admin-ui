@@ -33,11 +33,11 @@ a {
   color: #0379CE;
 }
 
-.fg-blue {
+.fg-brand {
   color: #137BCE;
 }
 
-.fg-dark-blue {
+.fg-dark-brand {
   color: #11375C
 }
 
@@ -65,7 +65,7 @@ a {
   background-color: #E8E8E8;
 }
 
-.bg-blue {
+.bg-brand {
   background-color: #137BCE;
 }
 
@@ -278,7 +278,7 @@ a {
   color: #137BCE;
 }
 
-.btn-blue {
+.btn-brand {
   background-color: #137BCE;
   color: white;
 }
@@ -289,7 +289,7 @@ a {
   text-decoration: underline;
 }
 
-.btn-blue:hover {
+.btn-brand:hover {
   background-color: white;
   color: #137BCE;
   text-decoration: underline;
@@ -331,8 +331,8 @@ a {
   text-decoration: underline;
 }
 
-.btn-blue-bold {
-  @extend .btn-custom, .btn-blue, .font-condensed-bold;
+.btn-brand-bold {
+  @extend .btn-custom, .btn-brand, .font-condensed-bold;
 }
 /**************************************************
 # Label Custom
@@ -348,7 +348,7 @@ a {
   width: 100%;
 }
 
-.label-blue {
+.label-brand {
   background-color: #11375C;
   color: white;
 }
@@ -740,7 +740,7 @@ table i {
 
 .lrs-main .banner-img_box {
   @extend .d-none, .d-md-flex;
-  background-image: url(../images/Mask-Group-1.jpg);
+  background-image: url(../images/banner.jpg);
 }
 
 .banner-img_box {
@@ -941,7 +941,7 @@ span.close-alert img {
 }
 
 .action-icon-list li a.icon-secret {
-  background: url('../images/icons/icon-eye-blue.svg') no-repeat left center;
+  background: url('../images/icons/icon-eye-brand.svg') no-repeat left center;
 }
 
 .action-icon-list li a.icon-secret:hover {
@@ -949,7 +949,7 @@ span.close-alert img {
 }
 
 .action-icon-list li a.icon-edit {
-  background: url('../images/icons/icon-edit-blue.svg') no-repeat left center;
+  background: url('../images/icons/icon-edit-brand.svg') no-repeat left center;
 }
 
 .action-icon-list li a.icon-edit:hover {
@@ -957,7 +957,7 @@ span.close-alert img {
 }
 
 .action-icon-list li a.icon-delete {
-  background: url('../images/icons/icon-delete-blue.svg') no-repeat left center;
+  background: url('../images/icons/icon-delete-brand.svg') no-repeat left center;
 }
 
 .action-icon-list li a.icon-delete:hover {
@@ -965,7 +965,7 @@ span.close-alert img {
 }
 
 .action-icon-list li a.icon-close {
-  background: url('../images/icons/icon-close-blue.svg') no-repeat left center;
+  background: url('../images/icons/icon-close-brand.svg') no-repeat left center;
 }
 
 .action-icon-list li a.icon-close:hover {
@@ -973,7 +973,7 @@ span.close-alert img {
 }
 
 .action-icon-list li a.icon-save {
-  background: url('../images/icons/icon-save-blue.svg') no-repeat left center;
+  background: url('../images/icons/icon-save-brand.svg') no-repeat left center;
 }
 
 .action-icon-list li a.icon-save:hover {
@@ -981,7 +981,7 @@ span.close-alert img {
 }
 
 .action-icon-list li a.icon-gen {
-  background: url('../images/icons/icon-gen-blue.svg') no-repeat left center;
+  background: url('../images/icons/icon-gen-brand.svg') no-repeat left center;
 }
 
 .action-icon-list li a.icon-gen:hover {
@@ -989,7 +989,7 @@ span.close-alert img {
 }
 
 a.icon-copy {
-  background: url('../images/icons/icon-copy-blue.svg') no-repeat left center;
+  background: url('../images/icons/icon-copy-brand.svg') no-repeat left center;
   display: inline-block;
   padding: 4px 4px 4px 24px;
   margin: 2px 0 0 4px;
@@ -1070,7 +1070,7 @@ a.icon-copy:hover {
 }
 
 .api-key-row {
-  @extend .row, .no-gutters, .accordion-header, .bg-gray, .fg-dark-blue, .pointer;
+  @extend .row, .no-gutters, .accordion-header, .bg-gray, .fg-dark-brand, .pointer;
 }
 
 .collapse-sign:before {
@@ -1267,7 +1267,7 @@ span.tooltip-info {
   width: 15px;
   height: 15px;
   margin-left: 4px;
-  background: url('../images/icons/info_blue_48.svg') no-repeat top left;
+  background: url('../images/icons/info_brand_48.svg') no-repeat top left;
   display: inline-block;
   background-size: 15px;
   line-height: 1.35;

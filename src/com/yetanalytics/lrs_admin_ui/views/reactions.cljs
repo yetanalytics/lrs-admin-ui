@@ -51,7 +51,7 @@
             [:td {:data-label @(subscribe [:lang/get :reactions.col.error])} (if error (short-error error) "[None]")]
             [:td {:data-label @(subscribe [:lang/get :reactions.col.action])}
              [:ul {:class "action-icon-list"}
-              [:li 
+              [:li
                [:a {:href "#!"
                     :class "icon-edit"
                     :on-click (fn [e]
@@ -77,13 +77,13 @@
    [:div {:class "tenant-wrapper"}
     [:div {:class "api-keys-table-actions"}
      [:input {:type "button",
-              :class "btn-blue-bold",
+              :class "btn-brand-bold",
               :on-click #(dispatch [:reaction/new])
               :value @(subscribe [:lang/get :reactions.add])}]]
     [reactions-table]
     [:div {:class "api-keys-table-actions"}
      [:input {:type "button",
-              :class "btn-blue-bold",
+              :class "btn-brand-bold",
               :on-click #(dispatch [:reaction/new])
               :value @(subscribe [:lang/get :reactions.add])}]]]])
 
@@ -303,8 +303,7 @@
        [:option
         {:value "not"}
         "Boolean NOT"]]
-      [tooltip-info {:value (clause-type-tooltips type-key)}]]
-     
+      [tooltip-info {:value (clause-type-tooltips type-key)}]] 
      (case type-key :and "AND" :or "OR" :not "NOT" ""))])
 
 (defn- delete-icon
@@ -319,7 +318,7 @@
     (gstr/format 
      @(subscribe [:lang/get :reactions.details.conditions.delete-button]) 
      to-delete-desc)
-    [:img {:src "images/icons/icon-delete-blue.svg"}]]])
+    [:img {:src "images/icons/icon-delete-brand.svg"}]]])
 
 (defn- add-condition
   []
@@ -422,7 +421,7 @@
 (defn- render-not
   [mode reaction-path not-clause]
   [:div.clause.boolean.not
-   {:class (clause-nest-class reaction-path)} 
+   {:class (clause-nest-class reaction-path)}
    [clause-label mode reaction-path :not]
    (when (nil? not-clause)
      [:ul.reaction-error-list
@@ -605,7 +604,7 @@
   (let [open? (r/atom false)]
     (fn [_mode _identity-paths]
       [:<>
-       [:dt 
+       [:dt
         {:on-click #(swap! open? not)
          :class (str "paths-collapse" (when @open? " expanded"))}
         @(subscribe [:lang/get :reactions.identity-paths])
@@ -614,7 +613,7 @@
         (when @open?
           (let [edit? (contains? #{:edit :new} _mode)]
             [:<>
-             (into 
+             (into
               [:ul.identity-paths]
               (map-indexed
                (fn [idx path]
@@ -624,7 +623,7 @@
                      _mode
                      path-path
                      path
-                     :remove-fn  
+                     :remove-fn
                      #(dispatch [:reaction/delete-identity-path idx])
                      :open-next? true]
                     (when (not edit?) [:br])]))
@@ -685,12 +684,12 @@
   [:<>
    [:div {:class "api-keys-table-actions"}
     [:input {:type "button",
-             :class "btn-blue-bold",
+             :class "btn-brand-bold",
              :on-click #(dispatch [:reaction/back-to-list])
              :value @(subscribe [:lang/get :reactions.buttons.back])}] 
     (when (= :focus mode)
       [:input {:type "button",
-               :class "btn-blue-bold",
+               :class "btn-brand-bold",
                :on-click #(dispatch [:reaction/edit ?id])
                :value @(subscribe [:lang/get :reactions.buttons.edit])}] )
     (when (and (= :edit mode)
@@ -698,16 +697,16 @@
       [:<>
        (when (not error?)
          [:input {:type "button",
-                  :class "btn-blue-bold",
+                  :class "btn-brand-bold",
                   :on-click #(dispatch [:reaction/save-edit])
                   :value @(subscribe [:lang/get :reactions.buttons.save])}]) 
        [:input {:type "button",
-                :class "btn-blue-bold",
+                :class "btn-brand-bold",
                 :on-click #(dispatch [:reaction/revert-edit])
                 :value @(subscribe [:lang/get :reactions.buttons.revert])}]])
     (when (and (= :new mode) (not error?))
       [:input {:type "button",
-               :class "btn-blue-bold",
+               :class "btn-brand-bold",
                :on-click #(dispatch [:reaction/save-edit])
                :value @(subscribe [:lang/get :reactions.buttons.create])}])]])
 
@@ -751,7 +750,7 @@
                               :focus [:reaction/focus]
                               [:reaction/editing]))
         error?  (and (contains? #{:edit :new} mode)
-                     (or 
+                     (or
                       (some? @(subscribe [:reaction/edit-spec-errors]))
                       (seq @(subscribe [:reaction/edit-template-errors]))))]
     [:div {:class "left-content-wrapper"}

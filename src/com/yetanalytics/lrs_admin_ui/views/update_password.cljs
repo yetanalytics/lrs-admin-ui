@@ -66,10 +66,10 @@
    [form]
    [:div {:class "update-password-actions"}
     [:input {:type "button",
-             :class "btn-blue-bold",
+             :class "btn-brand-bold",
              :on-click #(dispatch [:session/set-page :accounts])
              :value @(subscribe [:lang/get :account-mgmt.update-password.cancel])}]
     [:input {:type "button",
-             :class "btn-blue-bold",
+             :class "btn-brand-bold",
              :on-click #(dispatch [:update-password/update-password!])
              :value @(subscribe [:lang/get :account-mgmt.update-password.update])}]]])

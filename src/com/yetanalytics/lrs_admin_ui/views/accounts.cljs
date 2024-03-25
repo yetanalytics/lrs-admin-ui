@@ -114,6 +114,6 @@
       [new-account]
       [:div {:class "accounts-table-actions"}
        [:input {:type "button",
-                :class "btn-blue-bold",
+                :class "btn-brand-bold",
                 :on-click #(dispatch [:accounts/create-account])
                 :value @(subscribe [:lang/get :accounts.new])}]]]]))

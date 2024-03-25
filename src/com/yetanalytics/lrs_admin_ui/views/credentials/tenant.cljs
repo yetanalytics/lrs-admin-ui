@@ -8,7 +8,7 @@
     [:div {:class "tenant-wrapper"}
      [:div {:class "api-keys-table-actions"}
       [:input {:type "button",
-               :class "btn-blue-bold",
+               :class "btn-brand-bold",
                :on-click #(dispatch [:credentials/create-credential {:scopes ["all"]}])
                :value @(subscribe [:lang/get :credentials.tenant.add])}]]
      [:div {:class "credential-details"}
@@ -24,6 +24,6 @@
        credentials)]
      [:div {:class "api-keys-table-actions"}
       [:input {:type "button",
-               :class "btn-blue-bold",
+               :class "btn-brand-bold",
                :on-click #(dispatch [:credentials/create-credential {:scopes ["all"]}])
                :value @(subscribe [:lang/get :credentials.tenant.add])}]]]))

@@ -14,29 +14,29 @@
   [:div.section-pad.labeled-input
    [:div [:span.font-monospace label] ":"]
    [:input.round {:type "text"
-            :value @ratm
-            :on-change #(reset! ratm (fns/ps-event-val %))}]])
+                  :value @ratm
+                  :on-change #(reset! ratm (fns/ps-event-val %))}]])
 
 (defn delete-actor []
   (let [ifi-types ["mbox" "mbox_sha1sum" "openid" "account"]
         ifi-type (r/atom (first ifi-types))
         input (r/atom nil)]
     (fn []
-      [:div 
+      [:div
        [:h4 {:class "content-title"}
         @(subscribe [:lang/get :datamgmt.delete.title])]
-       [:div.section-pad (into [:select {:on-change #(do
-                                         (reset! input nil)
-                                         (reset! ifi-type (fns/ps-event-val %)))}]
-                 (for [k ifi-types]
-                   [:option {:value k :key k} k]))]
-       
+       [:div.section-pad (into [:select {:on-change 
+                                         #(do
+                                            (reset! input nil)
+                                            (reset! ifi-type (fns/ps-event-val %)))}]
+                               (for [k ifi-types]
+                                 [:option {:value k :key k} k]))]
        (case @ifi-type "account"
              [:<>
               [labeled-input "name" (r/cursor input [:name])]
               [labeled-input "homePage" (r/cursor input [:home-page])]]
              [labeled-input (name @ifi-type) input])
        [:div.section-pad [:input {:type "button",
-                                  :class "btn-blue-bold",
+                                  :class "btn-brand-bold",
                                   :on-click  #(dispatch-sync [:delete-actor/delete-actor (inp->ifi @ifi-type @input)])
                                   :value @(subscribe [:lang/get :datamgmt.delete.button])}]]])))
