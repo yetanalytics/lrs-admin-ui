@@ -78,12 +78,15 @@
    :credentials.key.delete.confirm {:en-US "Are you sure?"
                                     :zh-CN "确认？"}
    ;;Accounts Page
+   :accounts.title {:en-US "Account Management"}
+   :accounts.table-header {:en-US "Account"}
    :accounts.delete {:en-US "Delete"
                      :zh-CN "删除"}
    :accounts.delete.confirm {:en-US "Are you sure?"
                              :zh-CN "确认？"}
    :accounts.password.update {:en-US "Update Password"
                               :zh-CN "编辑密码"}
+   :accounts.new.subtitle {:en-US "Create New Account"}
    :accounts.new.username {:en-US "Username:"
                            :zh-CN "账号"}
    :accounts.new.username.note {:en-US "Username must be %d or more alphanumeric characters"
