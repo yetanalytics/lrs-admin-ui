@@ -77,6 +77,9 @@
 (s/def ::xapi-prefix string?) ;; default /xapi
 (s/def ::proxy-path (s/nilable string?)) ;; default nil
 
+(s/def ::pref-lang keyword?)
+(s/def ::language map?)
+
 (s/def :notification/id int?)
 (s/def :notification/error? boolean?)
 (s/def :notification/msg (s/nilable string?))
@@ -184,6 +187,8 @@
                           ::server-host
                           ::xapi-prefix
                           ::proxy-path
+                          ::language
+                          ::pref-lang
                           ::notifications
                           ::enable-statement-html
                           ::enable-admin-delete-actor

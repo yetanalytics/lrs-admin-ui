@@ -19,6 +19,7 @@
             goog.string.format
             [clojure.walk                                     :as w]
             [com.yetanalytics.lrs-admin-ui.spec.reaction      :as rs]
+            [com.yetanalytics.lrs-admin-ui.language           :as lang]
             [com.yetanalytics.lrs-reactions.path              :as rpath]))
 
 (def global-interceptors
@@ -45,6 +46,8 @@
          ::db/server-host (or server-host "")
          ::db/xapi-prefix "/xapi"
          ::db/proxy-path  nil
+         ::db/language lang/language
+         ::db/pref-lang :en-US
          ::db/enable-admin-delete-actor false
          ::db/enable-statement-html true
          ::db/notifications []
@@ -84,7 +87,9 @@
                                           enable-reactions
                                           no-val?
                                           no-val-logout-url
-                                          enable-admin-delete-actor]
+                                          enable-admin-delete-actor
+                                          admin-language-code
+                                          custom-language]
                        ?oidc             :oidc
                        ?oidc-local-admin :oidc-enable-local-admin}]]
    {:db (cond-> (assoc db
@@ -94,7 +99,9 @@
                        ::db/oidc-enable-local-admin (or ?oidc-local-admin false)
                        ::db/enable-admin-status enable-admin-status
                        ::db/enable-reactions enable-reactions
-                       ::db/enable-admin-delete-actor enable-admin-delete-actor)
+                       ::db/enable-admin-delete-actor enable-admin-delete-actor
+                       ::db/pref-lang (keyword admin-language-code)
+                       ::db/language (merge lang/language custom-language))
           (and no-val?
                (not-empty no-val-logout-url))
           (assoc ::db/no-val-logout-url no-val-logout-url))

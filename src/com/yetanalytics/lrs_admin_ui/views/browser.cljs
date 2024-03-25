@@ -29,10 +29,10 @@
                                      @(subscribe [:db/get-credentials]))]
         [:div {:class "left-content-wrapper"}
          [:h2 {:class "content-title"}
-          "Data Browser"]
+          @(subscribe [:lang/get :browser.title])]
          [:p
           [:span
-           [:b "Credentials to Use: "]
+           [:b @(subscribe [:lang/get :browser.credentials])]
            [:select {:name (str "update_credential")
                      :on-change #(dispatch [:browser/update-credential
                                             (fns/ps-event-val %)])}
@@ -48,7 +48,7 @@
                params  (httpfn/extract-params address)]
            (when (some? address)
              [:div {:class "browser-filters"}
-              [:p "Current Query:"]
+              [:p @(subscribe [:lang/get :browser.query])]
               [:div {:class "xapi-address"}
                address]
               (when (not-empty params)
@@ -75,7 +75,7 @@
                            :class "icon-clear-filters"} "Clear Filters"]]]])])]))
          (if (blank? content)
            [:div {:class "browser"}
-            "Please Choose an API Key Above to Browse LRS Data"]
+            @(subscribe [:lang/get :browser.key-note])]
            [:div {:class "browser"
                   :on-click process-click
                   "dangerouslySetInnerHTML" #js{:__html content}}])]))))

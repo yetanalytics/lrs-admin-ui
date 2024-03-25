@@ -23,6 +23,26 @@
    (::db/proxy-path db)))
 
 (reg-sub
+ :db/language
+ (fn [db _]
+   (::db/language db)))
+
+(reg-sub
+ :db/pref-lang
+ (fn [db _]
+   (::db/pref-lang db)))
+
+(reg-sub
+ :lang/get
+ :<- [:db/language]
+ :<- [:db/pref-lang]
+ (fn [[language pref-lang] [_ key]]
+   (let [langmap (get language key)]
+     (or (get langmap pref-lang)
+         (get langmap :en-US)
+         (get langmap (-> langmap keys first))))))
+
+(reg-sub
  :session/get-page
  (fn [_ _]
    (subscribe [:db/get-session]))

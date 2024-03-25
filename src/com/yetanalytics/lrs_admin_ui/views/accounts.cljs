@@ -22,7 +22,7 @@
           [:ul {:class "action-icon-list"}
            (if @delete-confirm
              [:li
-              [:span "Are you sure?"]
+              [:span @(subscribe [:lang/get :accounts.delete.confirm])]
               [:a {:href "#!",
                    :on-click #(do (dispatch [:accounts/delete-account account])
                                   (swap! delete-confirm not))
@@ -36,7 +36,7 @@
               [:a {:href "#!"
                    :on-click #(swap! delete-confirm not)
                    :class "icon-delete"}
-               "Delete"]])
+               @(subscribe [:lang/get :accounts.delete])]])
            (when (= username current-username)
              [:li
               [:a {:href "#!"
@@ -44,7 +44,7 @@
                                (fns/ps-event e)
                                (dispatch [:session/set-page :update-password]))
                    :class "icon-edit"}
-               "Update Password"]])]]]]])))
+               @(subscribe [:lang/get :accounts.password.update])]])]]]]])))
 
 (defn new-account []
   (let [hide-pass (r/atom true)]
@@ -52,15 +52,15 @@
       (let [new-account @(subscribe [:db/get-new-account])]
         [:div {:class "create-account-inputs"}
          [:div {:class "row"}
-          [:label {:for "new-username-input"} "Username:"]
+          [:label {:for "new-username-input"} @(subscribe [:lang/get :accounts.new.username])]
           [:input {:value (:username new-account)
                    :class "new-account round"
                    :id "new-username-input"
                    :on-change #(dispatch [:new-account/set-username (fns/ps-event-val %)])}]]
          [:span {:class "username-note"}
-          (format "Username must be %d or more alphanumeric characters" u-min-len)]
+          (format @(subscribe [:lang/get :accounts.new.username.note]) u-min-len)]
          [:div {:class "row pt-2"}
-          [:label {:for "new-password-input"} "Password:"]
+          [:label {:for "new-password-input"} @(subscribe [:lang/get :accounts.new.password])]
           [:input (cond-> {:value (:password new-account)
                            :class "new-account round"
                            :id "new-password-input"
@@ -73,16 +73,17 @@
                  :class "icon-secret pointer"
                  :on-click #(swap! hide-pass not)}
              (str (cond
-                    @hide-pass "Show"
-                    :else "Hide"))]]
+                    @hide-pass @(subscribe [:lang/get :accounts.new.password.show])
+                    :else @(subscribe [:lang/get :accounts.new.password.hide])))]]
            [:li
             [copy-text
              {:text (:password new-account)
               :on-copy #(dispatch [:notification/notify false
-                                   "Copied New Password!"])}
-             [:a {:class "icon-copy pointer"} "Copy"]]]]]
+                                   @(subscribe [:lang/get :notification.accounts.password-copied])])}
+             [:a {:class "icon-copy pointer"} 
+              @(subscribe [:lang/get :accounts.new.password.copy])]]]]]
          [:span {:class "password-note"}
-          (format "Password must be %d or more characters and contain uppercase, lowercase, numbers, and special characters (%s). Be sure to note or copy the new password as it will not be accessible after creation."
+          (format @(subscribe [:lang/get :accounts.new.password.note])
                   p-min-len
                   (apply str pass/special-chars))]
          [:div {:class "row"}
@@ -90,17 +91,17 @@
            [:li
             [:a {:href "#!",
                  :on-click #(dispatch [:new-account/generate-password])
-                 :class "icon-gen"} [:i "Generate Password"]]]]]]))))
+                 :class "icon-gen"} [:i @(subscribe [:lang/get :accounts.new.password.generate])]]]]]]))))
 
 (defn accounts []
   (dispatch [:accounts/load-accounts])
   (let [accounts @(subscribe [:db/get-accounts])]
     [:div {:class "left-content-wrapper"}
      [:h2 {:class "content-title"}
-      "Account Management"]
+      @(subscribe [:lang/get :accounts.title])]
      ;; this will be looped for all tenants if tenant mode is enabled (third)
      [:div {:class "tenant-wrapper"}
-      [:div {:class "accounts-table-header"} "Account"]
+      [:div {:class "accounts-table-header"} @(subscribe [:lang/get :accounts.table-header])]
       [:ol {:class "accounts-list accordion"}
        ;; will repeat for each key
        (map
@@ -109,10 +110,10 @@
                     :key (format "account-item-%s" account-id)}])
         accounts)]
       [:div {:class "h-divider"}]
-      [:h3 {:class "content-title"} "Create New Account"]
+      [:h3 {:class "content-title"} @(subscribe [:lang/get :accounts.new.subtitle])]
       [new-account]
       [:div {:class "accounts-table-actions"}
        [:input {:type "button",
                 :class "btn-brand-bold",
                 :on-click #(dispatch [:accounts/create-account])
-                :value "CREATE ACCOUNT"}]]]]))
+                :value @(subscribe [:lang/get :accounts.new])}]]]]))
