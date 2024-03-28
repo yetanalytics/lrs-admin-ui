@@ -24,7 +24,7 @@
    :login.username     {:en-US "Username"}
    :login.password     {:en-US "Password"}
    :login.login-button {:en-US "LOGIN"}
-   :login.trouble      {:en-US "Trouble logging in? See provided documentation about account management or contact your system administrator.123"}
+   :login.trouble      {:en-US "Trouble logging in? See provided documentation about account management or contact your system administrator."}
    :login.oidc-button  {:en-US "OIDC LOGIN"}
    ;;Credentials Page 
    :credentials.title       {:en-US "CREDENTIALS MANAGEMENT"}
