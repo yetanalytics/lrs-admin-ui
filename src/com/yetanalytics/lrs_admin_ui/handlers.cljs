@@ -101,7 +101,9 @@
                        ::db/enable-reactions enable-reactions
                        ::db/enable-admin-delete-actor enable-admin-delete-actor
                        ::db/pref-lang (keyword admin-language-code)
-                       ::db/language (merge lang/language custom-language))
+                       ::db/language (merge-with merge 
+                                                 lang/language 
+                                                 custom-language))
           (and no-val?
                (not-empty no-val-logout-url))
           (assoc ::db/no-val-logout-url no-val-logout-url))
