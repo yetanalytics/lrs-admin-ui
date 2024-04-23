@@ -392,6 +392,17 @@
       :dispatch [:browser/load-xapi {:params back-params}]})))
 
 (re-frame/reg-event-fx
+ :browser/add-filter
+ global-interceptors
+ (fn [{:keys [db]} [_ param-key param-value]]
+   (let [address (get-in db [::db/browser :address])
+         params (-> (httpfn/extract-params address)
+                    (dissoc :from)
+                    (dissoc :limit)
+                    (assoc param-key param-value))]
+     {:dispatch [:browser/load-xapi {:params params}]})))
+
+(re-frame/reg-event-fx
  :browser/update-credential
  global-interceptors
  (fn [{:keys [db]} [_ key]]

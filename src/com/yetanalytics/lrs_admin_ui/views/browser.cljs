@@ -51,32 +51,74 @@
   [row]
   (json-viewer
    {:data (:data row)
+    ;; top level expanded only
     :collapsed 1}))
+
+(defn verb-cell
+  [row]
+  (let [{:strs [verb]} (js->clj row)
+        {:strs [id]} verb]
+    (r/as-element
+     [:span
+      (verb-display verb)
+      [:a {:class "pointer"
+           :title "Filter by Verb"
+           :on-click #(dispatch [:browser/add-filter :verb id])}
+       " (+)"]])))
+
+(defn actor-cell
+  [row]
+  (let [{:strs [actor]} (js->clj row)]
+    (r/as-element
+     [:span
+      (actor-display actor)
+      [:a {:class "pointer"
+           :title "Filter by Actor"
+           :on-click #(dispatch [:browser/add-filter :agent 
+                                 (js/JSON.stringify (clj->js actor))])}
+       " (+)"]])))
+
+(defn object-cell 
+  [row]
+  (let [{:strs [object]} (js->clj row)
+        {:strs [id]} object]
+    (r/as-element
+     [:span 
+      (object-display object)
+      (when id
+        [:a {:class "pointer"
+             :title "Filter by Object"
+             :on-click #(dispatch [:browser/add-filter :activity id])}
+         " (+)"])])))
 
 (defn statement-table 
   [{:keys [data]}]
   (let [cols [{:name "Statement ID"
                :selector #(get % "id")
+               ;; ensure id is readable
                :minWidth "300px"}
               {:name "Actor"
-               :selector #(actor-display (get % "actor"))}
+               :cell actor-cell}
               {:name "Verb"
-               :selector #(verb-display (get % "verb"))}
+               :cell verb-cell}
               {:name "Object"
-               :selector #(object-display (get % "object"))}
+               :cell object-cell}
               {:name "Timestamp"
                :selector #(time/iso8601->local-display (get % "timestamp"))}]
-        opts {:columns        cols
-              :data           data
-              :expandableRows true
-              :expandableRowsComponent 
-              view-statement-json}] 
+        opts {:columns            cols
+              :data               data
+              :expandableRows     true
+              :expandOnRowClicked true
+              :expandableRowsComponent view-statement-json}
+        b-s  @(subscribe [:browser/get-back-stack])] 
     [:div 
      [data-table opts]
      [:p 
-      (when (seq @(subscribe [:browser/get-back-stack]))
+      (when (seq b-s)
         [:a {:on-click #(dispatch [:browser/back])
-             :class "pointer"} "Back"])
+             :class "pointer"} "Back"]) 
+      [:span (str " Page: " (count b-s))]
+      [:span " Rows Per Page: "]
       [:select
        {:name "batch_size"
         :on-change 
@@ -86,6 +128,7 @@
        [:option {:value "20"} "20"]
        [:option {:value "50"} "50"]
        [:option {:value "100"} "100"]]
+      [:span " "]
       (when (seq @(subscribe [:browser/get-more-link]))
         [:a {:on-click #(dispatch [:browser/more])
              :class "pointer"} "Next"])]]))
