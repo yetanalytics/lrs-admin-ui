@@ -173,6 +173,27 @@
    (:credential browser)))
 
 (reg-sub
+ :browser/get-more-link
+ (fn [_ _]
+   (subscribe [:db/get-browser]))
+ (fn [{:keys [more-link]} _]
+   more-link))
+
+(reg-sub
+ :browser/get-batch-size
+ (fn [_ _]
+   (subscribe [:db/get-browser]))
+ (fn [{:keys [batch-size]} _]
+   batch-size))
+
+(reg-sub
+ :browser/get-back-stack
+ (fn [_ _]
+   (subscribe [:db/get-browser]))
+ (fn [{:keys [back-stack]} _]
+   back-stack))
+
+(reg-sub
  :db/get-stmt-html-enabled
  (fn [db _]
    (::db/enable-statement-html db)))

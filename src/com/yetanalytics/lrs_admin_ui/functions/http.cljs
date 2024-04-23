@@ -2,6 +2,7 @@
   (:require [re-frame.core     :refer [subscribe]]
             [ajax.interceptors :refer [to-interceptor]]
             [lambdaisland.uri  :as uri]
+            [clojure.pprint :refer [pprint]]
             [goog.string       :refer [format]]
             goog.string.format))
 
@@ -15,18 +16,21 @@
                   (format "%s%s/statements"
                           (if (some? proxy-path) proxy-path "")
                           xapi-prefix))
-        param-map (cond-> {:unwrap_html true}
+        param-map (cond-> {:limit @(subscribe [:browser/get-batch-size])}
                     (some? params)
-                    (merge (uri/query-map params)))
+                    (merge
+                     (if (string? params)
+                       (uri/query-map params)
+                       params)))
         params' (uri/map->query-string param-map)]
     (format "%s%s?%s" server-host path' params')))
 
 (defn extract-params
   "return a map of parameters, unencoded and cleaned, from an xapi url,
-  excluding unwrap"
+  excluding limit"
   [address]
   (-> (uri/query-map (uri/uri address) {:keywordize? false})
-      (dissoc "unwrap_html")))
+      (dissoc "limit")))
 
 (defn is-rel?
   [url]

@@ -25,7 +25,7 @@
       (dispatch [:browser/load-xapi {:path   (.-pathname elem)
                                      :params (.-search elem)}]))))
 
-(defn actor-name 
+(defn actor-display 
   "Actor IFI progressive resolution to a display string."
   [actor]
   (or (get actor "name")
@@ -34,12 +34,18 @@
       (get actor "mbox_sha1sum")
       (get actor "openid")))
 
-(defn object-name
+(defn object-display
   "Object display resolution including the possibility of actor object"
   [object]
   (or (langmap (get-in object ["definition" "name"]))
       (get object "id")
-      (actor-name object)))
+      (actor-display object)))
+
+(defn verb-display
+  "Verb display resolution"
+  [verb]
+  (or (langmap (get verb "display"))
+      (get verb "id")))
 
 (defn view-statement-json
   [row]
@@ -49,12 +55,15 @@
 
 (defn statement-table 
   [{:keys [data]}]
-  (let [cols [{:name "ID"
-               :selector #(get % "id")}
-              {:name "Object"
-               :selector #(object-name (get % "object"))}
+  (let [cols [{:name "Statement ID"
+               :selector #(get % "id")
+               :minWidth "300px"}
               {:name "Actor"
-               :selector #(actor-name (get % "actor"))}
+               :selector #(actor-display (get % "actor"))}
+              {:name "Verb"
+               :selector #(verb-display (get % "verb"))}
+              {:name "Object"
+               :selector #(object-display (get % "object"))}
               {:name "Timestamp"
                :selector #(time/iso8601->local-display (get % "timestamp"))}]
         opts {:columns        cols
@@ -62,7 +71,24 @@
               :expandableRows true
               :expandableRowsComponent 
               view-statement-json}] 
-    [data-table opts]))
+    [:div 
+     [data-table opts]
+     [:p 
+      (when (seq @(subscribe [:browser/get-back-stack]))
+        [:a {:on-click #(dispatch [:browser/back])
+             :class "pointer"} "Back"])
+      [:select
+       {:name "batch_size"
+        :on-change 
+        #(dispatch [:browser/update-batch-size (int (fns/ps-event-val %))])
+        :value @(subscribe [:browser/get-batch-size])}
+       [:option {:value "10"} "10"]
+       [:option {:value "20"} "20"]
+       [:option {:value "50"} "50"]
+       [:option {:value "100"} "100"]]
+      (when (seq @(subscribe [:browser/get-more-link]))
+        [:a {:on-click #(dispatch [:browser/more])
+             :class "pointer"} "Next"])]]))
 
 (defn browser []
   (let [filter-expand (r/atom false)]

@@ -63,6 +63,9 @@
 
 (s/def :browser/content (s/nilable vector?))
 (s/def :browser/address (s/nilable string?))
+(s/def :browser/more-link (s/nilable string?))
+(s/def :browser/batch-size int?)
+(s/def :browser/back-stack vector?)
 (s/def :browser/credential (s/nilable
                             (s/keys :req-un [:credential/api-key
                                              :credential/secret-key
@@ -71,7 +74,10 @@
 (s/def ::browser
   (s/keys :req-un [:browser/content
                    :browser/address
-                   :browser/credential]))
+                   :browser/credential
+                   :browser/more-link
+                   :browser/back-stack
+                   :browser/batch-size]))
 
 (s/def ::server-host string?)
 (s/def ::xapi-prefix string?) ;; default /xapi
