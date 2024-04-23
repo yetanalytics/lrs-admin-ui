@@ -349,10 +349,10 @@
      {:dispatch   [:browser/set-address xapi-url]
       :http-xhrio {:method          :get
                    :uri             xapi-url
-                   :response-format (ajax/text-response-format)
+                   :response-format (ajax/json-response-format {:keywords? false})
                    :on-success      [:browser/load-stmts-success]
                    :on-failure      [:server-error]
-                   :interceptors    [httpfn/format-html-interceptor]}})))
+                   :interceptors    [httpfn/req-xapi-interceptor]}})))
 
 (re-frame/reg-event-db
  :browser/set-address
@@ -363,7 +363,7 @@
  :browser/load-stmts-success
  global-interceptors
  (fn [db [_ response]]
-   (assoc-in db [::db/browser :content] response)))
+   (assoc-in db [::db/browser :content] (get response "statements"))))
 
 (re-frame/reg-event-fx
  :browser/update-credential

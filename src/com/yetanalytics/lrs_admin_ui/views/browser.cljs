@@ -2,10 +2,15 @@
   (:require
    [reagent.core :as r]
    [re-frame.core :refer [subscribe dispatch]]
+   [clojure.string :as cstr]
    [com.yetanalytics.lrs-admin-ui.functions :as fns]
    [com.yetanalytics.lrs-admin-ui.functions.http :as httpfn]
    [com.yetanalytics.lrs-admin-ui.functions.scopes :as scopes]
-   [clojure.string :refer [blank?]]))
+   [com.yetanalytics.lrs-admin-ui.functions.time :as time]
+   [com.yetanalytics.lrs-admin-ui.views.util.json :refer [json-viewer]]
+   [com.yetanalytics.lrs-admin-ui.views.util.table :refer [data-table]]
+   [com.yetanalytics.lrs-admin-ui.views.util.langmap :refer [langmap]]
+   [clojure.pprint :refer [pprint]]))
 
 (defn process-click
   "Extract the pertinent parts of an element from an event and instrument links
@@ -19,6 +24,45 @@
       ;;dispatch xapi parsing and load
       (dispatch [:browser/load-xapi {:path   (.-pathname elem)
                                      :params (.-search elem)}]))))
+
+(defn actor-name 
+  "Actor IFI progressive resolution to a display string."
+  [actor]
+  (or (get actor "name")
+      (get-in actor ["account" "name"])
+      (get actor "mbox")
+      (get actor "mbox_sha1sum")
+      (get actor "openid")))
+
+(defn object-name
+  "Object display resolution including the possibility of actor object"
+  [object]
+  (or (langmap (get-in object ["definition" "name"]))
+      (get object "id")
+      (actor-name object)))
+
+(defn view-statement-json
+  [row]
+  (json-viewer
+   {:data (:data row)
+    :collapsed 1}))
+
+(defn statement-table 
+  [{:keys [data]}]
+  (let [cols [{:name "ID"
+               :selector #(get % "id")}
+              {:name "Object"
+               :selector #(object-name (get % "object"))}
+              {:name "Actor"
+               :selector #(actor-name (get % "actor"))}
+              {:name "Timestamp"
+               :selector #(time/iso8601->local-display (get % "timestamp"))}]
+        opts {:columns        cols
+              :data           data
+              :expandableRows true
+              :expandableRowsComponent 
+              view-statement-json}] 
+    [data-table opts]))
 
 (defn browser []
   (let [filter-expand (r/atom false)]
@@ -73,9 +117,7 @@
                       [:a {:href "#!"
                            :on-click #(dispatch [:browser/load-xapi])
                            :class "icon-clear-filters"} "Clear Filters"]]]])])]))
-         (if (blank? content)
+         (if (cstr/blank? content)
            [:div {:class "browser"}
             @(subscribe [:lang/get :browser.key-note])]
-           [:div {:class "browser"
-                  :on-click process-click
-                  "dangerouslySetInnerHTML" #js{:__html content}}])]))))
+           [statement-table {:data content}])]))))

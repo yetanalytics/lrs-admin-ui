@@ -61,7 +61,7 @@
   (s/keys :req-un [:update-password/old-password
                    :update-password/new-password]))
 
-(s/def :browser/content (s/nilable string?))
+(s/def :browser/content (s/nilable vector?))
 (s/def :browser/address (s/nilable string?))
 (s/def :browser/credential (s/nilable
                             (s/keys :req-un [:credential/api-key

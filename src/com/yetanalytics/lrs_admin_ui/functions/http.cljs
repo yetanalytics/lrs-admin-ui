@@ -48,14 +48,14 @@
   [credential]
   (js/btoa (format "%s:%s" (:api-key credential) (:secret-key credential))))
 
-;;Basic Auth and html format for xAPI
-(defn format-html [request]
+;;Basic Auth and json format for xAPI
+(defn req-xapi [request]
   (assoc request :headers
-         {"Accept" "text/html"
+         {"Accept" "application/json"
           "Authorization" (format "Basic %s" (make-basic-auth
                                               @(subscribe [:browser/get-credential])))
           "X-Experience-API-Version" "1.0.3"}))
 
-(def format-html-interceptor
-  (to-interceptor {:name "HTML Interceptor"
-                   :request format-html}))
+(def req-xapi-interceptor
+  (to-interceptor {:name "xAPI Interceptor"
+                   :request req-xapi}))
