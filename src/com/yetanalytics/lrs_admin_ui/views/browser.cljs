@@ -54,6 +54,15 @@
     ;; top level expanded only
     :collapsed 1}))
 
+(defn filter-button
+  [{:keys [key value title]}]
+  [:a {:class "pointer"
+       :title title
+       :on-click #(dispatch [:browser/add-filter key value])}
+   [:img {:src "images/icons/add-filter.svg"
+          :width "12px"
+          :height "15px"}]])
+
 (defn verb-cell
   [row]
   (let [{:strs [verb]} (js->clj row)
@@ -61,10 +70,9 @@
     (r/as-element
      [:span
       (verb-display verb)
-      [:a {:class "pointer"
-           :title "Filter by Verb"
-           :on-click #(dispatch [:browser/add-filter :verb id])}
-       " (+)"]])))
+      [filter-button {:title "Filter by Verb"
+                      :key   :verb
+                      :value id}]])))
 
 (defn actor-cell
   [row]
@@ -72,11 +80,9 @@
     (r/as-element
      [:span
       (actor-display actor)
-      [:a {:class "pointer"
-           :title "Filter by Actor"
-           :on-click #(dispatch [:browser/add-filter :agent 
-                                 (js/JSON.stringify (clj->js actor))])}
-       " (+)"]])))
+      [filter-button {:title "Filter by Actor"
+                      :key   :agent
+                      :value (js/JSON.stringify (clj->js actor))}]])))
 
 (defn object-cell 
   [row]
@@ -86,10 +92,9 @@
      [:span 
       (object-display object)
       (when id
-        [:a {:class "pointer"
-             :title "Filter by Object"
-             :on-click #(dispatch [:browser/add-filter :activity id])}
-         " (+)"])])))
+        [filter-button {:title "Filter by Activity"
+                        :key   :activity
+                        :value id}])])))
 
 (defn statement-table 
   [{:keys [data]}]
