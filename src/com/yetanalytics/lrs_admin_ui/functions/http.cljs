@@ -15,18 +15,21 @@
                   (format "%s%s/statements"
                           (if (some? proxy-path) proxy-path "")
                           xapi-prefix))
-        param-map (cond-> {:unwrap_html true}
+        param-map (cond-> {:limit @(subscribe [:browser/get-batch-size])}
                     (some? params)
-                    (merge (uri/query-map params)))
+                    (merge
+                     (if (string? params)
+                       (uri/query-map params)
+                       params)))
         params' (uri/map->query-string param-map)]
     (format "%s%s?%s" server-host path' params')))
 
 (defn extract-params
   "return a map of parameters, unencoded and cleaned, from an xapi url,
-  excluding unwrap"
+  excluding limit"
   [address]
   (-> (uri/query-map (uri/uri address) {:keywordize? false})
-      (dissoc "unwrap_html")))
+      (dissoc "limit")))
 
 (defn is-rel?
   [url]
@@ -48,14 +51,14 @@
   [credential]
   (js/btoa (format "%s:%s" (:api-key credential) (:secret-key credential))))
 
-;;Basic Auth and html format for xAPI
-(defn format-html [request]
+;;Basic Auth and json format for xAPI
+(defn req-xapi [request]
   (assoc request :headers
-         {"Accept" "text/html"
+         {"Accept" "application/json"
           "Authorization" (format "Basic %s" (make-basic-auth
                                               @(subscribe [:browser/get-credential])))
           "X-Experience-API-Version" "1.0.3"}))
 
-(def format-html-interceptor
-  (to-interceptor {:name "HTML Interceptor"
-                   :request format-html}))
+(def req-xapi-interceptor
+  (to-interceptor {:name "xAPI Interceptor"
+                   :request req-xapi}))

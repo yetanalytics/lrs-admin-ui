@@ -40,14 +40,18 @@
                            :password nil}
          ::db/update-password {:old-password nil
                                :new-password nil}
-         ::db/browser {:content nil
-                       :address nil
-                       :credential nil}
+         ::db/browser {:content    nil
+                       :address    nil
+                       :credential nil
+                       :more-link  nil
+                       :batch-size 10
+                       :back-stack []}
          ::db/server-host (or server-host "")
          ::db/xapi-prefix "/xapi"
          ::db/proxy-path  nil
          ::db/language lang/language
          ::db/pref-lang :en-US
+         ::db/stmt-get-max 10
          ::db/enable-admin-delete-actor false
          ::db/enable-statement-html true
          ::db/notifications []
@@ -89,6 +93,7 @@
                                           no-val-logout-url
                                           enable-admin-delete-actor
                                           admin-language-code
+                                          stmt-get-max
                                           custom-language]
                        ?oidc             :oidc
                        ?oidc-local-admin :oidc-enable-local-admin}]]
@@ -100,6 +105,7 @@
                        ::db/enable-admin-status enable-admin-status
                        ::db/enable-reactions enable-reactions
                        ::db/enable-admin-delete-actor enable-admin-delete-actor
+                       ::db/stmt-get-max stmt-get-max
                        ::db/pref-lang (keyword admin-language-code)
                        ::db/language (merge-with merge 
                                                  lang/language 
@@ -349,10 +355,10 @@
      {:dispatch   [:browser/set-address xapi-url]
       :http-xhrio {:method          :get
                    :uri             xapi-url
-                   :response-format (ajax/text-response-format)
+                   :response-format (ajax/json-response-format {:keywords? false})
                    :on-success      [:browser/load-stmts-success]
                    :on-failure      [:server-error]
-                   :interceptors    [httpfn/format-html-interceptor]}})))
+                   :interceptors    [httpfn/req-xapi-interceptor]}})))
 
 (re-frame/reg-event-db
  :browser/set-address
@@ -362,8 +368,52 @@
 (re-frame/reg-event-db
  :browser/load-stmts-success
  global-interceptors
- (fn [db [_ response]]
-   (assoc-in db [::db/browser :content] response)))
+ (fn [db [_ {:strs [statements more]}]]
+   (update-in db [::db/browser] assoc 
+              :content   statements
+              :more-link more)))
+
+(re-frame/reg-event-fx
+ :browser/more
+ global-interceptors
+ (fn [{:keys [db]} _]
+   ;; Convert more link into params and request new data.
+   (let [more-params 
+         (httpfn/extract-params (get-in db [::db/browser :more-link]))
+         address (get-in db [::db/browser :address])]
+     ;; Push current address into stack
+     {:db (update-in db [::db/browser :back-stack] conj address)
+      :dispatch [:browser/load-xapi {:params more-params}]})))
+
+(re-frame/reg-event-fx
+ :browser/back
+ global-interceptors
+ (fn [{:keys [db]} _]
+   ;; Pop most recent from stack
+   (let [back-stack (get-in db [::db/browser :back-stack])
+         back-params (httpfn/extract-params (peek back-stack))]
+     {:db (update-in db [::db/browser :back-stack] pop)
+      :dispatch [:browser/load-xapi {:params back-params}]})))
+
+(re-frame/reg-event-fx
+ :browser/add-filter
+ global-interceptors
+ (fn [{:keys [db]} [_ param-key param-value]]
+   (let [address (get-in db [::db/browser :address])
+         params (-> (httpfn/extract-params address)
+                    (dissoc "from" "limit")
+                    (assoc param-key param-value))]
+     ;; Clear back-stack
+     {:db (assoc-in db [::db/browser :back-stack] [])
+      :dispatch [:browser/load-xapi {:params params}]})))
+
+(re-frame/reg-event-fx
+ :browser/clear-filters
+ global-interceptors
+ (fn [{:keys [db]} _]
+   {;; Clear back-stack and reset query
+    :db (assoc-in db [::db/browser :back-stack] [])
+    :dispatch [:browser/load-xapi]}))
 
 (re-frame/reg-event-fx
  :browser/update-credential
@@ -372,8 +422,26 @@
    (let [credential (first (filter #(= key (:api-key %))
                                    (::db/credentials db)))]
      (when credential
-       {:db (assoc-in db [::db/browser :credential] credential)
+       ;; Clear backstack and limit and filters
+       {:db (update-in db [::db/browser] assoc
+                       :credential credential
+                       :back-stack []
+                       :batch-size 10)
         :dispatch [:browser/load-xapi]}))))
+
+(re-frame/reg-event-fx
+ :browser/update-batch-size
+ global-interceptors
+ (fn [{:keys [db]} [_ batch-size]]
+   ;; Clear from and limit
+   (let [address (get-in db [::db/browser :address])
+         params (-> (httpfn/extract-params address)
+                    (dissoc "from" "limit"))]
+     ;; update batch to new size and clear back-stack
+     {:db (update-in db [::db/browser] assoc
+                     :batch-size batch-size
+                     :back-stack [])
+      :dispatch [:browser/load-xapi {:params params}]})))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

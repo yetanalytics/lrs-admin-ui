@@ -61,8 +61,11 @@
   (s/keys :req-un [:update-password/old-password
                    :update-password/new-password]))
 
-(s/def :browser/content (s/nilable string?))
+(s/def :browser/content (s/nilable vector?))
 (s/def :browser/address (s/nilable string?))
+(s/def :browser/more-link (s/nilable string?))
+(s/def :browser/batch-size int?)
+(s/def :browser/back-stack vector?)
 (s/def :browser/credential (s/nilable
                             (s/keys :req-un [:credential/api-key
                                              :credential/secret-key
@@ -71,7 +74,10 @@
 (s/def ::browser
   (s/keys :req-un [:browser/content
                    :browser/address
-                   :browser/credential]))
+                   :browser/credential
+                   :browser/more-link
+                   :browser/back-stack
+                   :browser/batch-size]))
 
 (s/def ::server-host string?)
 (s/def ::xapi-prefix string?) ;; default /xapi
@@ -91,6 +97,8 @@
 
 (s/def ::enable-statement-html boolean?)
 (s/def ::enable-admin-delete-actor boolean?)
+
+(s/def ::stmt-get-max int?)
 
 (s/def ::oidc-auth boolean?)
 (s/def ::oidc-enable-local-admin boolean?)
@@ -192,6 +200,7 @@
                           ::notifications
                           ::enable-statement-html
                           ::enable-admin-delete-actor
+                          ::stmt-get-max
                           ::oidc-auth
                           ::oidc-enable-local-admin
                           ::enable-admin-status

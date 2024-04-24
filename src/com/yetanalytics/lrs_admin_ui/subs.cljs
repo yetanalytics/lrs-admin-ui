@@ -33,6 +33,11 @@
    (::db/pref-lang db)))
 
 (reg-sub
+ :db/stmt-get-max
+ (fn [db _]
+   (::db/stmt-get-max db)))
+
+(reg-sub
  :lang/get
  :<- [:db/language]
  :<- [:db/pref-lang]
@@ -171,6 +176,27 @@
    (subscribe [:db/get-browser]))
  (fn [browser _]
    (:credential browser)))
+
+(reg-sub
+ :browser/get-more-link
+ (fn [_ _]
+   (subscribe [:db/get-browser]))
+ (fn [{:keys [more-link]} _]
+   more-link))
+
+(reg-sub
+ :browser/get-batch-size
+ (fn [_ _]
+   (subscribe [:db/get-browser]))
+ (fn [{:keys [batch-size]} _]
+   batch-size))
+
+(reg-sub
+ :browser/get-back-stack
+ (fn [_ _]
+   (subscribe [:db/get-browser]))
+ (fn [{:keys [back-stack]} _]
+   back-stack))
 
 (reg-sub
  :db/get-stmt-html-enabled
