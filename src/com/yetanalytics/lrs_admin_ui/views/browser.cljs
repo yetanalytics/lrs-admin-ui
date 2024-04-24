@@ -118,7 +118,8 @@
               :expandOnRowClicked true
               :dense              false
               :expandableRowsComponent view-statement-json}
-        b-s  @(subscribe [:browser/get-back-stack])] 
+        b-s  @(subscribe [:browser/get-back-stack])
+        max  @(subscribe [:db/stmt-get-max])] 
     [:div 
      [data-table opts]
      [:div {:class "table-nav"}
@@ -138,9 +139,11 @@
          #(dispatch [:browser/update-batch-size (int (fns/ps-event-val %))])
          :value @(subscribe [:browser/get-batch-size])}
         [:option {:value "10"} "10"]
-        [:option {:value "20"} "20"]
-        [:option {:value "50"} "50"]
-        [:option {:value "100"} "100"]]]
+        (when (<= 20 max) [:option {:value "20"} "20"])
+        (when (<= 50 max) [:option {:value "50"} "50"])
+        (when (<= 100 max) [:option {:value "100"} "100"])
+        (when (<= 250 max) [:option {:value "250"} "250"])
+        (when (<= 500 max) [:option {:value "500"} "500"])]]
       [:div {:class "table-nav-next"}
        (when (seq @(subscribe [:browser/get-more-link]))
          [:a {:on-click #(dispatch [:browser/more])

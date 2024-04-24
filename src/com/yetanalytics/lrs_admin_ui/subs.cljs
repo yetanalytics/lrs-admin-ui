@@ -33,6 +33,11 @@
    (::db/pref-lang db)))
 
 (reg-sub
+ :db/stmt-get-max
+ (fn [db _]
+   (::db/stmt-get-max db)))
+
+(reg-sub
  :lang/get
  :<- [:db/language]
  :<- [:db/pref-lang]

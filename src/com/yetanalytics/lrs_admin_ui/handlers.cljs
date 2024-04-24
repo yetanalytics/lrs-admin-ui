@@ -51,6 +51,7 @@
          ::db/proxy-path  nil
          ::db/language lang/language
          ::db/pref-lang :en-US
+         ::db/stmt-get-max 10
          ::db/enable-admin-delete-actor false
          ::db/enable-statement-html true
          ::db/notifications []
@@ -92,6 +93,7 @@
                                           no-val-logout-url
                                           enable-admin-delete-actor
                                           admin-language-code
+                                          stmt-get-max
                                           custom-language]
                        ?oidc             :oidc
                        ?oidc-local-admin :oidc-enable-local-admin}]]
@@ -103,6 +105,7 @@
                        ::db/enable-admin-status enable-admin-status
                        ::db/enable-reactions enable-reactions
                        ::db/enable-admin-delete-actor enable-admin-delete-actor
+                       ::db/stmt-get-max stmt-get-max
                        ::db/pref-lang (keyword admin-language-code)
                        ::db/language (merge-with merge 
                                                  lang/language 
