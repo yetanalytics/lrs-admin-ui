@@ -199,7 +199,7 @@
                     [:ul {:class "action-icon-list"}
                      [:li
                       [:a {:href "#!"
-                           :on-click #(dispatch [:browser/load-xapi])
+                           :on-click #(dispatch [:browser/clear-filters])
                            :class "icon-clear-filters"} "Clear Filters"]]]])])]))
          (if (cstr/blank? content)
            [:div {:class "browser"}

@@ -406,6 +406,14 @@
       :dispatch [:browser/load-xapi {:params params}]})))
 
 (re-frame/reg-event-fx
+ :browser/clear-filters
+ global-interceptors
+ (fn [{:keys [db]} _]
+   {;; Clear back-stack and reset query
+    :db (assoc-in db [::db/browser :back-stack] [])
+    :dispatch [:browser/load-xapi]}))
+
+(re-frame/reg-event-fx
  :browser/update-credential
  global-interceptors
  (fn [{:keys [db]} [_ key]]
