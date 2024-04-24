@@ -401,8 +401,7 @@
  (fn [{:keys [db]} [_ param-key param-value]]
    (let [address (get-in db [::db/browser :address])
          params (-> (httpfn/extract-params address)
-                    (dissoc "from")
-                    (dissoc "limit")
+                    (dissoc "from" "limit")
                     (assoc param-key param-value))]
      ;; Clear back-stack
      {:db (assoc-in db [::db/browser :back-stack] [])
@@ -437,8 +436,7 @@
    ;; Clear from and limit
    (let [address (get-in db [::db/browser :address])
          params (-> (httpfn/extract-params address)
-                    (dissoc "from")
-                    (dissoc "limit"))]
+                    (dissoc "from" "limit"))]
      ;; update batch to new size and clear back-stack
      {:db (update-in db [::db/browser] assoc
                      :batch-size batch-size

@@ -17,6 +17,12 @@
                                                :borderRightColor "lightgray"}}}});
 
 (defn data-table
+  "Adapts the react-data-table-component to make it more cljs/reagent friendly.
+   the opts map is the same as the ones for the table however in here some of
+   the inputs are adapted to try to account for the change from cljs to js. 
+   You can use cljs `selector` and `expandableRowsComponents` and they will be
+   converted automatically. Other things, like cell definitions, need to still 
+   be react-aware. `customStyles` has a default which can be overriden"
   [{:keys [columns expandableRowsComponent data customStyles] :as opts
     :or   {customStyles default-table-style}}]
   (let [;; JS INTEROP
