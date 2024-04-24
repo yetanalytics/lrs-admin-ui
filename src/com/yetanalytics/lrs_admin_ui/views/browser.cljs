@@ -9,21 +9,7 @@
    [com.yetanalytics.lrs-admin-ui.functions.time :as time]
    [com.yetanalytics.lrs-admin-ui.views.util.json :refer [json-viewer]]
    [com.yetanalytics.lrs-admin-ui.views.util.table :refer [data-table]]
-   [com.yetanalytics.lrs-admin-ui.views.util.langmap :refer [langmap]]
-   [clojure.pprint :refer [pprint]]))
-
-(defn process-click
-  "Extract the pertinent parts of an element from an event and instrument links
-  with appropriate dispatch. ignore non-links and external links"
-  [event]
-  (let [elem (.-target event)]
-    (when (and (= (.-nodeName elem) "A")
-               (httpfn/is-rel? (.-href elem)))
-      ;;prevent nav
-      (fns/ps-event event)
-      ;;dispatch xapi parsing and load
-      (dispatch [:browser/load-xapi {:path   (.-pathname elem)
-                                     :params (.-search elem)}]))))
+   [com.yetanalytics.lrs-admin-ui.views.util.langmap :refer [langmap]]))
 
 (defn actor-display 
   "Actor IFI progressive resolution to a display string."
@@ -47,6 +33,61 @@
   (or (langmap (get verb "display"))
       (get verb "id")))
 
+(defn filter-button
+  [{:keys [key value title]}]
+  [:a {:class "pointer"
+       :title title
+       :on-click #(dispatch [:browser/add-filter key value])}
+   [:img {:src "images/icons/add-filter.svg"
+          :width "15px"
+          :height "20px"}]])
+
+(defn verb-cell
+  [row]
+  (let [{:strs [verb]} (js->clj row)
+        {:strs [id]} verb]
+    (r/as-element
+     [:div.custom-cell
+      [:div.cell-display
+       (verb-display verb)]
+      [:div.cell-action 
+       [filter-button {:title "Filter by Verb"
+                       :key   :verb
+                       :value id}]]])))
+
+(defn actor-cell
+  [row]
+  (let [{:strs [actor]} (js->clj row)]
+    (r/as-element
+     [:div.custom-cell
+      [:div.cell-display
+       (actor-display actor)]
+      [:div.cell-action
+       [filter-button {:title "Filter by Actor"
+                       :key   :agent
+                       :value (js/JSON.stringify (clj->js actor))}]]])))
+
+(defn object-cell 
+  [row]
+  (let [{:strs [object]} (js->clj row)
+        {:strs [id]} object]
+    (r/as-element
+     [:div.custom-cell
+      [:div.cell-display
+       (object-display object)]
+      [:div.cell-action
+       (when id
+         [filter-button {:title "Filter by Activity"
+                         :key   :activity
+                         :value id}])]])))
+
+(defn row-num-cell
+  [_ idx]
+  (let [page-start 
+        (+ 1 (* @(subscribe [:browser/get-batch-size])
+                (count @(subscribe [:browser/get-back-stack]))))]
+    (r/as-element [:i (+ idx page-start)])))
+
 (defn view-statement-json
   [row]
   (json-viewer
@@ -54,51 +95,12 @@
     ;; top level expanded only
     :collapsed 1}))
 
-(defn filter-button
-  [{:keys [key value title]}]
-  [:a {:class "pointer"
-       :title title
-       :on-click #(dispatch [:browser/add-filter key value])}
-   [:img {:src "images/icons/add-filter.svg"
-          :width "12px"
-          :height "15px"}]])
-
-(defn verb-cell
-  [row]
-  (let [{:strs [verb]} (js->clj row)
-        {:strs [id]} verb]
-    (r/as-element
-     [:span
-      (verb-display verb)
-      [filter-button {:title "Filter by Verb"
-                      :key   :verb
-                      :value id}]])))
-
-(defn actor-cell
-  [row]
-  (let [{:strs [actor]} (js->clj row)]
-    (r/as-element
-     [:span
-      (actor-display actor)
-      [filter-button {:title "Filter by Actor"
-                      :key   :agent
-                      :value (js/JSON.stringify (clj->js actor))}]])))
-
-(defn object-cell 
-  [row]
-  (let [{:strs [object]} (js->clj row)
-        {:strs [id]} object]
-    (r/as-element
-     [:span 
-      (object-display object)
-      (when id
-        [filter-button {:title "Filter by Activity"
-                        :key   :activity
-                        :value id}])])))
-
 (defn statement-table 
   [{:keys [data]}]
-  (let [cols [{:name "Statement ID"
+  (let [cols [{:name (r/as-element [:i "#"])
+               :cell row-num-cell
+               :maxWidth "10px"}
+              {:name "Statement ID"
                :selector #(get % "id")
                ;; ensure id is readable
                :minWidth "300px"}
@@ -114,29 +116,37 @@
               :data               data
               :expandableRows     true
               :expandOnRowClicked true
+              :dense              false
               :expandableRowsComponent view-statement-json}
         b-s  @(subscribe [:browser/get-back-stack])] 
     [:div 
      [data-table opts]
-     [:p 
-      (when (seq b-s)
-        [:a {:on-click #(dispatch [:browser/back])
-             :class "pointer"} "Back"]) 
-      [:span (str " Page: " (count b-s))]
-      [:span " Rows Per Page: "]
-      [:select
-       {:name "batch_size"
-        :on-change 
-        #(dispatch [:browser/update-batch-size (int (fns/ps-event-val %))])
-        :value @(subscribe [:browser/get-batch-size])}
-       [:option {:value "10"} "10"]
-       [:option {:value "20"} "20"]
-       [:option {:value "50"} "50"]
-       [:option {:value "100"} "100"]]
-      [:span " "]
-      (when (seq @(subscribe [:browser/get-more-link]))
-        [:a {:on-click #(dispatch [:browser/more])
-             :class "pointer"} "Next"])]]))
+     [:div {:class "table-nav"}
+      [:div {:class "table-nav-back"}
+       (when (seq b-s)
+         [:a {:on-click #(dispatch [:browser/back])
+              :class "pointer"}
+          [:img {:src "images/icons/prev.svg"
+                 :width "30px"}]])] 
+      [:div {:class "table-nav-pages"}
+       [:span " Page: " (+ 1 (count b-s))]]
+      [:div {:class "table-nav-rows"}
+       [:span " Rows Per Page: "]
+       [:select
+        {:name "batch_size"
+         :on-change 
+         #(dispatch [:browser/update-batch-size (int (fns/ps-event-val %))])
+         :value @(subscribe [:browser/get-batch-size])}
+        [:option {:value "10"} "10"]
+        [:option {:value "20"} "20"]
+        [:option {:value "50"} "50"]
+        [:option {:value "100"} "100"]]]
+      [:div {:class "table-nav-next"}
+       (when (seq @(subscribe [:browser/get-more-link]))
+         [:a {:on-click #(dispatch [:browser/more])
+              :class "pointer"}
+          [:img {:src "images/icons/next.svg"
+                 :width "30px"}]])]]]))
 
 (defn browser []
   (let [filter-expand (r/atom false)]

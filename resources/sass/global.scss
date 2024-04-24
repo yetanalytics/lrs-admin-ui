@@ -1309,6 +1309,48 @@ div.tooltip-text span.multi-line {
 }
 
 /**************************************************
+# Table Nav
+**************************************************/
+
+div.table-nav {
+  width: 100%;
+  margin-top: 10px;
+  font-size: 10pt;
+}
+
+div.table-nav-back {
+  float: left;
+}
+
+div.table-nav-pages {
+  float: left;
+  margin-left: 35%;
+}
+
+div.table-nav-rows {
+  float: left;
+  margin-left: 7%;
+}
+
+div.table-nav-next {
+  float: right;
+}
+
+div.custom-cell {
+  width: 100%;
+}
+
+div.custom-cell div.cell-display {
+  float: left;
+  width: 80%;
+}
+
+div.custom-cell div.cell-action {
+  float: right;
+}
+
+
+/**************************************************
 # Footer
 **************************************************/
 .footer-menu-box {

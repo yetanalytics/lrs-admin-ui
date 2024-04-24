@@ -1,8 +1,7 @@
 (ns com.yetanalytics.lrs-admin-ui.views.util.json
   "JSON display. (For the JSON editor see the `editor` ns.)"
   (:require [reagent.core      :as r]
-            ["react-json-view" :as ReactJson]
-            [clojure.pprint :refer [pprint]]))
+            ["react-json-view" :as ReactJson]))
 
 (def json-view-theme
   "Base16 format style input for json viewer, see:

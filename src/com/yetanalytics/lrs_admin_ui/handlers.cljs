@@ -20,8 +20,7 @@
             [clojure.walk                                     :as w]
             [com.yetanalytics.lrs-admin-ui.spec.reaction      :as rs]
             [com.yetanalytics.lrs-admin-ui.language           :as lang]
-            [com.yetanalytics.lrs-reactions.path              :as rpath]
-            [clojure.pprint :refer [pprint]]))
+            [com.yetanalytics.lrs-reactions.path              :as rpath]))
 
 (def global-interceptors
   [db/check-spec-interceptor])
@@ -375,20 +374,22 @@
  :browser/more
  global-interceptors
  (fn [{:keys [db]} _]
+   ;; Convert more link into params and request new data.
    (let [more-params 
          (httpfn/extract-params (get-in db [::db/browser :more-link]))
-         {:keys [address back-stack]} (get db ::db/browser)]
-     {:db (assoc-in db [::db/browser :back-stack] (conj back-stack address))
+         address (get-in db [::db/browser :address])]
+     ;; Push current address into stack
+     {:db (update-in db [::db/browser :back-stack] conj address)
       :dispatch [:browser/load-xapi {:params more-params}]})))
 
 (re-frame/reg-event-fx
  :browser/back
  global-interceptors
  (fn [{:keys [db]} _]
+   ;; Pop most recent from stack
    (let [back-stack (get-in db [::db/browser :back-stack])
-         back-address (peek back-stack)
-         back-params (httpfn/extract-params back-address)]
-     {:db (assoc-in db [::db/browser :back-stack] (pop back-stack))
+         back-params (httpfn/extract-params (peek back-stack))]
+     {:db (update-in db [::db/browser :back-stack] pop)
       :dispatch [:browser/load-xapi {:params back-params}]})))
 
 (re-frame/reg-event-fx
@@ -397,10 +398,12 @@
  (fn [{:keys [db]} [_ param-key param-value]]
    (let [address (get-in db [::db/browser :address])
          params (-> (httpfn/extract-params address)
-                    (dissoc :from)
-                    (dissoc :limit)
+                    (dissoc "from")
+                    (dissoc "limit")
                     (assoc param-key param-value))]
-     {:dispatch [:browser/load-xapi {:params params}]})))
+     ;; Clear back-stack
+     {:db (assoc-in db [::db/browser :back-stack] [])
+      :dispatch [:browser/load-xapi {:params params}]})))
 
 (re-frame/reg-event-fx
  :browser/update-credential
@@ -409,15 +412,27 @@
    (let [credential (first (filter #(= key (:api-key %))
                                    (::db/credentials db)))]
      (when credential
-       {:db (assoc-in db [::db/browser :credential] credential)
+       ;; Clear backstack and limit and filters
+       {:db (update-in db [::db/browser] assoc
+                       :credential credential
+                       :back-stack []
+                       :batch-size 10)
         :dispatch [:browser/load-xapi]}))))
 
 (re-frame/reg-event-fx
  :browser/update-batch-size
  global-interceptors
  (fn [{:keys [db]} [_ batch-size]]
-   {:db (assoc-in db [::db/browser :batch-size] batch-size)
-    :dispatch [:browser/load-xapi]}))
+   ;; Clear from and limit
+   (let [address (get-in db [::db/browser :address])
+         params (-> (httpfn/extract-params address)
+                    (dissoc "from")
+                    (dissoc "limit"))]
+     ;; update batch to new size and clear back-stack
+     {:db (update-in db [::db/browser] assoc
+                     :batch-size batch-size
+                     :back-stack [])
+      :dispatch [:browser/load-xapi {:params params}]})))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

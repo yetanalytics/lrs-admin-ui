@@ -2,7 +2,6 @@
   (:require [re-frame.core     :refer [subscribe]]
             [ajax.interceptors :refer [to-interceptor]]
             [lambdaisland.uri  :as uri]
-            [clojure.pprint :refer [pprint]]
             [goog.string       :refer [format]]
             goog.string.format))
 

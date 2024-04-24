@@ -9,14 +9,14 @@
    to the highest override, the system preference, english, or the first entry 
    if no match."
   [m & {:keys [overrides]}]
-  (println @(subscribe [:db/pref-lang]))
   (when (map? m)
     (let [matches?  (fn [pref k]
                       (cstr/starts-with? (cstr/lower-case (name k))
                                          (cstr/lower-case pref)))
           lang-keys (keys m)
           pref-keys (->> lang-keys
-                         (filter (partial matches? (name @(subscribe [:db/pref-lang])))))
+                         (filter (partial matches? 
+                                          (name @(subscribe [:db/pref-lang])))))
           en-keys   (->> lang-keys
                          (filter (partial matches? "en")))
           over-keys (when overrides
