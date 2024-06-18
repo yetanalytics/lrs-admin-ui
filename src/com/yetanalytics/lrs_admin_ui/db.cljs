@@ -95,7 +95,6 @@
 
 (s/def ::notifications (s/every ::notification))
 
-(s/def ::enable-statement-html boolean?)
 (s/def ::enable-admin-delete-actor boolean?)
 
 (s/def ::stmt-get-max int?)
@@ -198,7 +197,6 @@
                           ::language
                           ::pref-lang
                           ::notifications
-                          ::enable-statement-html
                           ::enable-admin-delete-actor
                           ::stmt-get-max
                           ::oidc-auth

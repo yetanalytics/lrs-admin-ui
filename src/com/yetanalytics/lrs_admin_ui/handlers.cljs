@@ -53,7 +53,6 @@
          ::db/pref-lang :en-US
          ::db/stmt-get-max 10
          ::db/enable-admin-delete-actor false
-         ::db/enable-statement-html true
          ::db/notifications []
          ::db/oidc-auth false
          ::db/oidc-enable-local-admin false
@@ -86,7 +85,6 @@
  global-interceptors
  (fn [{:keys [db]} [_ {:keys             [url-prefix
                                           proxy-path
-                                          enable-stmt-html
                                           enable-admin-status
                                           enable-reactions
                                           no-val?
@@ -100,7 +98,6 @@
    {:db (cond-> (assoc db
                        ::db/xapi-prefix url-prefix
                        ::db/proxy-path proxy-path
-                       ::db/enable-statement-html enable-stmt-html
                        ::db/oidc-enable-local-admin (or ?oidc-local-admin false)
                        ::db/enable-admin-status enable-admin-status
                        ::db/enable-reactions enable-reactions
