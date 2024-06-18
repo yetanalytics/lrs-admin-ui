@@ -16,8 +16,7 @@
     [menu-item {:name @(subscribe [:lang/get :header.nav.credentials]) :page :credentials}]
     (when @(subscribe [:oidc/show-account-nav?])
       [menu-item {:name @(subscribe [:lang/get :header.nav.accounts]) :page :accounts}])
-    (when @(subscribe [:db/get-stmt-html-enabled])
-      [menu-item {:name @(subscribe [:lang/get :header.nav.browser]) :page :browser}])
+    [menu-item {:name @(subscribe [:lang/get :header.nav.browser]) :page :browser}]
     (when @(subscribe [:status/enabled?])
       [menu-item {:name @(subscribe [:lang/get :header.nav.monitor]) :page :status}])
     (when (some identity [@(subscribe [:delete-actor/enabled?])])
