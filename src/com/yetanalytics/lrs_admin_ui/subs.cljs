@@ -198,11 +198,6 @@
  (fn [{:keys [back-stack]} _]
    back-stack))
 
-(reg-sub
- :db/get-stmt-html-enabled
- (fn [db _]
-   (::db/enable-statement-html db)))
-
 ;; OIDC State
 (reg-sub
  :oidc/login-available?
