@@ -430,7 +430,7 @@
  :browser/refresh
  global-interceptors
  (fn [{:keys [db]} _]
-   (when-let [credential (get-in db [::db/browser :credential])]
+   (when-let (get-in db [::db/browser :credential])
      (when credential
        ;; Clear backstack
        {:db (assoc-in db [::db/browser :back-stack] [])

@@ -152,7 +152,7 @@
                  :width "30px"}]])]]]))
 
 (defn refresh-button []
-  (when-let [credential @(subscribe [:browser/get-credential])]
+  (when @(subscribe [:browser/get-credential])
     [:a.icon-refresh
      {:href "!#"
       :on-click (fn [e]
