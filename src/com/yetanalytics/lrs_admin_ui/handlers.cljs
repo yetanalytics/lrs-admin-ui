@@ -431,10 +431,9 @@
  global-interceptors
  (fn [{:keys [db]} _]
    (when (get-in db [::db/browser :credential])
-     (when credential
-       ;; Clear backstack
-       {:db (assoc-in db [::db/browser :back-stack] [])
-        :dispatch [:browser/load-xapi]}))))
+     ;; Clear backstack
+     {:db (assoc-in db [::db/browser :back-stack] [])
+      :dispatch [:browser/load-xapi]})))
 
 (re-frame/reg-event-fx
  :browser/update-batch-size
