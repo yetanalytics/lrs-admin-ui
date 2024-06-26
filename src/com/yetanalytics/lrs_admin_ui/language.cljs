@@ -62,6 +62,7 @@
    :browser.credentials {:en-US "Credentials to Use:"}
    :browser.query {:en-US "Current Query:"}
    :browser.key-note {:en-US "Please Choose an API Key Above to Browse LRS Data"}
+   :browser.refresh {:en-US "Refresh"}
    ;;Monitor
    :monitor.title {:en-US "LRS Monitor"}
    :monitor.no-data {:en-US "No Statement Data"}

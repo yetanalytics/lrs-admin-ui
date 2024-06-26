@@ -158,7 +158,7 @@
       :on-click (fn [e]
                   (fns/ps-event e)
                   (dispatch [:browser/refresh]))}
-     "Refresh"]))
+     @(subscribe [:lang/get :browser.refresh])]))
 
 (defn browser []
   (let [filter-expand (r/atom false)]
