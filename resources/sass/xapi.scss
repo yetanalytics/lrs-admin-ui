@@ -230,3 +230,16 @@ div.browser a:hover {
 .action-icon-list li a.icon-clear-filters:hover {
   background: url('../images/icons/icon-close-black.svg') no-repeat left center;
 }
+
+a.icon-refresh {
+  background: url('../images/icons/refresh-brand.svg') no-repeat left center;
+  display: inline-block;
+  padding: 4px 4px 4px 24px;
+  margin: 2px 0 0 4px;
+  color: #137bce;
+}
+
+a.icon-refresh:hover {
+  background: url('../images/icons/refresh-brand.svg') no-repeat left center;
+  color: black;
+}

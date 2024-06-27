@@ -34,7 +34,7 @@
                       :read-only true}]
              [copy-text
               {:text (:api-key credential)
-               :on-copy #(dispatch [:notification/notify false 
+               :on-copy #(dispatch [:notification/notify false
                                     @(subscribe [:lang/get :notification.credentials.key-copied])])}
               [:a {:class "icon-copy"
                    :on-click #(ps-event %)}]]]]
@@ -53,7 +53,7 @@
                             :read-only true}]
                    [copy-text
                     {:text (:secret-key credential)
-                     :on-copy #(dispatch [:notification/notify false 
+                     :on-copy #(dispatch [:notification/notify false
                                           @(subscribe [:lang/get :notification.credentials.secret-copied])])}
                     [:a {:class "icon-copy pointer"}]]]])
                [:ul {:class "action-icon-list"}

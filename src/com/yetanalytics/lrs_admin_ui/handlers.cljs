@@ -104,8 +104,8 @@
                        ::db/enable-admin-delete-actor enable-admin-delete-actor
                        ::db/stmt-get-max stmt-get-max
                        ::db/pref-lang (keyword admin-language-code)
-                       ::db/language (merge-with merge 
-                                                 lang/language 
+                       ::db/language (merge-with merge
+                                                 lang/language
                                                  custom-language))
           (and no-val?
                (not-empty no-val-logout-url))
@@ -366,7 +366,7 @@
  :browser/load-stmts-success
  global-interceptors
  (fn [db [_ {:strs [statements more]}]]
-   (update-in db [::db/browser] assoc 
+   (update-in db [::db/browser] assoc
               :content   statements
               :more-link more)))
 
@@ -375,7 +375,7 @@
  global-interceptors
  (fn [{:keys [db]} _]
    ;; Convert more link into params and request new data.
-   (let [more-params 
+   (let [more-params
          (httpfn/extract-params (get-in db [::db/browser :more-link]))
          address (get-in db [::db/browser :address])]
      ;; Push current address into stack
@@ -425,6 +425,15 @@
                        :back-stack []
                        :batch-size 10)
         :dispatch [:browser/load-xapi]}))))
+
+(re-frame/reg-event-fx
+ :browser/refresh
+ global-interceptors
+ (fn [{:keys [db]} _]
+   (when (get-in db [::db/browser :credential])
+     ;; Clear backstack
+     {:db (assoc-in db [::db/browser :back-stack] [])
+      :dispatch [:browser/load-xapi]})))
 
 (re-frame/reg-event-fx
  :browser/update-batch-size
@@ -1264,7 +1273,7 @@
 (re-frame/reg-event-db
  :reaction/add-path-segment
  global-interceptors
- (fn [db [_ path-path]] 
+ (fn [db [_ path-path]]
    (let [full-path (into [::db/editing-reaction]
                          path-path)
          path-before (get-in db full-path)

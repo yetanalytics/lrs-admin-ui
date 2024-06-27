@@ -11,7 +11,7 @@
    [com.yetanalytics.lrs-admin-ui.views.util.table :refer [data-table]]
    [com.yetanalytics.lrs-admin-ui.views.util.langmap :refer [langmap]]))
 
-(defn actor-display 
+(defn actor-display
   "Actor IFI progressive resolution to a display string."
   [actor]
   (or (get actor "name")
@@ -50,7 +50,7 @@
      [:div.custom-cell
       [:div.cell-display
        (verb-display verb)]
-      [:div.cell-action 
+      [:div.cell-action
        [filter-button {:title "Filter by Verb"
                        :key   :verb
                        :value id}]]])))
@@ -67,7 +67,7 @@
                        :key   :agent
                        :value (js/JSON.stringify (clj->js actor))}]]])))
 
-(defn object-cell 
+(defn object-cell
   [row]
   (let [{:strs [object]} (js->clj row)
         {:strs [id]} object]
@@ -83,7 +83,7 @@
 
 (defn row-num-cell
   [_ idx]
-  (let [page-start 
+  (let [page-start
         (+ 1 (* @(subscribe [:browser/get-batch-size])
                 (count @(subscribe [:browser/get-back-stack]))))]
     (r/as-element [:i (+ idx page-start)])))
@@ -95,7 +95,7 @@
     ;; top level expanded only
     :collapsed 1}))
 
-(defn statement-table 
+(defn statement-table
   [{:keys [data]}]
   (let [cols [{:name (r/as-element [:i "#"])
                :cell row-num-cell
@@ -119,8 +119,8 @@
               :dense              false
               :expandableRowsComponent view-statement-json}
         b-s  @(subscribe [:browser/get-back-stack])
-        max  @(subscribe [:db/stmt-get-max])] 
-    [:div 
+        max  @(subscribe [:db/stmt-get-max])]
+    [:div
      [data-table opts]
      [:div {:class "table-nav"}
       [:div {:class "table-nav-back"}
@@ -128,14 +128,14 @@
          [:a {:on-click #(dispatch [:browser/back])
               :class "pointer"}
           [:img {:src "images/icons/prev.svg"
-                 :width "30px"}]])] 
+                 :width "30px"}]])]
       [:div {:class "table-nav-pages"}
        [:span " Page: " (+ 1 (count b-s))]]
       [:div {:class "table-nav-rows"}
        [:span " Rows Per Page: "]
        [:select
         {:name "batch_size"
-         :on-change 
+         :on-change
          #(dispatch [:browser/update-batch-size (int (fns/ps-event-val %))])
          :value @(subscribe [:browser/get-batch-size])}
         [:option {:value "10"} "10"]
@@ -151,6 +151,15 @@
           [:img {:src "images/icons/next.svg"
                  :width "30px"}]])]]]))
 
+(defn refresh-button []
+  (when @(subscribe [:browser/get-credential])
+    [:a.icon-refresh
+     {:href "!#"
+      :on-click (fn [e]
+                  (fns/ps-event e)
+                  (dispatch [:browser/refresh]))}
+     @(subscribe [:lang/get :browser.refresh])]))
+
 (defn browser []
   (let [filter-expand (r/atom false)]
     (fn []
@@ -164,9 +173,10 @@
          [:p
           [:span
            [:b @(subscribe [:lang/get :browser.credentials])]
-           [:select {:name (str "update_credential")
-                     :on-change #(dispatch [:browser/update-credential
-                                            (fns/ps-event-val %)])}
+           [:select
+            {:name (str "update_credential")
+             :on-change #(dispatch [:browser/update-credential
+                                    (fns/ps-event-val %)])}
             [:option "Credential to Browse"]
             (map-indexed
              (fn [idx credential]
@@ -174,7 +184,7 @@
                          :key (str "browser-credential-" idx)}
                 (fns/elide (:api-key credential) 20)])
              read-credentials)]
-           ]]
+           [refresh-button]]]
          (let [address @(subscribe [:browser/get-address])
                params  (httpfn/extract-params address)]
            (when (some? address)
