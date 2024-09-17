@@ -48,7 +48,7 @@
                        :back-stack []}
          ::db/server-host (or server-host "")
          ::db/xapi-prefix "/xapi"
-         ::db/proxy-path  nil
+         ::db/proxy-path (stor/get-item "proxy-path")
          ::db/language lang/language
          ::db/pref-lang :en-US
          ::db/stmt-get-max 10
@@ -112,7 +112,8 @@
           (assoc ::db/no-val-logout-url no-val-logout-url))
     :fx (cond-> []
           ?oidc (conj [:dispatch [:oidc/init ?oidc]])
-          no-val? (conj [:dispatch [:session/proxy-token-init]]))}))
+          no-val? (conj [:dispatch [:session/proxy-token-init]]))
+    :session/store ["proxy-path" proxy-path]}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Login / Auth
