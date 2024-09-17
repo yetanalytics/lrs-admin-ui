@@ -9,7 +9,7 @@ on:
 
 jobs:
   lint:
-    uses: yetanalytics/workflow-linter/.github/workflows/linter.yml@v2023.01.20
+    uses: yetanalytics/workflow-linter/.github/workflows/linter.yml@v2024.08.01
     with:
       lint-directories: 'src'
   test:
@@ -17,7 +17,7 @@ jobs:
     timeout-minutes: 5
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Setup CI Environment
       uses: yetanalytics/actions/setup-env@v0.0.4
