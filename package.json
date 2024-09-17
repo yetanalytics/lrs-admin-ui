@@ -6,7 +6,7 @@
     "webpack-cli": "^4.8.0"
   },
   "dependencies": {
-    "bootstrap": "^4.5.3",
+    "bootstrap": "^5.0.0",
     "codemirror": "5.65.0",
     "oidc-client": "1.11.5",
     "react": "^17.0.2",
