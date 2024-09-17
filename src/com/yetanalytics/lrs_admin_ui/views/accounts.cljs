@@ -52,36 +52,38 @@
       (let [new-account @(subscribe [:db/get-new-account])]
         [:div {:class "create-account-inputs"}
          [:div {:class "row"}
-          [:label {:for "new-username-input"} @(subscribe [:lang/get :accounts.new.username])]
-          [:input {:value (:username new-account)
-                   :class "new-account round"
-                   :id "new-username-input"
-                   :on-change #(dispatch [:new-account/set-username (fns/ps-event-val %)])}]]
+          [:div 
+           [:label {:for "new-username-input"} @(subscribe [:lang/get :accounts.new.username])]
+           [:input {:value (:username new-account)
+                    :class "new-account round"
+                    :id "new-username-input"
+                    :on-change #(dispatch [:new-account/set-username (fns/ps-event-val %)])}]]]
          [:span {:class "username-note"}
           (format @(subscribe [:lang/get :accounts.new.username.note]) u-min-len)]
          [:div {:class "row pt-2"}
-          [:label {:for "new-password-input"} @(subscribe [:lang/get :accounts.new.password])]
-          [:input (cond-> {:value (:password new-account)
-                           :class "new-account round"
-                           :id "new-password-input"
-                           :on-change #(dispatch [:new-account/set-password
-                                                  (fns/ps-event-val %)])}
-                    @hide-pass (merge {:type "password"}))]
-          [:ul {:class "action-icon-list"}
-           [:li
-            [:a {:href "#!",
-                 :class "icon-secret pointer"
-                 :on-click #(swap! hide-pass not)}
-             (str (cond
-                    @hide-pass @(subscribe [:lang/get :accounts.new.password.show])
-                    :else @(subscribe [:lang/get :accounts.new.password.hide])))]]
-           [:li
-            [copy-text
-             {:text (:password new-account)
-              :on-copy #(dispatch [:notification/notify false
-                                   @(subscribe [:lang/get :notification.accounts.password-copied])])}
-             [:a {:class "icon-copy pointer"} 
-              @(subscribe [:lang/get :accounts.new.password.copy])]]]]]
+          [:div 
+           [:label {:for "new-password-input"} @(subscribe [:lang/get :accounts.new.password])]
+           [:input (cond-> {:value (:password new-account)
+                            :class "new-account round"
+                            :id "new-password-input"
+                            :on-change #(dispatch [:new-account/set-password
+                                                   (fns/ps-event-val %)])}
+                     @hide-pass (merge {:type "password"}))]
+           [:ul {:class "action-icon-list"}
+            [:li
+             [:a {:href "#!",
+                  :class "icon-secret pointer"
+                  :on-click #(swap! hide-pass not)}
+              (str (cond
+                     @hide-pass @(subscribe [:lang/get :accounts.new.password.show])
+                     :else @(subscribe [:lang/get :accounts.new.password.hide])))]]
+            [:li
+             [copy-text
+              {:text (:password new-account)
+               :on-copy #(dispatch [:notification/notify false
+                                    @(subscribe [:lang/get :notification.accounts.password-copied])])}
+              [:a {:class "icon-copy pointer"} 
+               @(subscribe [:lang/get :accounts.new.password.copy])]]]]]]
          [:span {:class "password-note"}
           (format @(subscribe [:lang/get :accounts.new.password.note])
                   p-min-len

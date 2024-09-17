@@ -122,6 +122,10 @@ form#login-form div.form-group:not(:first-child) {
   @extend .mb-0;
 }
 
+form#login-form input {
+  height: 30px;
+}
+
 .field-label {
   @extend .mb-0, .mt-3;
 }
