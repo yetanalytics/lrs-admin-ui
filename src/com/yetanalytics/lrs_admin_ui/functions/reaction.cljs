@@ -86,11 +86,11 @@
 
 (defn validate-template-xapi
   "Take raw JSON str of an xAPI Statement and issue a vec of error maps for 
-   any schema violations."
+   any schema violations. Returns `nil` if `raw-json` is valid."
   [raw-json]
   (try
-    (let [result (xs/validate-statement-data raw-json)]
-      result)
+    (xs/validate-statement-data raw-json)
+    nil
     ;; JSON errors handled by editor directly, ignore
     (catch js/SyntaxError _)
     ;; Other exceptions will be spec errors
