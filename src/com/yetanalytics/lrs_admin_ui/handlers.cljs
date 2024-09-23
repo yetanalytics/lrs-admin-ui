@@ -341,6 +341,20 @@
                (remove-notice (get db ::db/notifications) id))}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Downloads
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(re-frame/reg-fx
+ :download-json
+ (fn [[json-data json-data-name]]
+   (download/download-json json-data json-data-name)))
+
+(re-frame/reg-fx
+ :download-edn
+ (fn [[edn-data edn-data-name]]
+   (download/download-edn edn-data edn-data-name)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Data Browser
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -1037,20 +1051,23 @@
        reaction))
    (::db/reactions db)))
 
-(re-frame/reg-fx
- :reaction/download-fx
- (fn [reaction]
-   (let [reaction-name (:title reaction)
-         reaction*     (select-keys reaction [:title :ruleset :active])]
-     (download/download-edn reaction* reaction-name))))
+(re-frame/reg-event-fx
+ :reaction/download-all
+ global-interceptors
+ (fn [{:keys [db]}]
+   (let [reactions (->> (::db/reactions db)
+                        (map rfns/index-conditions)
+                        (mapv #(select-keys % [:title :ruleset :active])))]
+     {:download-edn [reactions "reactions"]})))
 
 (re-frame/reg-event-fx
  :reaction/download
  global-interceptors
  (fn [{:keys [db]} [_ reaction-id]]
    (if-let [reaction (some-> (find-reaction db reaction-id)
-                             rfns/index-conditions)]
-     {:reaction/download-fx reaction}
+                             rfns/index-conditions
+                             (select-keys [:title :ruleset :active]))]
+     {:download-edn [reaction (:title reaction)]}
      {:fx [[:dispatch [:notification/notify true
                        "Cannot download, reaction not found!"]]]})))
 

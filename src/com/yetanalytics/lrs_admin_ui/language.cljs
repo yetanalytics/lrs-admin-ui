@@ -88,6 +88,7 @@
    :reactions.title {:en-us "REACTIONS"}
    :reactions.title.beta {:en-US " (Beta)"}
    :reactions.add {:en-US "ADD NEW REACTION"}
+   :reactions.download-all {:en-US "DOWNLOAD ALL"}
    :reactions.col.title {:en-US "Title"}
    :reactions.col.conds {:en-US "# of Conditions"}
    :reactions.col.created {:en-US "Created"}

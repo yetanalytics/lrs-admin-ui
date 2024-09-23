@@ -66,6 +66,18 @@
                                 (dispatch [:reaction/delete-confirm id]))}
                 @(subscribe [:lang/get :reactions.action.delete])]]]]]))])
 
+(defn- reactions-list-buttons
+  []
+  [:div {:class "api-keys-table-actions"}
+   [:input {:type "button",
+            :class "btn-brand-bold",
+            :on-click #(dispatch [:reaction/new])
+            :value @(subscribe [:lang/get :reactions.add])}]
+   [:input {:type "button"
+            :class "btn-brand-bold"
+            :on-click #(dispatch [:reaction/download-all])
+            :value @(subscribe [:lang/get :reactions.download-all])}]])
+
 (defn- reactions-list
   []
   [:div {:class "left-content-wrapper"}
@@ -75,17 +87,9 @@
     @(subscribe [:lang/get :reactions.title.beta])]
    [:p ]
    [:div {:class "tenant-wrapper"}
-    [:div {:class "api-keys-table-actions"}
-     [:input {:type "button",
-              :class "btn-brand-bold",
-              :on-click #(dispatch [:reaction/new])
-              :value @(subscribe [:lang/get :reactions.add])}]]
+    [reactions-list-buttons]
     [reactions-table]
-    [:div {:class "api-keys-table-actions"}
-     [:input {:type "button",
-              :class "btn-brand-bold",
-              :on-click #(dispatch [:reaction/new])
-              :value @(subscribe [:lang/get :reactions.add])}]]]])
+    [reactions-list-buttons]]])
 
 (defn- render-path
   [path]
