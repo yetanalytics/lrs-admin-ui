@@ -691,7 +691,8 @@
              :class "btn-brand-bold",
              :on-click #(dispatch [:reaction/back-to-list])
              :value @(subscribe [:lang/get :reactions.buttons.back])}] 
-    (when (= :focus mode)
+    (cond
+      (= :focus mode)
       [:<>
        [:input {:type "button",
                 :class "btn-brand-bold",
@@ -700,24 +701,34 @@
        [:input {:type "button"
                 :class "btn-brand-bold"
                 :on-click #(dispatch [:reaction/download ?id])
-                :value @(subscribe [:lang/get :reactions.buttons.download])}]] )
-    (when (and (= :edit mode)
-               @(subscribe [:reaction/edit-dirty?]))
+                :value @(subscribe [:lang/get :reactions.buttons.download])}]]
+      (and (= :edit mode)
+           @(subscribe [:reaction/edit-dirty?]))
       [:<>
        (when (not error?)
          [:input {:type "button",
                   :class "btn-brand-bold",
                   :on-click #(dispatch [:reaction/save-edit])
-                  :value @(subscribe [:lang/get :reactions.buttons.save])}]) 
+                  :value @(subscribe [:lang/get :reactions.buttons.save])}])
        [:input {:type "button",
                 :class "btn-brand-bold",
                 :on-click #(dispatch [:reaction/revert-edit])
-                :value @(subscribe [:lang/get :reactions.buttons.revert])}]])
-    (when (and (= :new mode) (not error?))
-      [:input {:type "button",
-               :class "btn-brand-bold",
-               :on-click #(dispatch [:reaction/save-edit])
-               :value @(subscribe [:lang/get :reactions.buttons.create])}])]])
+                :value @(subscribe [:lang/get :reactions.buttons.revert])}]]
+      (= :new mode)
+      [:<>
+       [:span
+        [:label {:for "reaction-upload"
+                 :class "file-input-button"}
+         @(subscribe [:lang/get :reactions.buttons.upload])]
+        [:input {:id "reaction-upload"
+                 :type "file"
+                 :class "hidden-file-input"
+                 :on-click #(dispatch [:reaction/upload])}]]
+       (when (not error?)
+         [:input {:type "button",
+                  :class "btn-brand-bold",
+                  :on-click #(dispatch [:reaction/save-edit])
+                  :value @(subscribe [:lang/get :reactions.buttons.create])}])])]])
 
 (defn- edit-title
   [title]

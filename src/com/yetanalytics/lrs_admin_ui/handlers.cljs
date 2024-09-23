@@ -1073,6 +1073,12 @@
                        "Cannot download, reaction not found!"]]]})))
 
 (re-frame/reg-event-fx
+ :reaction/upload
+ global-interceptors
+ (fn [{:keys [db]}]
+   {:db db}))
+
+(re-frame/reg-event-fx
  :reaction/edit
  global-interceptors
  (fn [{:keys [db]} [_ reaction-id]]
