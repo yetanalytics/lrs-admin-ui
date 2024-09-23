@@ -5,6 +5,7 @@
             [com.yetanalytics.lrs-admin-ui.input              :as input]
             [day8.re-frame.http-fx]
             [com.yetanalytics.lrs-admin-ui.functions          :as fns]
+            [com.yetanalytics.lrs-admin-ui.functions.download :as download]
             [com.yetanalytics.lrs-admin-ui.functions.http     :as httpfn]
             [com.yetanalytics.lrs-admin-ui.functions.storage  :as stor]
             [com.yetanalytics.lrs-admin-ui.functions.password :as pass]
@@ -20,7 +21,8 @@
             [clojure.walk                                     :as w]
             [com.yetanalytics.lrs-admin-ui.spec.reaction      :as rs]
             [com.yetanalytics.lrs-admin-ui.language           :as lang]
-            [com.yetanalytics.lrs-reactions.path              :as rpath]))
+            [com.yetanalytics.lrs-reactions.path              :as rpath]
+            ))
 
 (def global-interceptors
   [db/check-spec-interceptor])
@@ -1034,6 +1036,23 @@
      (when (= id reaction-id)
        reaction))
    (::db/reactions db)))
+
+(re-frame/reg-fx
+ :reaction/download-fx
+ (fn [reaction]
+   (let [reaction-name (:title reaction)
+         reaction*     (select-keys reaction [:title :ruleset :active])]
+     (download/download-edn reaction* reaction-name))))
+
+(re-frame/reg-event-fx
+ :reaction/download
+ global-interceptors
+ (fn [{:keys [db]} [_ reaction-id]]
+   (if-let [reaction (some-> (find-reaction db reaction-id)
+                             rfns/index-conditions)]
+     {:reaction/download-fx reaction}
+     {:fx [[:dispatch [:notification/notify true
+                       "Cannot download, reaction not found!"]]]})))
 
 (re-frame/reg-event-fx
  :reaction/edit

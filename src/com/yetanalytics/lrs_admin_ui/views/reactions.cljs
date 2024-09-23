@@ -688,10 +688,15 @@
              :on-click #(dispatch [:reaction/back-to-list])
              :value @(subscribe [:lang/get :reactions.buttons.back])}] 
     (when (= :focus mode)
-      [:input {:type "button",
-               :class "btn-brand-bold",
-               :on-click #(dispatch [:reaction/edit ?id])
-               :value @(subscribe [:lang/get :reactions.buttons.edit])}] )
+      [:<>
+       [:input {:type "button",
+                :class "btn-brand-bold",
+                :on-click #(dispatch [:reaction/edit ?id])
+                :value @(subscribe [:lang/get :reactions.buttons.edit])}]
+       [:input {:type "button"
+                :class "btn-brand-bold"
+                :on-click #(dispatch [:reaction/download ?id])
+                :value @(subscribe [:lang/get :reactions.buttons.download])}]] )
     (when (and (= :edit mode)
                @(subscribe [:reaction/edit-dirty?]))
       [:<>
