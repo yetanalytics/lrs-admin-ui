@@ -20,6 +20,7 @@
             goog.string.format
             [clojure.walk                                     :as w]
             [com.yetanalytics.lrs-admin-ui.spec.reaction      :as rs]
+            [com.yetanalytics.lrs-admin-ui.spec.reaction-edit :as rse]
             [com.yetanalytics.lrs-admin-ui.language           :as lang]
             [com.yetanalytics.lrs-reactions.path              :as rpath]))
 
@@ -1116,6 +1117,28 @@
               prep-edit-reaction-template)
       ;; unset focus in case we're looking at one
       :fx [[:dispatch [:reaction/unset-focus]]]})))
+
+(re-frame/reg-event-fx
+ :reaction/upload-edit
+ global-interceptors
+ (fn [{:keys [db]} [_ upload-data]]
+   (if-some [edn-data (try
+                          (js->clj (js/JSON.parse upload-data)
+                                   :keywordize-keys true)
+                          (catch js/Error _ nil))]
+     (let [reaction (-> edn-data
+                        (select-keys [:title :ruleset :active])
+                        (update-in [:ruleset :template] w/stringify-keys)
+                        rfns/index-conditions)]
+       (if (valid? ::rse/reaction reaction)
+         {:db (-> db
+                  (assoc ::db/editing-reaction reaction)
+                  prep-edit-reaction-template)
+          :fx [[:dispatch [:reaction/unset-focus]]]}
+         {:fx [[:dispatch [:notification/notify true
+                           "Cannot upload invalid reaction"]]]}))
+     {:fx [[:dispatch [:notification/notify true
+                       "Cannot upload invalid JSON data as reaction"]]]})))
 
 (re-frame/reg-event-fx
  :reaction/revert-edit

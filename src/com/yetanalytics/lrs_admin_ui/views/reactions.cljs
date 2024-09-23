@@ -3,6 +3,7 @@
             [re-frame.core :refer [dispatch subscribe]]
             [com.yetanalytics.lrs-admin-ui.functions :as fns]
             [com.yetanalytics.lrs-admin-ui.functions.reaction :as rfns]
+            [com.yetanalytics.lrs-admin-ui.functions.upload :as upload]
             [com.yetanalytics.lrs-reactions.path :as rpath]
             [com.yetanalytics.lrs-admin-ui.functions.time :refer [iso8601->local-display]]
             [com.yetanalytics.lrs-admin-ui.functions.tooltip :refer [tooltip-info]]
@@ -723,7 +724,13 @@
         [:input {:id "reaction-upload"
                  :type "file"
                  :class "hidden-file-input"
-                 :on-click #(dispatch [:reaction/upload])}]]
+                 :accept ".json"
+                 :on-change (fn [ev]
+                              (upload/process-upload-event
+                               ev
+                               (fn [data]
+                                 
+                                 (dispatch [:reaction/upload-edit data]))))}]]
        (when (not error?)
          [:input {:type "button",
                   :class "btn-brand-bold",
