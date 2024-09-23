@@ -21,8 +21,7 @@
             [clojure.walk                                     :as w]
             [com.yetanalytics.lrs-admin-ui.spec.reaction      :as rs]
             [com.yetanalytics.lrs-admin-ui.language           :as lang]
-            [com.yetanalytics.lrs-reactions.path              :as rpath]
-            ))
+            [com.yetanalytics.lrs-reactions.path              :as rpath]))
 
 (def global-interceptors
   [db/check-spec-interceptor])
