@@ -1056,7 +1056,8 @@
  global-interceptors
  (fn [{:keys [db]}]
    (let [reactions (->> (::db/reactions db)
-                        (map rfns/index-conditions)
+                        (map rfns/index-conditions) ; sort by sort-idx, then remove
+                        (map rfns/strip-condition-indices)
                         (mapv #(select-keys % [:title :ruleset :active])))]
      {:download-edn [reactions "reactions"]})))
 
@@ -1065,7 +1066,8 @@
  global-interceptors
  (fn [{:keys [db]} [_ reaction-id]]
    (if-let [reaction (some-> (find-reaction db reaction-id)
-                             rfns/index-conditions
+                             rfns/index-conditions ; sort by sort-idx, then remove
+                             rfns/strip-condition-indices
                              (select-keys [:title :ruleset :active]))]
      {:download-edn [reaction (:title reaction)]}
      {:fx [[:dispatch [:notification/notify true
