@@ -1050,7 +1050,8 @@
        reaction))
    (::db/reactions db)))
 
-(re-frame/reg-event-fx
+;; TODO: Currently unimplemented
+#_(re-frame/reg-event-fx
  :reaction/download-all
  global-interceptors
  (fn [{:keys [db]}]

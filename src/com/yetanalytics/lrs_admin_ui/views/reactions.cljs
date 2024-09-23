@@ -73,10 +73,14 @@
             :class "btn-brand-bold",
             :on-click #(dispatch [:reaction/new])
             :value @(subscribe [:lang/get :reactions.add])}]
-   [:input {:type "button"
-            :class "btn-brand-bold"
-            :on-click #(dispatch [:reaction/download-all])
-            :value @(subscribe [:lang/get :reactions.download-all])}]])
+   ;; TODO: Currently the "Download All" button is unimplemented because
+   ;; there is no corresponding "Upload All" button (and implementing that
+   ;; would be tricky because there is no multi-reaction insert). However,
+   ;; we may want to implement this in the future.
+   #_[:input {:type "button"
+              :class "btn-brand-bold"
+              :on-click #(dispatch [:reaction/download-all])
+              :value @(subscribe [:lang/get :reactions.download-all])}]])
 
 (defn- reactions-list
   []
