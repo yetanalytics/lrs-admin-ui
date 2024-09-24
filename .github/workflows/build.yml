@@ -37,7 +37,7 @@ jobs:
 
     - name: Craft Draft Release (Tag Pushes)
       if: ${{ startsWith(github.ref, 'refs/tags') }}
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         # Defaults:
         # name: [tag name]
