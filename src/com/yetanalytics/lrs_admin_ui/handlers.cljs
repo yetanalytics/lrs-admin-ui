@@ -5,6 +5,7 @@
             [com.yetanalytics.lrs-admin-ui.input              :as input]
             [day8.re-frame.http-fx]
             [com.yetanalytics.lrs-admin-ui.functions          :as fns]
+            [com.yetanalytics.lrs-admin-ui.functions.download :as download]
             [com.yetanalytics.lrs-admin-ui.functions.http     :as httpfn]
             [com.yetanalytics.lrs-admin-ui.functions.storage  :as stor]
             [com.yetanalytics.lrs-admin-ui.functions.password :as pass]
@@ -19,6 +20,7 @@
             goog.string.format
             [clojure.walk                                     :as w]
             [com.yetanalytics.lrs-admin-ui.spec.reaction      :as rs]
+            [com.yetanalytics.lrs-admin-ui.spec.reaction-edit :as rse]
             [com.yetanalytics.lrs-admin-ui.language           :as lang]
             [com.yetanalytics.lrs-reactions.path              :as rpath]))
 
@@ -337,6 +339,20 @@
  (fn [{:keys [db]} [_ id]]
    {:db (assoc db ::db/notifications
                (remove-notice (get db ::db/notifications) id))}))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Downloads
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(re-frame/reg-fx
+ :download-json
+ (fn [[json-data json-data-name]]
+   (download/download-json json-data json-data-name)))
+
+(re-frame/reg-fx
+ :download-edn
+ (fn [[edn-data edn-data-name]]
+   (download/download-edn edn-data edn-data-name)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Data Browser
@@ -1035,6 +1051,35 @@
        reaction))
    (::db/reactions db)))
 
+;; TODO: Currently unimplemented
+#_(re-frame/reg-event-fx
+ :reaction/download-all
+ global-interceptors
+ (fn [{:keys [db]}]
+   (let [reactions (->> (::db/reactions db)
+                        (map rfns/index-conditions) ; sort by sort-idx, then remove
+                        (map rfns/strip-condition-indices)
+                        (mapv #(select-keys % [:title :ruleset :active])))]
+     {:download-edn [reactions "reactions"]})))
+
+(re-frame/reg-event-fx
+ :reaction/download
+ global-interceptors
+ (fn [{:keys [db]} [_ reaction-id]]
+   (if-let [reaction (some-> (find-reaction db reaction-id)
+                             rfns/index-conditions ; sort by sort-idx, then remove
+                             rfns/strip-condition-indices
+                             (select-keys [:title :ruleset :active]))]
+     {:download-edn [reaction (:title reaction)]}
+     {:fx [[:dispatch [:notification/notify true
+                       "Cannot download, reaction not found!"]]]})))
+
+(re-frame/reg-event-fx
+ :reaction/upload
+ global-interceptors
+ (fn [{:keys [db]}]
+   {:db db}))
+
 (re-frame/reg-event-fx
  :reaction/edit
  global-interceptors
@@ -1073,6 +1118,28 @@
               prep-edit-reaction-template)
       ;; unset focus in case we're looking at one
       :fx [[:dispatch [:reaction/unset-focus]]]})))
+
+(re-frame/reg-event-fx
+ :reaction/upload-edit
+ global-interceptors
+ (fn [{:keys [db]} [_ upload-data]]
+   (if-some [edn-data (try
+                          (js->clj (js/JSON.parse upload-data)
+                                   :keywordize-keys true)
+                          (catch js/Error _ nil))]
+     (let [reaction (-> edn-data
+                        (select-keys [:title :ruleset :active])
+                        (update-in [:ruleset :template] w/stringify-keys)
+                        rfns/index-conditions)]
+       (if (valid? ::rse/reaction reaction)
+         {:db (-> db
+                  (assoc ::db/editing-reaction reaction)
+                  prep-edit-reaction-template)
+          :fx [[:dispatch [:reaction/unset-focus]]]}
+         {:fx [[:dispatch [:notification/notify true
+                           "Cannot upload invalid reaction"]]]}))
+     {:fx [[:dispatch [:notification/notify true
+                       "Cannot upload invalid JSON data as reaction"]]]})))
 
 (re-frame/reg-event-fx
  :reaction/revert-edit

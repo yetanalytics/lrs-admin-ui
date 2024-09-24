@@ -3,6 +3,7 @@
             [re-frame.core :refer [dispatch subscribe]]
             [com.yetanalytics.lrs-admin-ui.functions :as fns]
             [com.yetanalytics.lrs-admin-ui.functions.reaction :as rfns]
+            [com.yetanalytics.lrs-admin-ui.functions.upload :as upload]
             [com.yetanalytics.lrs-reactions.path :as rpath]
             [com.yetanalytics.lrs-admin-ui.functions.time :refer [iso8601->local-display]]
             [com.yetanalytics.lrs-admin-ui.functions.tooltip :refer [tooltip-info]]
@@ -66,6 +67,22 @@
                                 (dispatch [:reaction/delete-confirm id]))}
                 @(subscribe [:lang/get :reactions.action.delete])]]]]]))])
 
+(defn- reactions-list-buttons
+  []
+  [:div {:class "api-keys-table-actions"}
+   [:input {:type "button",
+            :class "btn-brand-bold",
+            :on-click #(dispatch [:reaction/new])
+            :value @(subscribe [:lang/get :reactions.add])}]
+   ;; TODO: Currently the "Download All" button is unimplemented because
+   ;; there is no corresponding "Upload All" button (and implementing that
+   ;; would be tricky because there is no multi-reaction insert). However,
+   ;; we may want to implement this in the future.
+   #_[:input {:type "button"
+              :class "btn-brand-bold"
+              :on-click #(dispatch [:reaction/download-all])
+              :value @(subscribe [:lang/get :reactions.download-all])}]])
+
 (defn- reactions-list
   []
   [:div {:class "left-content-wrapper"}
@@ -75,17 +92,9 @@
     @(subscribe [:lang/get :reactions.title.beta])]
    [:p ]
    [:div {:class "tenant-wrapper"}
-    [:div {:class "api-keys-table-actions"}
-     [:input {:type "button",
-              :class "btn-brand-bold",
-              :on-click #(dispatch [:reaction/new])
-              :value @(subscribe [:lang/get :reactions.add])}]]
+    [reactions-list-buttons]
     [reactions-table]
-    [:div {:class "api-keys-table-actions"}
-     [:input {:type "button",
-              :class "btn-brand-bold",
-              :on-click #(dispatch [:reaction/new])
-              :value @(subscribe [:lang/get :reactions.add])}]]]])
+    [reactions-list-buttons]]])
 
 (defn- render-path
   [path]
@@ -687,28 +696,50 @@
              :class "btn-brand-bold",
              :on-click #(dispatch [:reaction/back-to-list])
              :value @(subscribe [:lang/get :reactions.buttons.back])}] 
-    (when (= :focus mode)
-      [:input {:type "button",
-               :class "btn-brand-bold",
-               :on-click #(dispatch [:reaction/edit ?id])
-               :value @(subscribe [:lang/get :reactions.buttons.edit])}] )
-    (when (and (= :edit mode)
-               @(subscribe [:reaction/edit-dirty?]))
+    (cond
+      (= :focus mode)
+      [:<>
+       [:input {:type "button",
+                :class "btn-brand-bold",
+                :on-click #(dispatch [:reaction/edit ?id])
+                :value @(subscribe [:lang/get :reactions.buttons.edit])}]
+       [:input {:type "button"
+                :class "btn-brand-bold"
+                :on-click #(dispatch [:reaction/download ?id])
+                :value @(subscribe [:lang/get :reactions.buttons.download])}]]
+      (and (= :edit mode)
+           @(subscribe [:reaction/edit-dirty?]))
       [:<>
        (when (not error?)
          [:input {:type "button",
                   :class "btn-brand-bold",
                   :on-click #(dispatch [:reaction/save-edit])
-                  :value @(subscribe [:lang/get :reactions.buttons.save])}]) 
+                  :value @(subscribe [:lang/get :reactions.buttons.save])}])
        [:input {:type "button",
                 :class "btn-brand-bold",
                 :on-click #(dispatch [:reaction/revert-edit])
-                :value @(subscribe [:lang/get :reactions.buttons.revert])}]])
-    (when (and (= :new mode) (not error?))
-      [:input {:type "button",
-               :class "btn-brand-bold",
-               :on-click #(dispatch [:reaction/save-edit])
-               :value @(subscribe [:lang/get :reactions.buttons.create])}])]])
+                :value @(subscribe [:lang/get :reactions.buttons.revert])}]]
+      (= :new mode)
+      [:<>
+       [:span
+        [:label {:for "reaction-upload"
+                 :class "file-input-button"}
+         @(subscribe [:lang/get :reactions.buttons.upload])]
+        [:input {:id "reaction-upload"
+                 :type "file"
+                 :class "hidden-file-input"
+                 :accept ".json"
+                 :on-change (fn [ev]
+                              (upload/process-upload-event
+                               ev
+                               (fn [data]
+                                 
+                                 (dispatch [:reaction/upload-edit data]))))}]]
+       (when (not error?)
+         [:input {:type "button",
+                  :class "btn-brand-bold",
+                  :on-click #(dispatch [:reaction/save-edit])
+                  :value @(subscribe [:lang/get :reactions.buttons.create])}])])]])
 
 (defn- edit-title
   [title]

@@ -88,6 +88,7 @@
    :reactions.title {:en-us "REACTIONS"}
    :reactions.title.beta {:en-US " (Beta)"}
    :reactions.add {:en-US "ADD NEW REACTION"}
+   :reactions.download-all {:en-US "DOWNLOAD ALL"} ; Note: Currently unimplemented
    :reactions.col.title {:en-US "Title"}
    :reactions.col.conds {:en-US "# of Conditions"}
    :reactions.col.created {:en-US "Created"}
@@ -128,6 +129,8 @@
    :reactions.buttons.create {:en-US "CREATE"}
    :reactions.buttons.back {:en-US "BACK"}
    :reactions.buttons.revert {:en-US "REVERT CHANGES"}
+   :reactions.buttons.download {:en-US "DOWNLOAD"}
+   :reactions.buttons.upload {:en-US "UPLOAD"}
 
    :reactions.template.title {:en-US "Template"}
    :reactions.template.template-json {:en-US "Template JSON"}
@@ -186,4 +189,3 @@
    :notification.accounts.password-copied {:en-US "Copied New Password!"}
    :notification.reactions.copied-template-var {:en-US "Copied Template Variable to Clipboard!"}
    :notification.account-mgmt.copied-password {:en-US "Copied New Password!"}})
-
