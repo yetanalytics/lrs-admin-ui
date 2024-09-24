@@ -130,6 +130,7 @@
    :reactions.buttons.back {:en-US "BACK"}
    :reactions.buttons.revert {:en-US "REVERT CHANGES"}
    :reactions.buttons.download {:en-US "DOWNLOAD"}
+   :reactions.buttons.upload {:en-US "UPLOAD"}
 
    :reactions.template.title {:en-US "Template"}
    :reactions.template.template-json {:en-US "Template JSON"}
