@@ -1333,7 +1333,7 @@
     (let [{:keys [leaf-type]} (rpath/analyze-path path)]
       (if leaf-type
         (let [vtype (val-type val)]
-          (assoc c :val (if (= leaf-type vtype)
+          (assoc c :val (if (= (str leaf-type) vtype)
                           val
                           (init-type leaf-type))))
         c))))
