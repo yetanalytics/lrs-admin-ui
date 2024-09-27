@@ -1525,14 +1525,18 @@
  :reaction/add-condition
  global-interceptors
  (fn [db [_ ?condition-key]]
-   (let [k (or ?condition-key (keyword (format "condition_%s"
+   (let [cond-count (count (get-in db [::db/editing-reaction
+                                       :ruleset
+                                       :conditions]))
+         k (or ?condition-key (keyword (format "condition_%s"
                                                (fns/rand-alpha-str 8))))]
      (-> db
          (update-in
           [::db/editing-reaction :ruleset :conditions]
-          assoc k {:path [""]
-                   :op   "eq"
-                   :val  ""})
+          assoc k {:path     [""]
+                   :op       "eq"
+                   :val      ""
+                   :sort-idx cond-count})
          (update
           ::db/editing-reaction
           rfns/index-conditions)))))
