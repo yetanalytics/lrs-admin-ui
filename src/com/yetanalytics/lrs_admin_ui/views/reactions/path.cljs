@@ -40,7 +40,9 @@
                            ;; If it can be an int, pass it as such
                            (let [parsed-int (js/parseInt v)]
                              (if (js/isNaN parsed-int)
-                               (change-fn v)
+                               (if (nil? v)
+                                 (change-fn "")
+                                 (change-fn v))
                                (change-fn parsed-int))))
               :on-search (fn [v] (reset! search v))
               :value seg-val
