@@ -119,3 +119,29 @@
       (select-keys [:id :title :active :ruleset])
       (rename-keys {:id :reactionId})
       (update-in [:ruleset :conditions] mapify-conditions)))
+
+;; Path selection dropdown ordering
+
+(def selection-order
+  {"id"          0
+   "name"        1
+   "display"     2
+   "definition"  3
+   "description" 4})
+
+(defn order-select-entries
+  "Order path segment select entries by placing ID and lang map properties at
+   the top, then alphabetically for the rest."
+  [selects]
+  (sort-by :label
+           (fn [x y]
+             (let [x-order (get selection-order x)
+                   y-order (get selection-order y)]
+               (cond
+                 (and x-order
+                      y-order)
+                 (< x-order y-order)
+                 x-order true
+                 y-order false
+                 :else   (< x y))))
+           selects))

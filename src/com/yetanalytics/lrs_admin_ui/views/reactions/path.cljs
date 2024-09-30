@@ -4,7 +4,8 @@
             [com.yetanalytics.lrs-reactions.path :as rpath]
             [com.yetanalytics.lrs-admin-ui.views.form :as form]
             [goog.string :refer [format]]
-            [goog.string.format]))
+            [goog.string.format]
+            [com.yetanalytics.lrs-admin-ui.functions.reaction :as rfns]))
 
 (defn- path-input-segment
   [seg-val]
@@ -55,9 +56,10 @@
                   ;; index expected
                   (for [idx (range 10)]
                     {:label (str idx) :value idx})
-                  (for [k next-keys
-                        :when (.startsWith k @search)]
-                    {:label k :value k})))
+                  (rfns/order-select-entries
+                   (for [k next-keys
+                         :when (.startsWith k @search)]
+                     {:label k :value k}))))
               ;; :tooltip "I'M A TOOLTIP OVA HEA" ;; NOT YET IMPLEMENTED, MIGHT NEVER BE
               ;; :required true
               :removable? false}]])]))))
