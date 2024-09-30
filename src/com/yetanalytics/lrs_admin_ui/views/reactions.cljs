@@ -10,6 +10,7 @@
             [com.yetanalytics.lrs-admin-ui.views.form :as form]
             [com.yetanalytics.lrs-admin-ui.views.reactions.path :as p]
             [com.yetanalytics.lrs-admin-ui.views.reactions.template :as t]
+            [com.yetanalytics.lrs-admin-ui.spec.reaction-edit :as rse]
             [goog.string :as gstr]
             [goog.string.format]))
 
@@ -553,18 +554,26 @@
     ;; if it is top-level & empty, do not render
     sort-idx nil))
 
+(defn- render-condition-name-errors
+  [condition-name]
+  (when (not (rse/keywordizable-string? condition-name))
+    
+    [:ul.reaction-error-list
+     [:li @(subscribe [:lang/get :reactions.errors.invalid-condition-name])]]))
+
 (defn- render-or-edit-condition-name
-  [mode condition-name]
+  [mode condition-path condition-name]
   [:div.condition-name
    (if (contains? #{:edit :new} mode)
      [:input
       {:type  "text"
        :class "round"
-       :value condition-name
+       :value (name condition-name)
        :on-change
        (fn [e]
          (dispatch [:reaction/set-condition-name
-                    condition-name (keyword (fns/ps-event-val e))]))}]
+                    (conj condition-path :name)
+                    (fns/ps-event-val e)]))}]
      condition-name)
    [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.condition-title])}]])
 
@@ -578,35 +587,39 @@
 (defn- render-conditions
   [mode conditions]
   (into [:div.reaction-conditions]
-        (for [[condition-name condition]
-              (sort-by
-               (comp :sort-idx val)
-               conditions)
-              :let [condition-path [:ruleset :conditions condition-name]]]
-          [:div.condition
-           [render-or-edit-condition-name
-            mode condition-name]
-           (when (contains? #{:edit :new} mode)
-             [render-condition-errors condition])
-           [:div.condition-body
-            ;; condition can be nil during edit
-            (when condition
-              [render-clause
-               mode
-               condition-path
-               condition
-               1])]
-           (when (contains? #{:edit :new} mode)
-             [delete-icon
-              :to-delete-desc "Condition"
-              :on-click
-              (fn []
-                (dispatch [:reaction/delete-condition condition-name]))])
-           (when (and (contains? #{:edit :new} mode)
-                      ;; when empty
-                      (-> condition keys (= [:sort-idx])))
-             [add-clause
-              condition-path])])))
+        (map-indexed
+         (fn [idx condition*]
+           (let [condition-name (if (contains? #{:edit :new} mode)
+                                  (get condition* :name)
+                                  (first condition*))
+                 condition      (if (contains? #{:edit :new} mode)
+                                  condition*
+                                  (second condition*))
+                 condition-path [:ruleset :conditions idx]]
+             [:div.condition
+              (when (contains? #{:edit :new} mode)
+                [render-condition-name-errors condition-name])
+              [render-or-edit-condition-name
+               mode condition-path condition-name]
+              (when (contains? #{:edit :new} mode)
+                [render-condition-errors condition])
+              [:div.condition-body
+               (when condition ; condition can be nil during edit
+                 [render-clause
+                  mode
+                  condition-path
+                  condition])]
+              (when (contains? #{:edit :new} mode)
+                [delete-icon
+                 :to-delete-desc "Condition"
+                 :on-click
+                 (fn []
+                   (dispatch [:reaction/delete-condition idx]))])
+              (when (and (contains? #{:edit :new} mode)
+                         (= condition {:name condition-name})) ; when empty
+                [add-clause
+                 condition-path])]))
+         conditions)))
 
 (defn- render-identity-paths
   [_mode _identity-paths]
@@ -650,9 +663,13 @@
   "Render out top-level conditions errors, currently there is only one, an empty
   conditions map."
   [conditions]
-  (when (empty? conditions)
+  (let [empty-err? (empty? conditions)
+        dupe-err?  (not (rse/distinct-name-vector? conditions))]
     [:ul.reaction-error-list
-     [:li @(subscribe [:lang/get :reactions.errors.one-condition])]]))
+     (when empty-err?
+       [:li @(subscribe [:lang/get :reactions.errors.one-condition])])
+     (when dupe-err?
+       [:li @(subscribe [:lang/get :reactions.errors.dupe-condition-names])])]))
 
 (defn- ruleset-view
   [mode

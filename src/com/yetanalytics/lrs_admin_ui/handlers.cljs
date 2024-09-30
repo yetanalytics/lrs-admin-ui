@@ -19,7 +19,6 @@
             [goog.string                                      :refer [format]]
             goog.string.format
             [clojure.walk                                     :as w]
-            [com.yetanalytics.lrs-admin-ui.spec.reaction      :as rs]
             [com.yetanalytics.lrs-admin-ui.spec.reaction-edit :as rse]
             [com.yetanalytics.lrs-admin-ui.language           :as lang]
             [com.yetanalytics.lrs-reactions.path              :as rpath]))
@@ -1016,10 +1015,7 @@
  (fn [db [_ {:keys [reactions]}]]
    (assoc db
           ::db/reactions
-          (mapv
-           (fn [reaction]
-             (update-in reaction [:ruleset :template] w/stringify-keys))
-           reactions))))
+          (mapv rfns/db->focus-form reactions))))
 
 (re-frame/reg-event-db
  :reaction/set-focus
@@ -1056,10 +1052,7 @@
  :reaction/download-all
  global-interceptors
  (fn [{:keys [db]}]
-   (let [reactions (->> (::db/reactions db)
-                        (map rfns/index-conditions) ; sort by sort-idx, then remove
-                        (map rfns/strip-condition-indices)
-                        (mapv #(select-keys % [:title :ruleset :active])))]
+   (let [reactions (rfns/focus->download-form (::db/reactions db))]
      {:download-edn [reactions "reactions"]})))
 
 (re-frame/reg-event-fx
@@ -1067,9 +1060,7 @@
  global-interceptors
  (fn [{:keys [db]} [_ reaction-id]]
    (if-let [reaction (some-> (find-reaction db reaction-id)
-                             rfns/index-conditions ; sort by sort-idx, then remove
-                             rfns/strip-condition-indices
-                             (select-keys [:title :ruleset :active]))]
+                             rfns/focus->download-form)]
      {:download-edn [reaction (:title reaction)]}
      {:fx [[:dispatch [:notification/notify true
                        "Cannot download, reaction not found!"]]]})))
@@ -1085,7 +1076,7 @@
  global-interceptors
  (fn [{:keys [db]} [_ reaction-id]]
    (if-let [reaction (some-> (find-reaction db reaction-id)
-                             rfns/index-conditions)]
+                             rfns/focus->edit-form)]
      {:db (-> db
               (assoc ::db/editing-reaction reaction)
               prep-edit-reaction-template)
@@ -1107,7 +1098,7 @@
                                     ["actor" "mbox_sha1sum"]
                                     ["actor" "account" "homePage"]
                                     ["actor" "account" "name"]]
-                    :conditions    {}
+                    :conditions    []
                     :template      {"actor"
                                     {"name" "Actor Example",
                                      "mbox" "mailto:actor_example@yetanalytics.com"},
@@ -1128,9 +1119,7 @@
                                    :keywordize-keys true)
                           (catch js/Error _ nil))]
      (let [reaction (-> edn-data
-                        (select-keys [:title :ruleset :active])
-                        (update-in [:ruleset :template] w/stringify-keys)
-                        rfns/index-conditions)]
+                        rfns/upload->edit-form)]
        (if (valid? ::rse/reaction reaction)
          {:db (-> db
                   (assoc ::db/editing-reaction reaction)
@@ -1147,7 +1136,7 @@
  (fn [{:keys [db]} _]
    (when-let [reaction-id (get-in db [::db/editing-reaction :id])]
      (when-let [reaction (some-> (find-reaction db reaction-id)
-                                 rfns/index-conditions)]
+                                 rfns/focus->edit-form)]
        {:db (-> db
                 (assoc ::db/editing-reaction reaction)
                 prep-edit-reaction-template)
@@ -1171,13 +1160,9 @@
  (fn [{{server-host       ::db/server-host
         proxy-path        ::db/proxy-path
         ?editing-reaction ::db/editing-reaction} :db} _]
-   (when-let [{:keys [title
-                      ruleset
-                      active]
-               ?reaction-id :id
-               :as reaction} (some-> ?editing-reaction
-                                     rfns/strip-condition-indices)]
-     (if (valid? ::rs/new-reaction reaction)
+   (when-let [{?reaction-id :id
+               :as reaction} ?editing-reaction]
+     (if (valid? :validation/reaction reaction)
        {:http-xhrio {:method          (if ?reaction-id :put :post)
                      :uri             (httpfn/serv-uri
                                        server-host
@@ -1185,10 +1170,7 @@
                                        proxy-path)
                      :format          (ajax/json-request-format)
                      :response-format (ajax/json-response-format {:keywords? true})
-                     :params          (cond-> {:ruleset ruleset
-                                               :active  active
-                                               :title   title}
-                                        ?reaction-id (assoc :reactionId ?reaction-id))
+                     :params          (rfns/edit->db-form reaction)
                      :on-success      [:reaction/save-edit-success]
                      :on-failure      [:reaction/server-error]
                      :interceptors    [httpfn/add-jwt-interceptor]}}
@@ -1231,8 +1213,8 @@
 (re-frame/reg-event-fx
  :reaction/delete
  global-interceptors
- (fn [{{server-host       ::db/server-host
-        proxy-path        ::db/proxy-path} :db} [_ reaction-id]]
+ (fn [{{server-host ::db/server-host
+        proxy-path  ::db/proxy-path} :db} [_ reaction-id]]
    {:http-xhrio {:method          :delete
                  :uri             (httpfn/serv-uri
                                    server-host
@@ -1433,8 +1415,7 @@
          condition-names (-> reaction
                              :ruleset
                              :conditions
-                             keys
-                             (->> (map name)))
+                             (->> (map :name)))
          {:keys [path] :as clause} (get-in db full-path)
          {:keys [leaf-type]} (rpath/analyze-path path)]
      (case set-to
@@ -1462,46 +1443,29 @@
  (fn [db [_ clause-path clause-type]] ;; #{"and" "or" "not" "logic"}
    (let [full-path (into [::db/editing-reaction]
                          clause-path)
-         {and-clauses :and
-          or-clauses :or
-          :as clause} (get-in db full-path)]
-     (assoc-in db full-path
-               (-> clause
-                   ;; preserve sort idx if there
-                   (select-keys [:sort-idx])
-                   (merge
-                    (case clause-type
-                      "and" {:and (or or-clauses [])}
-                      "or" {:or (or and-clauses [])}
-                      "not" {:not nil}
-                      "logic" {:path [""]
-                               :op "eq"
-                               :val ""})))))))
+         {?cond-name  :name
+          and-clauses :and
+          or-clauses  :or
+          :as         _clause} (get-in db full-path)
+         new-clause
+         (cond-> (case clause-type
+                   "and"   {:and (or or-clauses [])}
+                   "or"    {:or (or and-clauses [])}
+                   "not"   {:not nil}
+                   "logic" {:path [""]
+                            :op   "eq"
+                            :val  ""})
+           ?cond-name
+           (assoc :name ?cond-name))]
+     (assoc-in db full-path new-clause))))
 
 (re-frame/reg-event-db
  :reaction/set-condition-name
  global-interceptors
- (fn [db [_ old-name new-name]]
-   (let [reaction (::db/editing-reaction db)
-         all-names (-> reaction
-                       :ruleset
-                       :conditions
-                       keys
-                       set)]
-     (if (contains? all-names old-name)
-       (let [other-names (disj all-names old-name)]
-         (if (contains? other-names new-name)
-           ;; TODO: maybe pop error
-           db
-           (let [condition-val (-> reaction
-                                   :ruleset
-                                   :conditions
-                                   old-name)]
-             (assoc db ::db/editing-reaction
-                    (-> reaction
-                        (update-in [:ruleset :conditions] dissoc old-name)
-                        (assoc-in [:ruleset :conditions new-name] condition-val))))))
-       db))))
+ (fn [db [_ cond-path new-name]]
+   (let [full-path (into [::db/editing-reaction]
+                         cond-path)]
+     (assoc-in db full-path new-name))))
 
 (re-frame/reg-event-db
  :reaction/delete-clause
@@ -1512,46 +1476,40 @@
          parent-path (butlast full-path)
          k (last full-path)]
      (cond
-       ;; is an element in a list
-       (number? k)
+       (#{:and :or} (last parent-path))
        (let [parent (get-in db parent-path)
              new-parent (remove-element parent k)]
          (assoc-in db parent-path new-parent))
-       ;; is at the root of a condition, remove everything but the sort
-       (keyword? k)
-       (update-in db full-path select-keys [:sort-idx])))))
+       (#{:not} (last full-path))
+       (assoc-in db full-path nil)
+       :else
+       (update-in db full-path select-keys [:name])))))
 
 (re-frame/reg-event-db
  :reaction/add-condition
  global-interceptors
  (fn [db [_ ?condition-key]]
-   (let [cond-count (count (get-in db [::db/editing-reaction
-                                       :ruleset
-                                       :conditions]))
-         k (or ?condition-key (keyword (format "condition_%s"
-                                               (fns/rand-alpha-str 8))))]
-     (-> db
-         (update-in
-          [::db/editing-reaction :ruleset :conditions]
-          assoc k {:path     [""]
-                   :op       "eq"
-                   :val      ""
-                   :sort-idx cond-count})
-         (update
-          ::db/editing-reaction
-          rfns/index-conditions)))))
+   (let [cond-name (or ?condition-key
+                       (format "condition_%s"
+                               (fns/rand-alpha-str 8)))]
+     (update-in
+      db
+      [::db/editing-reaction :ruleset :conditions]
+      conj
+      {:name cond-name
+       :path [""]
+       :op   "eq"
+       :val  ""}))))
 
 (re-frame/reg-event-db
  :reaction/delete-condition
  global-interceptors
- (fn [db [_ condition-key]]
-   (-> db
-       (update-in
-        [::db/editing-reaction :ruleset :conditions]
-        dissoc condition-key)
-       (update
-        ::db/editing-reaction
-        rfns/index-conditions))))
+ (fn [db [_ condition-idx]]
+   (update-in
+    db
+    [::db/editing-reaction :ruleset :conditions]
+    remove-element
+    condition-idx)))
 
 (re-frame/reg-event-db
  :reaction/add-clause
@@ -1560,19 +1518,19 @@
    (let [pkey (last parent-path) ;; :and, :or, :not, <condition name>
          full-path (into [::db/editing-reaction]
                          parent-path)
-         new-clause (case clause-type
-                      :and   {:and []}
-                      :or    {:or []}
-                      :not   {:not nil}
-                      :logic {:path [""]
-                              :op   "eq"
-                              :val  ""})]
-     (-> (if (contains? #{:and :or} pkey)
-           (update-in db full-path conj new-clause)
-           (assoc-in db full-path new-clause))
-         (update
-          ::db/editing-reaction
-          rfns/index-conditions)))))
+         ?cond-name (get-in db (conj full-path :name))
+         new-clause (cond-> (case clause-type
+                              :and   {:and []}
+                              :or    {:or []}
+                              :not   {:not nil}
+                              :logic {:path [""]
+                                      :op   "eq"
+                                      :val  ""})
+                      ?cond-name
+                      (assoc :name ?cond-name))]
+     (if (contains? #{:and :or} pkey)
+       (update-in db full-path conj new-clause)
+       (assoc-in db full-path new-clause)))))
 
 (re-frame/reg-event-db
  :reaction/update-template

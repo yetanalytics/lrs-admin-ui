@@ -147,6 +147,8 @@
    :reactions.errors.like-string {:en-US "The 'like' op only supports string values."}
    :reactions.errors.invalid {:en-US "Reaction is invalid see below."}
    :reactions.errors.one-condition {:en-US "Ruleset must specify at least one condition."}
+   :reactions.errors.dupe-condition-names {:en-US "Ruleset cannot have duplicate condition names."}
+   :reactions.errors.invalid-condition-name {:en-US "Condition name must not include spaces or `/` characters, or start with `@` symbols."}
    :reactions.errors.one-clause {:en-US "Condition must have at least one clause."}
 
    ;;Account Management
