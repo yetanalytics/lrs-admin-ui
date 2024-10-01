@@ -140,38 +140,3 @@
     [:img {:src (if @dropdown-open?
                   "images/icons/icon-expand-less.svg"
                   "images/icons/icon-expand-more.svg")}]]])
-
-(defn multi-select-input-top
-  "The top pane of a multiple-selection combo box."
-  [{:keys [id disabled options current-value dropdown-open?
-           value-update-fn placeholder]}]
-  [:div {:id    (str id "-multi-select-input")
-         :name  (str id "-multi-select-input")
-         :class (if @dropdown-open?
-                  "form-multi-select-top opened"
-                  "form-multi-select-top")
-         ; We need two ps-event calls to stop propagation of onClick
-         ;; event from the div to the delete button
-         :on-click (fn [e]
-                     (when-not disabled
-                       (swap! dropdown-open? not)
-                       (fns/ps-event e)))}
-   [:div {:class "form-multi-select-top-left"}
-    (if-some [values (not-empty @current-value)]
-      (reduce
-       (fn [acc val]
-         (conj acc
-               [:span {:class "form-multi-select-array-item"}
-                ;; TODO: Better solution to value-label discrepancy
-                [:p (or (get-label options val) val)
-                 [:img {:src "images/icons/icon-close-black.svg"
-                        :on-click (fn [e]
-                                    (fns/ps-event e)
-                                    (value-update-fn val))}]]]))
-       [:span]
-       values)
-      [:p placeholder])]
-   [:div {:class "form-multi-select-top-right"}
-    [:img {:src (if @dropdown-open?
-                  "images/icons/icon-expand-less.svg"
-                  "images/icons/icon-expand-more.svg")}]]])
