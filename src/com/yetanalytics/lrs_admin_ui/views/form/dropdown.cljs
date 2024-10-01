@@ -18,14 +18,16 @@
 (defn make-key-down-fn
   "Return an event callback function to use for `:on-key-down`."
   [{:keys [options dropdown-focus dropdown-open? on-enter space-select?]}]
-  (let [opts-count     (count options)
+  (let [options        (vec options) ; ensure options is a vector
+        opts-count     (count options)
         opts-dec-count (dec opts-count)
-        on-enter       (fn [_]
-                         (when (not-empty options)
+        on-enter       (if (not-empty options)
+                         (fn [_]
                            (-> options
                                (get @dropdown-focus)
                                :value
-                               on-enter)))
+                               on-enter))
+                         (fn [_] nil))
         on-up          (fn [e]
                          (when (<= 0 (dec @dropdown-focus))
                            (swap! dropdown-focus dec))
