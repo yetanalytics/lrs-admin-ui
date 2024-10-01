@@ -25,19 +25,20 @@
    | `value`        | The initial value. Default is the empty string.
    | `placeholder`  | The placeholder text for when an item has not yet been selected.
    | `disabled`     | Is the combo box disabled? If so, the dropdown can't be opened.
-   | `custom-text?` | Is the user allowed to input custom text, and not just the select options?
-   | `options-fn`   | A thunk that returns the options list.
+   | `options`      | The options list of `{:label ... :value ...}` maps.
+   | `on-filter`    | A callback that is called whenever the search box is updated, that filters out the options list.
    | `required`     | A boolean that will show a required indicator if true."
-  [{:keys [id on-change on-search value placeholder disabled custom-text?
-           options-fn]
+  [{:keys [id on-change value placeholder disabled
+           options on-filter]
     :or {id          (random-uuid)
          disabled    false
          value       ""
          placeholder "Please make your selection"
          on-change   identity
-         on-search   (constantly nil)
-         options-fn  (constantly [])}}]
-  (let [combo-box-ratom (r/atom {:current-value value
+         on-filter   (fn [opts _] opts)
+         options     []}}]
+  (let [options-ref     (r/atom options)
+        combo-box-ratom (r/atom {:current-value value
                                  :dropdown {:open? false
                                             :focus 0
                                             :value nil}})
@@ -53,11 +54,11 @@
                           (when-not (fns/child-event? e)
                             (reset! dropdown-open? false)))]
     (fn []
-      (let [opts-coll      (vec (options-fn))
-            curr-label     (or (drop-form/get-label opts-coll @current-value)
+      (let [options*       @options-ref
+            curr-label     (or (drop-form/get-label options* @current-value)
                                (str @current-value))
             on-key-down-fn (make-key-down-fn
-                            {:options         opts-coll
+                            {:options         options*
                              :dropdown-focus  dropdown-focus
                              :dropdown-open?  dropdown-open?
                              :value-update-fn value-update-fn
@@ -82,9 +83,10 @@
               :dropdown-focus   dropdown-focus
               :dropdown-value   dropdown-value
               :value-update-fn  value-update-fn
-              :search-update-fn on-search
-              :options          opts-coll
-              :custom-text?     custom-text?}])]]))))
+              :on-search        (fn [search-str]
+                                  (reset! options-ref
+                                          (on-filter options search-str)))
+              :options          options*}])]]))))
 
 (defn combo-box-numeric-input
   "A combo box for selecting a single item.

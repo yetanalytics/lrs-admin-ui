@@ -103,21 +103,24 @@
 (defn- combo-box-search
   "The top combo box search bar."
   [{:keys
-    [id dropdown-value value-update-fn search-update-fn]}]
-  [:div
-   [:div {:class "form-select-dropdown-search-label"}
-    [:p "Search or Add:"]]
-   [:div {:class "form-select-dropdown-search-box"}
-    [:input {:on-change (fn [x]
-                          (reset! dropdown-value (fns/ps-event-val x))
-                          (search-update-fn @dropdown-value))
-             :type      "text"
-             :value     @dropdown-value
-             :id        (str id "-dropdown-search")
-             :name      (str id "-dropdown-search")
-             :class     "form-text-input-with-side-button"}]
-    [add-button {:dropdown-value  dropdown-value
-                 :value-update-fn value-update-fn}]]])
+    [id dropdown-value value-update-fn on-search]}]
+  (let [value-ref (r/atom @dropdown-value)]
+    (fn [_]
+      [:div
+       [:div {:class "form-select-dropdown-search-label"}
+        [:p "Search or Add:"]]
+       [:div {:class "form-select-dropdown-search-box"}
+        [:input {:on-change (fn [x]
+                              (let [v (fns/ps-event-val x)]
+                                (reset! value-ref v)
+                                (on-search v)))
+                 :type      "text"
+                 :value     @value-ref
+                 :id        (str id "-dropdown-search")
+                 :name      (str id "-dropdown-search")
+                 :class     "form-text-input-with-side-button"}]
+        [add-button {:dropdown-value  value-ref
+                     :value-update-fn value-update-fn}]]])))
 
 (defn combo-box-dropdown
   "A dropdown specific for combo boxes, including the search bar."

@@ -1,5 +1,6 @@
 (ns com.yetanalytics.lrs-admin-ui.views.reactions.path
   (:require [reagent.core :as r]
+            [clojure.string :as cstr]
             [com.yetanalytics.lrs-admin-ui.functions :as fns]
             [com.yetanalytics.lrs-reactions.path :as rpath]
             [com.yetanalytics.lrs-admin-ui.views.form :as form]
@@ -22,15 +23,10 @@
         v)
       parsed-int)))
 
-(defn- next-key-options [next-keys search-str]
-  (if (= ['idx] next-keys)
-    ;; index expected (should never happen)
-    (for [idx (range 10)]
-      {:label (str idx) :value idx})
-    (rfns/order-select-entries
-     (for [k next-keys
-           :when (.startsWith k search-str)]
-       {:label k :value k}))))
+(defn- next-key-options [next-key-opts search-str]
+  (->> next-key-opts
+       (filter (fn [{:keys [value]}] (cstr/starts-with? value search-str)))
+       rfns/order-select-entries))
 
 (defn- path-input-segment-edit
   [_ _ _]
@@ -61,6 +57,8 @@
               :on-search    (fn [v] (reset! search v))
               :options-fn   (fn []
                               (next-key-options next-keys @search))
+              :on-filter    next-key-options
+              :options      (mapv (fn [k] {:label k :value k}) next-keys)
               :value        seg-val
               :placeholder  "(select)"
               :disabled     false
