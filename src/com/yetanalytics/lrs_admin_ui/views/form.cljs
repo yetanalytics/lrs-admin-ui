@@ -2,14 +2,23 @@
   (:require [reagent.core :as r]
             [com.yetanalytics.lrs-admin-ui.functions :as fns]
             [com.yetanalytics.lrs-admin-ui.views.form.dropdown
+             :as form-drop
              :refer [make-key-down-fn
                      select-input-top
-                     dropdown-items
-                     combo-box-dropdown]]
+                     dropdown-items]]
             [goog.string :refer [format]]
             [goog.string.format]))
 
 ;; Combo Box Input ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn combo-box-dropdown
+  "A dropdown specific for combo boxes, including the search bar."
+  [{:keys [id name] :as opts}]
+  [:div {:id    (str id "-dropdown")
+         :name  (str name "-dropdown")
+         :class "form-select-dropdown"}
+   [form-drop/combo-box-search opts]
+   [form-drop/dropdown-items opts]])
 
 (defn combo-box-input
   "A combo box for selecting a single item.
@@ -25,19 +34,10 @@
    | `disabled`     | Is the combo box disabled? If so, the dropdown can't be opened.
    | `custom-text?` | Is the user allowed to input custom text, and not just the select options?
    | `options-fn`   | A thunk that returns the options list.
-   | `tooltip`      | A keyword or string that corresponds to tooltip info when the user hovers over the info icon.
-   | `required`     | A boolean that will show a required indicator if true.
-   | `err-sub`      | A subscription vector to buffer errors that may include errors corresponding to this component.
-   | `err-match`    | An error location vector for filtering errors from err-sub. It is treated as a prefix and will match any error that begins with it.
    | `removable?`   | When true, a \"(None)\" option will appear as the first item in the dropdown; clicking it results in passing `nil` to `on-change`.
    | `remove-text`  | The dropdown label for `nil` when `removable?` is `true`. Default is \"(None)\"."
   [{:keys [id name on-change on-search value placeholder disabled custom-text?
-           options-fn
-           #_:clj-kondo/ignore tooltip
-           #_:clj-kondo/ignore err-sub
-           #_:clj-kondo/ignore err-match
-           #_:clj-kondo/ignore required
-           removable? remove-text]
+           options-fn removable? remove-text]
     :or {name        (random-uuid)
          id          (random-uuid)
          disabled    false
@@ -48,7 +48,7 @@
          options-fn  (constantly [])
          removable?  false
          remove-text "(None)"}}
-   & #_:clj-kondo/ignore label]
+   dropdown-panel]
   (let [combo-box-ratom (r/atom {:current-value value
                                  :dropdown {:open? false
                                             :focus 0
@@ -64,7 +64,7 @@
         on-blur-fn      (fn [e]
                           (when-not (fns/child-event? e)
                             (reset! dropdown-open? false)))]
-    (fn []
+    (fn [_]
       (let [opts-coll      (cond->> (vec (options-fn))
                              removable?
                              (into [{:value nil :label remove-text}]))
@@ -74,33 +74,31 @@
                              :dropdown-open?  dropdown-open?
                              :value-update-fn value-update-fn
                              :space-select?   false})]
-        [:div
-         #_[form-label label id tooltip required err-sub err-match]
-         [:div {:id          id
-                :disabled    disabled
-                :tab-index   0
-                :class       "form-custom-select-input"
-                :on-key-down on-key-down-fn
-                :on-blur     on-blur-fn
-                :aria-label  (format "Combo Box Input for %s" name)}
-          [select-input-top
-           {:id             id
-            :name           name
-            :disabled       disabled
-            :options        opts-coll
-            :current-value  current-value
-            :dropdown-open? dropdown-open?
-            :placeholder    placeholder}]
-          (when (and (not disabled) @dropdown-open?)
-            [combo-box-dropdown
-             {:id               id
-              :name             name
-              :dropdown-focus   dropdown-focus
-              :dropdown-value   dropdown-value
-              :value-update-fn  value-update-fn
-              :search-update-fn on-search
-              :options          opts-coll
-              :custom-text?     custom-text?}])]]))))
+        [:div {:id          id
+               :disabled    disabled
+               :tab-index   0
+               :class       "form-custom-select-input"
+               :on-key-down on-key-down-fn
+               :on-blur     on-blur-fn
+               :aria-label  (format "Combo Box Input for %s" name)}
+         [select-input-top
+          {:id             id
+           :name           name
+           :disabled       disabled
+           :options        opts-coll
+           :current-value  current-value
+           :dropdown-open? dropdown-open?
+           :placeholder    placeholder}]
+         (when (and (not disabled) @dropdown-open?)
+           [dropdown-panel
+            {:id               id
+             :name             name
+             :dropdown-focus   dropdown-focus
+             :dropdown-value   dropdown-value
+             :value-update-fn  value-update-fn
+             :search-update-fn on-search
+             :options          opts-coll
+             :custom-text?     custom-text?}])]))))
 
 ;; Action Dropdown ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

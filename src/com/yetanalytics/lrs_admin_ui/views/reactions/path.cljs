@@ -14,6 +14,24 @@
      (format "[%s]" seg-val)
      (str seg-val))])
 
+(defn- parse-path-segment-selection [v]
+  (let [parsed-int (js/parseInt v)]
+    (if (js/isNaN parsed-int)
+      (if (nil? v)
+        ""
+        v)
+      parsed-int)))
+
+(defn- path-segment-options [next-keys search-str]
+  (if (= ['idx] next-keys)
+    ;; index expected
+    (for [idx (range 10)]
+      {:label (str idx) :value idx})
+    (rfns/order-select-entries
+     (for [k next-keys
+           :when (.startsWith k search-str)]
+       {:label k :value k}))))
+
 (defn- path-input-segment-edit
   [_ _ _]
   (let [search (r/atom "")]
@@ -24,7 +42,7 @@
             {:keys [next-keys]} (rpath/analyze-path
                                  path-until)]
         [:div.path-input-segment-edit
-         (if (= '[idx] next-keys)
+         (if false #_(= '[idx] next-keys)
            ;; When we know it is an index, use a numeric input
            [:input.index
             {:type "number"
@@ -35,34 +53,21 @@
                           (change-fn (js/parseInt (fns/ps-event-val e))))}]
            [:div.segment-combo
             [form/combo-box-input
-             {:id id
-              :name (format "combo-%s" id)
-              :on-change (fn [v]
-                           ;; If it can be an int, pass it as such
-                           (let [parsed-int (js/parseInt v)]
-                             (if (js/isNaN parsed-int)
-                               (if (nil? v)
-                                 (change-fn "")
-                                 (change-fn v))
-                               (change-fn parsed-int))))
-              :on-search (fn [v] (reset! search v))
-              :value seg-val
-              :placeholder "(select)"
-              :disabled false
+             {:id           id
+              :name         (format "combo-%s" id)
+              :on-search    (fn [v] (reset! search v))
+              :on-change    (fn [v]
+                              (change-fn (parse-path-segment-selection v)))
+              :options-fn   (fn []
+                              (path-segment-options next-keys @search))
+              :value        seg-val
+              :placeholder  "(select)"
+              :disabled     false
               :custom-text? true
-              :options-fn
-              (fn []
-                (if (= ['idx] next-keys)
-                  ;; index expected
-                  (for [idx (range 10)]
-                    {:label (str idx) :value idx})
-                  (rfns/order-select-entries
-                   (for [k next-keys
-                         :when (.startsWith k @search)]
-                     {:label k :value k}))))
               ;; :tooltip "I'M A TOOLTIP OVA HEA" ;; NOT YET IMPLEMENTED, MIGHT NEVER BE
               ;; :required true
-              :removable? false}]])]))))
+              :removable?   false}
+             form/combo-box-dropdown]])]))))
 
 (defn path-input
   [path
