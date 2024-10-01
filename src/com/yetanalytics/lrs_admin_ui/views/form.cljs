@@ -2,10 +2,12 @@
   (:require [reagent.core :as r]
             [com.yetanalytics.lrs-admin-ui.functions :as fns]
             [com.yetanalytics.lrs-admin-ui.views.form.dropdown
+             :as drop-form
              :refer [make-key-down-fn
                      select-input-top
                      dropdown-items
-                     combo-box-dropdown]]))
+                     combo-box-dropdown
+                     action-select-top]]))
 
 ;; Combo Box Input ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -50,6 +52,8 @@
                             (reset! dropdown-open? false)))]
     (fn []
       (let [opts-coll      (vec (options-fn))
+            curr-label     (or (drop-form/get-label opts-coll @current-value)
+                               (str @current-value))
             on-key-down-fn (make-key-down-fn
                             {:options         opts-coll
                              :dropdown-focus  dropdown-focus
@@ -67,9 +71,8 @@
           [select-input-top
            {:id             id
             :disabled       disabled
-            :options        opts-coll
-            :current-value  current-value
             :dropdown-open? dropdown-open?
+            :label          curr-label
             :placeholder    placeholder}]
           (when (and (not disabled) @dropdown-open?)
             [combo-box-dropdown
@@ -106,16 +109,11 @@
        {:on-blur (fn [_]
                    ;; FIXME: Horrible hack, can't figure out how to stop the clobbering here
                    (js/setTimeout #(swap! state assoc :dropdown-open? false) 200))}
-       [:div.action-dropdown-icon
-        [:a {:href "#"
-             :on-click (fn [e]
-                         (fns/ps-event e)
-                         (swap! state assoc :dropdown-open? true))}
-         (when (and label label-left?)
-           [:span.action-dropdown-label (str label " ")])
-         [:img {:src icon-src}]
-         (when (and label (not label-left?))
-           [:span.action-dropdown-label (str " " label)])]]
+       [action-select-top
+        {:label          label
+         :label-left?    label-left?
+         :icon-src       icon-src
+         :dropdown-open? dropdown-open?}]
        [:div.action-dropdown-list
         {:class (str class (if @dropdown-open? " dropdown-open" ""))}
         [dropdown-items

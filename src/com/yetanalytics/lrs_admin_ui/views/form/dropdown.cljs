@@ -47,7 +47,7 @@
         :end       (on-pg-down e)
         nil))))
 
-(defn- get-label
+(defn get-label
   "Takes an options coll and a value and returns the label text"
   [opts val]
   (->> opts
@@ -123,7 +123,7 @@
 
 (defn select-input-top
   "The top pane of a (singleton) select input (including regular combo boxes)."
-  [{:keys [id disabled placeholder options current-value dropdown-open?]}]
+  [{:keys [id disabled label placeholder dropdown-open?]}]
   [:div {:id       (str id "-select-input")
          :name     (str id "-select-input")
          :class    (cond
@@ -132,11 +132,22 @@
                      :else           "form-select-top")
          :on-click #(when-not disabled (swap! dropdown-open? not))}
    [:span {:class "form-select-top-left"}
-    [:p (if-some [value @current-value]
-            ;; TODO: Better solution to value-label discrepancy
-          (or (get-label options value) value)
-          placeholder)]]
+    [:p (or label placeholder)]]
    [:span {:class "form-select-top-right"}
     [:img {:src (if @dropdown-open?
                   "images/icons/icon-expand-less.svg"
                   "images/icons/icon-expand-more.svg")}]]])
+
+(defn action-select-top
+  "The top pane of a select input with a custom dropdown icon."
+  [{:keys [label label-left? icon-src dropdown-open?]}]
+  [:div.action-dropdown-icon
+   [:a {:href "#"
+        :on-click (fn [e]
+                    (fns/ps-event e)
+                    (reset! dropdown-open? true))}
+    (when (and label label-left?)
+      [:span.action-dropdown-label (str label " ")])
+    [:img {:src icon-src}]
+    (when (and label (not label-left?))
+      [:span.action-dropdown-label (str " " label)])]])
