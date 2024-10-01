@@ -77,7 +77,7 @@
             [:p label]])
          options)))
 
-(defn combo-box-search
+(defn- combo-box-search
   "The top combo box search bar."
   [{:keys
     [id name dropdown-value value-update-fn search-update-fn custom-text?]}]
@@ -107,6 +107,15 @@
               :aria-label  "Select the text in the search bar."}
        [:img {:src "images/icons/icon-add.svg"}]
        "Add"])]])
+
+(defn combo-box-dropdown
+  "A dropdown specific for combo boxes, including the search bar."
+  [{:keys [id name] :as opts}]
+  [:div {:id    (str id "-dropdown")
+         :name  (str name "-dropdown")
+         :class "form-select-dropdown"}
+   [combo-box-search opts]
+   [dropdown-items opts]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Top Component
