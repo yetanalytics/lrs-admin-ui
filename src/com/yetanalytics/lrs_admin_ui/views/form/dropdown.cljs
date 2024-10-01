@@ -61,9 +61,9 @@
 
 (defn dropdown-items
   "The list of items in a dropdown."
-  [{:keys [id name options dropdown-focus value-update-fn]}]
+  [{:keys [id options dropdown-focus value-update-fn]}]
   (into [:ul {:id       (str id "-dropdown-items")
-              :name     (str name "-dropdown-items")
+              :name     (str id "-dropdown-items")
               :class    "form-select-dropdown-items"}]
         (map-indexed
          (fn [idx {:keys [value label]}]
@@ -80,7 +80,7 @@
 (defn- combo-box-search
   "The top combo box search bar."
   [{:keys
-    [id name dropdown-value value-update-fn search-update-fn custom-text?]}]
+    [id dropdown-value value-update-fn search-update-fn custom-text?]}]
   [:div
    [:div {:class "form-select-dropdown-search-label"}
     (if custom-text? [:p "Search or Add:"] [:p "Search:"])]
@@ -91,7 +91,7 @@
              :type      "text"
              :value     @dropdown-value
              :id        (str id "-dropdown-search")
-             :name      (str name "-dropdown-search")
+             :name      (str id "-dropdown-search")
              :class     (if custom-text?
                           "form-text-input-with-side-button"
                           "form-text-input")}]
@@ -123,9 +123,9 @@
 
 (defn select-input-top
   "The top pane of a (singleton) select input (including regular combo boxes)."
-  [{:keys [id name disabled placeholder options current-value dropdown-open?]}]
+  [{:keys [id disabled placeholder options current-value dropdown-open?]}]
   [:div {:id       (str id "-select-input")
-         :name     (str name "-select-input")
+         :name     (str id "-select-input")
          :class    (cond
                      disabled        "form-select-top disabled"
                      @dropdown-open? "form-select-top opened"
@@ -143,10 +143,10 @@
 
 (defn multi-select-input-top
   "The top pane of a multiple-selection combo box."
-  [{:keys [id name disabled options current-value dropdown-open?
+  [{:keys [id disabled options current-value dropdown-open?
            value-update-fn placeholder]}]
   [:div {:id    (str id "-multi-select-input")
-         :name  (str name "-multi-select-input")
+         :name  (str id "-multi-select-input")
          :class (if @dropdown-open?
                   "form-multi-select-top opened"
                   "form-multi-select-top")

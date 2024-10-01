@@ -14,6 +14,24 @@
      (format "[%s]" seg-val)
      (str seg-val))])
 
+(defn- parse-selection [v]
+  (let [parsed-int (js/parseInt v)]
+    (if (js/isNaN parsed-int)
+      (if (nil? v)
+        ""
+        v)
+      parsed-int)))
+
+(defn- next-key-options [next-keys search-str]
+  (if (= ['idx] next-keys)
+    ;; index expected
+    (for [idx (range 10)]
+      {:label (str idx) :value idx})
+    (rfns/order-select-entries
+     (for [k next-keys
+           :when (.startsWith k search-str)]
+       {:label k :value k}))))
+
 (defn- path-input-segment-edit
   [_ _ _]
   (let [search (r/atom "")]
@@ -35,34 +53,19 @@
                           (change-fn (js/parseInt (fns/ps-event-val e))))}]
            [:div.segment-combo
             [form/combo-box-input
-             {:id id
-              :name (format "combo-%s" id)
-              :on-change (fn [v]
-                           ;; If it can be an int, pass it as such
-                           (let [parsed-int (js/parseInt v)]
-                             (if (js/isNaN parsed-int)
-                               (if (nil? v)
-                                 (change-fn "")
-                                 (change-fn v))
-                               (change-fn parsed-int))))
-              :on-search (fn [v] (reset! search v))
-              :value seg-val
-              :placeholder "(select)"
-              :disabled false
+             {:id           id
+              :name         (format "combo-%s" id)
+              :on-change    (fn [v]
+                              (change-fn (parse-selection v)))
+              :on-search    (fn [v] (reset! search v))
+              :options-fn   (fn []
+                              (next-key-options next-keys @search))
+              :value        seg-val
+              :placeholder  "(select)"
+              :disabled     false
               :custom-text? true
-              :options-fn
-              (fn []
-                (if (= ['idx] next-keys)
-                  ;; index expected
-                  (for [idx (range 10)]
-                    {:label (str idx) :value idx})
-                  (rfns/order-select-entries
-                   (for [k next-keys
-                         :when (.startsWith k @search)]
-                     {:label k :value k}))))
               ;; :tooltip "I'M A TOOLTIP OVA HEA" ;; NOT YET IMPLEMENTED, MIGHT NEVER BE
-              ;; :required true
-              :removable? false}]])]))))
+              }]])]))))
 
 (defn path-input
   [path
