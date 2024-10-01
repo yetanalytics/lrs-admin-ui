@@ -12,7 +12,8 @@
     (case (fns/get-event-key e)
       :space (when-not @dropdown-open?
                (reset! dropdown-open? true)
-               (fns/ps-event e)))))
+               (fns/ps-event e))
+      nil)))
 
 (defn make-key-down-fn
   "Return an event callback function to use for `:on-key-down`."
