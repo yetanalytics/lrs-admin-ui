@@ -16,7 +16,7 @@
 
 (defn make-key-down-fn
   "Return an event callback function to use for `:on-key-down`."
-  [{:keys [options dropdown-focus dropdown-open? value-update-fn space-select?]}]
+  [{:keys [options dropdown-focus dropdown-open? on-enter space-select?]}]
   (let [opts-count     (count options)
         opts-dec-count (dec opts-count)
         on-enter       (fn [_]
@@ -24,7 +24,7 @@
                            (-> options
                                (get @dropdown-focus)
                                :value
-                               value-update-fn)))
+                               on-enter)))
         on-up          (fn [e]
                          (when (<= 0 (dec @dropdown-focus))
                            (swap! dropdown-focus dec))
@@ -69,13 +69,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn- add-button
-  [{:keys [dropdown-value value-update-fn]}]
+  [{:keys [dropdown-value on-enter]}]
   [:span {:class       "side-button"
           :on-click    (fn [_]
-                         (value-update-fn @dropdown-value))
+                         (on-enter @dropdown-value))
           :on-key-down (fn [e]
                          (when (= :enter (fns/get-event-key e))
-                           (value-update-fn @dropdown-value)
+                           (on-enter @dropdown-value)
                            (fns/ps-event e)))
           :tab-index   0
           :aria-label  "Select the text in the search bar."}
@@ -84,7 +84,7 @@
 
 (defn dropdown-items
   "The list of items in a dropdown."
-  [{:keys [id options dropdown-focus value-update-fn]}]
+  [{:keys [id options dropdown-focus on-enter]}]
   (into [:ul {:id       (str id "-dropdown-items")
               :name     (str id "-dropdown-items")
               :class    "form-select-dropdown-items"}]
@@ -95,7 +95,7 @@
                                   "form-select-dropdown-item selected"
                                   "form-select-dropdown-item")
                  :on-mouse-over #(reset! dropdown-focus idx)
-                 :on-click      #(value-update-fn value)
+                 :on-click      #(on-enter value)
                  :aria-label    (str "Select the value " label)}
             [:p label]])
          options)))
@@ -103,7 +103,7 @@
 (defn- combo-box-search
   "The top combo box search bar."
   [{:keys
-    [id dropdown-value value-update-fn on-search]}]
+    [id dropdown-value on-enter on-search]}]
   (let [value-ref (r/atom @dropdown-value)]
     (fn [_]
       [:div
@@ -119,8 +119,8 @@
                  :id        (str id "-dropdown-search")
                  :name      (str id "-dropdown-search")
                  :class     "form-text-input-with-side-button"}]
-        [add-button {:dropdown-value  value-ref
-                     :value-update-fn value-update-fn}]]])))
+        [add-button {:dropdown-value value-ref
+                     :on-enter       on-enter}]]])))
 
 (defn combo-box-dropdown
   "A dropdown specific for combo boxes, including the search bar."
@@ -132,7 +132,7 @@
    [dropdown-items opts]])
 
 (defn combo-box-numeric
-  [{:keys [min dropdown-value value-update-fn]}]
+  [{:keys [min dropdown-value on-enter]}]
   (let [value-ref (r/atom @dropdown-value)]
     (fn [_]
       [:div {:class "form-select-dropdown"}
@@ -143,8 +143,8 @@
                  :min       min
                  :value     @value-ref
                  :class     "form-text-input-with-side-button"}]
-        [add-button {:dropdown-value  value-ref
-                     :value-update-fn value-update-fn}]]])))
+        [add-button {:dropdown-value value-ref
+                     :on-enter       on-enter}]]])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Top Component

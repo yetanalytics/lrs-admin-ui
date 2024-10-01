@@ -46,30 +46,30 @@
         dropdown-open?  (r/cursor combo-box-ratom [:dropdown :open?])
         dropdown-focus  (r/cursor combo-box-ratom [:dropdown :focus])
         dropdown-value  (r/cursor combo-box-ratom [:dropdown :value])
-        value-update-fn (fn [value]
+        on-enter        (fn [value]
                           (reset! current-value value)
                           (reset! dropdown-open? false)
                           (on-change @current-value))
-        on-blur-fn      (fn [e]
+        on-blur         (fn [e]
                           (when-not (fns/child-event? e)
                             (reset! dropdown-open? false)))]
     (fn []
       (let [options*       @options-ref
             curr-label     (or (drop-form/get-label options* @current-value)
                                (str @current-value))
-            on-key-down-fn (make-key-down-fn
-                            {:options         options*
-                             :dropdown-focus  dropdown-focus
-                             :dropdown-open?  dropdown-open?
-                             :value-update-fn value-update-fn
-                             :space-select?   false})]
+            on-key-down    (make-key-down-fn
+                            {:options        options*
+                             :dropdown-focus dropdown-focus
+                             :dropdown-open? dropdown-open?
+                             :on-enter       on-enter
+                             :space-select?  false})]
         [:div
          [:div {:id          id
                 :disabled    disabled
                 :tab-index   0
                 :class       "form-custom-select-input"
-                :on-key-down on-key-down-fn
-                :on-blur     on-blur-fn
+                :on-key-down on-key-down
+                :on-blur     on-blur
                 :aria-label  "Combo Box Input"}
           [select-input-top
            {:id             id
@@ -79,14 +79,14 @@
             :placeholder    placeholder}]
           (when (and (not disabled) @dropdown-open?)
             [combo-box-dropdown
-             {:id               id
-              :dropdown-focus   dropdown-focus
-              :dropdown-value   dropdown-value
-              :value-update-fn  value-update-fn
-              :on-search        (fn [search-str]
-                                  (reset! options-ref
-                                          (on-filter options search-str)))
-              :options          options*}])]]))))
+             {:id             id
+              :dropdown-focus dropdown-focus
+              :dropdown-value dropdown-value
+              :on-enter       on-enter
+              :on-search      (fn [search-str]
+                                (reset! options-ref
+                                        (on-filter options search-str)))
+              :options        options*}])]]))))
 
 (defn combo-box-numeric-input
   "A combo box for selecting a single item.
@@ -112,7 +112,7 @@
                                             :value nil}})
         current-value   (r/cursor combo-box-ratom [:current-value])
         dropdown-open?  (r/cursor combo-box-ratom [:dropdown :open?])
-        value-update-fn (fn [value]
+        on-enter        (fn [value]
                           (reset! current-value value)
                           (reset! dropdown-open? false)
                           (on-change @current-value))
@@ -139,10 +139,10 @@
             :placeholder    placeholder}]
           (when (and (not disabled) @dropdown-open?)
             [combo-box-numeric
-             {:id              id
-              :min             min
-              :dropdown-value  current-value
-              :value-update-fn value-update-fn}])]]))))
+             {:id             id
+              :min            min
+              :dropdown-value current-value
+              :on-enter       on-enter}])]]))))
 
 ;; Action Dropdown ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -177,9 +177,8 @@
        [:div.action-dropdown-list
         {:class (str class (if @dropdown-open? " dropdown-open" ""))}
         [dropdown-items
-         {:id id
-          :name id
+         {:id             id
+          :name           id
           :dropdown-focus dropdown-focus
-          :value-update-fn (fn [v]
-                             (select-fn v))
-          :options options}]]])))
+          :on-enter       select-fn
+          :options        options}]]])))
