@@ -41,7 +41,7 @@
          [:div.segment-combo
           (if (= '[idx] next-keys)
             ;; When we know it is an index, use a numeric input
-            [form/combo-box-numeric-input
+            [form/numeric-input
              {:id          id
               :min         "0"
               :on-change   (fn [v]

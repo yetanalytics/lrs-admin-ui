@@ -66,6 +66,41 @@
        :label))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Top Component
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn select-input-top
+  "The top pane of a (singleton) select input (including regular combo boxes)."
+  [{:keys [id disabled label placeholder dropdown-open?]}]
+  [:div {:id       (str id "-select-input")
+         :name     (str id "-select-input")
+         :class    (cond
+                     disabled        "form-select-top disabled"
+                     @dropdown-open? "form-select-top opened"
+                     :else           "form-select-top")
+         :on-click #(when-not disabled (swap! dropdown-open? not))}
+   [:span {:class "form-select-top-left"}
+    [:p (or label placeholder)]]
+   [:span {:class "form-select-top-right"}
+    [:img {:src (if @dropdown-open?
+                  "images/icons/icon-expand-less.svg"
+                  "images/icons/icon-expand-more.svg")}]]])
+
+(defn action-select-top
+  "The top pane of a select input with a custom dropdown icon."
+  [{:keys [label label-left? icon-src dropdown-open?]}]
+  [:div.action-dropdown-icon
+   [:a {:href "#"
+        :on-click (fn [e]
+                    (fns/ps-event e)
+                    (reset! dropdown-open? true))}
+    (when (and label label-left?)
+      [:span.action-dropdown-label (str label " ")])
+    [:img {:src icon-src}]
+    (when (and label (not label-left?))
+      [:span.action-dropdown-label (str " " label)])]])
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Dropdown Component
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -83,7 +118,7 @@
    [:img {:src "images/icons/icon-add.svg"}]
    "Add"])
 
-(defn dropdown-items
+(defn items-dropdown
   "The list of items in a dropdown."
   [{:keys [id options dropdown-focus on-enter]}]
   (into [:ul {:id       (str id "-dropdown-items")
@@ -130,9 +165,9 @@
          :name  (str name "-dropdown")
          :class "form-select-dropdown"}
    [combo-box-search opts]
-   [dropdown-items opts]])
+   [items-dropdown opts]])
 
-(defn combo-box-numeric
+(defn numeric-dropdown
   [{:keys [min dropdown-value on-enter]}]
   (let [value-ref (r/atom @dropdown-value)]
     (fn [_]
@@ -146,38 +181,3 @@
                  :class     "form-text-input-with-side-button"}]
         [add-button {:dropdown-value value-ref
                      :on-enter       on-enter}]]])))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Top Component
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn select-input-top
-  "The top pane of a (singleton) select input (including regular combo boxes)."
-  [{:keys [id disabled label placeholder dropdown-open?]}]
-  [:div {:id       (str id "-select-input")
-         :name     (str id "-select-input")
-         :class    (cond
-                     disabled        "form-select-top disabled"
-                     @dropdown-open? "form-select-top opened"
-                     :else           "form-select-top")
-         :on-click #(when-not disabled (swap! dropdown-open? not))}
-   [:span {:class "form-select-top-left"}
-    [:p (or label placeholder)]]
-   [:span {:class "form-select-top-right"}
-    [:img {:src (if @dropdown-open?
-                  "images/icons/icon-expand-less.svg"
-                  "images/icons/icon-expand-more.svg")}]]])
-
-(defn action-select-top
-  "The top pane of a select input with a custom dropdown icon."
-  [{:keys [label label-left? icon-src dropdown-open?]}]
-  [:div.action-dropdown-icon
-   [:a {:href "#"
-        :on-click (fn [e]
-                    (fns/ps-event e)
-                    (reset! dropdown-open? true))}
-    (when (and label label-left?)
-      [:span.action-dropdown-label (str label " ")])
-    [:img {:src icon-src}]
-    (when (and label (not label-left?))
-      [:span.action-dropdown-label (str " " label)])]])

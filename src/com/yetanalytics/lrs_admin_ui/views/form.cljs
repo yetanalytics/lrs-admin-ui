@@ -6,9 +6,9 @@
              :refer [make-key-down-fn*
                      make-key-down-fn
                      select-input-top
-                     dropdown-items
+                     items-dropdown
                      combo-box-dropdown
-                     combo-box-numeric
+                     numeric-dropdown
                      action-select-top]]))
 
 ;; Combo Box Input ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -19,17 +19,13 @@
    | Key | Description
    | --- | ---
    | `id`           | The ID of the combo box in the DOM.
-   | `name`         | The name of the combo box.
    | `on-change`    | A callback function that is called when the user makes a selection (e.g. by clicking on an item or on \"Add\" for custom item).
-   | `on-search`    | A callback function that is called whenever an update is made in the search bar.
+   | `on-filter`    | A callback that is called whenever the search box is updated, that filters out the options list.
    | `value`        | The initial value. Default is the empty string.
    | `placeholder`  | The placeholder text for when an item has not yet been selected.
    | `disabled`     | Is the combo box disabled? If so, the dropdown can't be opened.
-   | `options`      | The options list of `{:label ... :value ...}` maps.
-   | `on-filter`    | A callback that is called whenever the search box is updated, that filters out the options list.
-   | `required`     | A boolean that will show a required indicator if true."
-  [{:keys [id on-change value placeholder disabled
-           options on-filter]
+   | `options`      | The options list of `{:label ... :value ...}` maps."
+  [{:keys [id on-change on-filter value placeholder disabled options]
     :or {id          (random-uuid)
          disabled    false
          value       ""
@@ -53,7 +49,7 @@
         on-blur         (fn [e]
                           (when-not (fns/child-event? e)
                             (reset! dropdown-open? false)))]
-    (fn []
+    (fn [_opts]
       (let [options*       @options-ref
             curr-label     (or (drop-form/get-label options* @current-value)
                                (str @current-value))
@@ -63,38 +59,38 @@
                              :dropdown-open? dropdown-open?
                              :on-enter       on-enter
                              :space-select?  false})]
-        [:div
-         [:div {:id          id
-                :disabled    disabled
-                :tab-index   0
-                :class       "form-custom-select-input"
-                :on-key-down on-key-down
-                :on-blur     on-blur
-                :aria-label  "Combo Box Input"}
-          [select-input-top
-           {:id             id
-            :disabled       disabled
-            :dropdown-open? dropdown-open?
-            :label          curr-label
-            :placeholder    placeholder}]
-          (when (and (not disabled) @dropdown-open?)
-            [combo-box-dropdown
-             {:id             id
-              :dropdown-focus dropdown-focus
-              :dropdown-value dropdown-value
-              :on-enter       on-enter
-              :on-search      (fn [search-str]
-                                (reset! options-ref
-                                        (on-filter options search-str)))
-              :options        options*}])]]))))
+        [:div {:id          id
+               :disabled    disabled
+               :tab-index   0
+               :class       "form-custom-select-input"
+               :on-key-down on-key-down
+               :on-blur     on-blur
+               :aria-label  "Combo Box Input"}
+         [select-input-top
+          {:id             id
+           :disabled       disabled
+           :dropdown-open? dropdown-open?
+           :label          curr-label
+           :placeholder    placeholder}]
+         (when (and (not disabled) @dropdown-open?)
+           [combo-box-dropdown
+            {:id             id
+             :dropdown-focus dropdown-focus
+             :dropdown-value dropdown-value
+             :on-enter       on-enter
+             :on-search      (fn [search-str]
+                               (reset! options-ref
+                                       (on-filter options search-str)))
+             :options        options*}])]))))
 
-(defn combo-box-numeric-input
-  "A combo box for selecting a single item.
+;; Numeric Input ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn numeric-input
+  "A dropdown that displays a numeric input to add.
 
    | Key | Description
    | --- | ---
-   | `id`           | The ID of the combo box in the DOM.
-   | `name`         | The name of the combo box.
+   | `id`           | The ID of the dropdown in the DOM.
    | `min`          | The minimum numeric value the value can be (as a string).
    | `on-change`    | A callback function that is called when the user makes a selection (e.g. by clicking on an item or on \"Add\" for custom item).
    | `value`        | The initial value. Default is the empty string.
@@ -119,52 +115,60 @@
         on-blur-fn      (fn [e]
                           (when-not (fns/child-event? e)
                             (reset! dropdown-open? false)))]
-    (fn []
+    (fn [_opts]
       (let [curr-label     (str @current-value)
             on-key-down-fn (make-key-down-fn*
                             {:dropdown-open?  dropdown-open?})]
-        [:div
-         [:div {:id          id
-                :disabled    disabled
-                :tab-index   0
-                :class       "form-custom-select-input"
-                :on-key-down on-key-down-fn
-                :on-blur     on-blur-fn
-                :aria-label  "Combo Box Input"}
-          [select-input-top
-           {:id             id
-            :disabled       disabled
-            :dropdown-open? dropdown-open?
-            :label          curr-label
-            :placeholder    placeholder}]
-          (when (and (not disabled) @dropdown-open?)
-            [combo-box-numeric
-             {:id             id
-              :min            min
-              :dropdown-value current-value
-              :on-enter       on-enter}])]]))))
+        [:div {:id          id
+               :disabled    disabled
+               :tab-index   0
+               :class       "form-custom-select-input"
+               :on-key-down on-key-down-fn
+               :on-blur     on-blur-fn
+               :aria-label  "Combo Box Input"}
+         [select-input-top
+          {:id             id
+           :disabled       disabled
+           :dropdown-open? dropdown-open?
+           :label          curr-label
+           :placeholder    placeholder}]
+         (when (and (not disabled) @dropdown-open?)
+           [numeric-dropdown
+            {:id             id
+             :min            min
+             :dropdown-value current-value
+             :on-enter       on-enter}])]))))
 
 ;; Action Dropdown ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn action-dropdown
-  "Icon that, when clicked, presents a dropdown of clickable actions."
-  [_]
+  "Icon that, when clicked, presents a dropdown of clickable actions.
+   
+    | Key | Description
+   | --- | ---
+   | `select-fn`   | Callback that is triggered when an item is selected from the dropdown.
+   | `label`       | Dropdown label
+   | `label-left?` | Whether the label should be placed to the left of the icon.
+   | `options`     | The ID of the combo box in the DOM.
+   | `icon-src`    | The filepath of the icon.
+   | `class`       | Custom CSS class name."
+  [{:keys [select-fn
+           label
+           label-left?
+           options
+           icon-src
+           class]
+    :or {options     []
+         select-fn   (fn [v] (println 'select v))
+         label-left? false
+         icon-src    "images/icons/add.svg"
+         class       ""}}]
   (let [state (r/atom {:dropdown-open? false
                        :dropdown-focus nil})
         dropdown-open? (r/cursor state [:dropdown-open?])
         dropdown-focus (r/cursor state [:dropdown-focus])
         id (str (random-uuid))]
-    (fn [{:keys [options
-                 select-fn
-                 label
-                 label-left?
-                 class
-                 icon-src]
-          :or {options     []
-               select-fn   (fn [v] (println 'select v))
-               label-left? false
-               icon-src    "images/icons/add.svg"
-               class       ""}}]
+    (fn [_opts]
       [:div.action-dropdown
        {:on-blur (fn [_]
                    ;; FIXME: Horrible hack, can't figure out how to stop the clobbering here
@@ -176,7 +180,7 @@
          :dropdown-open? dropdown-open?}]
        [:div.action-dropdown-list
         {:class (str class (if @dropdown-open? " dropdown-open" ""))}
-        [dropdown-items
+        [items-dropdown
          {:id             id
           :name           id
           :dropdown-focus dropdown-focus
