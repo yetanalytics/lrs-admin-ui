@@ -24,7 +24,7 @@
 
 (defn- next-key-options [next-keys search-str]
   (if (= ['idx] next-keys)
-    ;; index expected
+    ;; index expected (should never happen)
     (for [idx (range 10)]
       {:label (str idx) :value idx})
     (rfns/order-select-entries
@@ -42,16 +42,17 @@
             {:keys [next-keys]} (rpath/analyze-path
                                  path-until)]
         [:div.path-input-segment-edit
-         (if (= '[idx] next-keys)
-           ;; When we know it is an index, use a numeric input
-           [:input.index
-            {:type "number"
-             :min "0"
-             :value seg-val
-             :on-change (fn [e]
-                          (fns/ps-event e)
-                          (change-fn (js/parseInt (fns/ps-event-val e))))}]
-           [:div.segment-combo
+         [:div.segment-combo
+          (if (= '[idx] next-keys)
+            ;; When we know it is an index, use a numeric input
+            [form/combo-box-numeric-input
+             {:id          id
+              :min         "0"
+              :on-change   (fn [v]
+                             (change-fn (parse-selection v)))
+              :value       seg-val
+              :placeholder "(select)"
+              :disabled    false}]
             [form/combo-box-input
              {:id           id
               :name         (format "combo-%s" id)
@@ -65,7 +66,7 @@
               :disabled     false
               :custom-text? true
               ;; :tooltip "I'M A TOOLTIP OVA HEA" ;; NOT YET IMPLEMENTED, MIGHT NEVER BE
-              }]])]))))
+              }])]]))))
 
 (defn path-input
   [path

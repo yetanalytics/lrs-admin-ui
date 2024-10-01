@@ -1,5 +1,6 @@
 (ns com.yetanalytics.lrs-admin-ui.views.form.dropdown
-  (:require [com.yetanalytics.lrs-admin-ui.functions :as fns]))
+  (:require [reagent.core :as r]
+            [com.yetanalytics.lrs-admin-ui.functions :as fns]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Helpers
@@ -116,6 +117,30 @@
          :class "form-select-dropdown"}
    [combo-box-search opts]
    [dropdown-items opts]])
+
+(defn combo-box-numeric
+  [{:keys [min dropdown-value value-update-fn]}]
+  (let [value-ref (r/atom @dropdown-value)]
+    (fn [_]
+      [:div {:class "form-select-dropdown"}
+       [:div {:class "form-select-dropdown-search-box"}
+        [:input {:on-change (fn [x]
+                              (reset! value-ref (fns/ps-event-val x)))
+                 :type      "number"
+                 :min       min
+                 :value     @value-ref
+                 :class     "form-text-input-with-side-button"}]
+        [:span {:class       "side-button"
+                :on-click    (fn [_]
+                               (value-update-fn @value-ref))
+                :on-key-down (fn [e]
+                               (when (= :enter (fns/get-event-key e))
+                                 (value-update-fn @value-ref)
+                                 (fns/ps-event e)))
+                :tab-index   0
+                :aria-label  "Select the text in the search bar."}
+         [:img {:src "images/icons/icon-add.svg"}]
+         "Add"]]])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Top Component
