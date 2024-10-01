@@ -79,11 +79,13 @@
            del-fn (fn [_] (println 'del))
            change-fn (fn [_] (println 'change))
            validate? true}}]
-  (let [{:keys [complete? valid?]} (rpath/analyze-path path)]
+  (let [{:keys [complete? valid? leaf-type]} (rpath/analyze-path path)
+        valid-path? (and validate?
+                         (or (not valid?)
+                             (and (not= 'json leaf-type) ; disregard extensions
+                                  (not complete?))))]
     (-> [:div.path-input
-         {:class (when (and validate?
-                            (or (not valid?) (not complete?)))
-                   "invalid")}
+         {:class (when valid-path? "invalid")}
          [:div.path-input-root
           "$"]]
         ;; Intermediate path

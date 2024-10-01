@@ -1331,12 +1331,12 @@
                               path-before)
          parent-path (butlast full-path)]
      (-> db
-       (update-in full-path
-                  conj
-                  (if (= '[idx] next-keys) 0 ""))
-       (update-in
-        parent-path
-        ensure-val-type)))))
+         (update-in full-path
+                    conj
+                    (if (= '[idx] next-keys) 0 ""))
+         (update-in
+          parent-path
+          ensure-val-type)))))
 
 (re-frame/reg-event-db
  :reaction/del-path-segment
@@ -1362,14 +1362,17 @@
          path-before         (get-in db full-path)
          path-after          (conj (vec (butlast path-before))
                                    new-seg-val)
-         {:keys [complete?]} (rpath/analyze-path path-after)
+         {:keys [leaf-type
+                 complete?]} (rpath/analyze-path path-after)
          parent-path         (butlast full-path)]
      (cond-> {:db (-> db
                       (assoc-in full-path path-after)
                       (update-in
                        parent-path
                        ensure-val-type))}
-       (and (not complete?) open-next?)
+       (and (not complete?)
+            (not= 'json leaf-type) ; not extension
+            open-next?)
        (assoc :fx [[:dispatch [:reaction/add-path-segment path-path]]])))))
 
 (re-frame/reg-event-db
