@@ -68,6 +68,20 @@
 ;; Dropdown Component
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn- add-button
+  [{:keys [dropdown-value value-update-fn]}]
+  [:span {:class       "side-button"
+          :on-click    (fn [_]
+                         (value-update-fn @dropdown-value))
+          :on-key-down (fn [e]
+                         (when (= :enter (fns/get-event-key e))
+                           (value-update-fn @dropdown-value)
+                           (fns/ps-event e)))
+          :tab-index   0
+          :aria-label  "Select the text in the search bar."}
+   [:img {:src "images/icons/icon-add.svg"}]
+   "Add"])
+
 (defn dropdown-items
   "The list of items in a dropdown."
   [{:keys [id options dropdown-focus value-update-fn]}]
@@ -102,17 +116,8 @@
              :id        (str id "-dropdown-search")
              :name      (str id "-dropdown-search")
              :class     "form-text-input-with-side-button"}]
-    [:span {:class       "side-button"
-            :on-click    (fn [_]
-                           (value-update-fn @dropdown-value))
-            :on-key-down (fn [e]
-                           (when (= :enter (fns/get-event-key e))
-                             (value-update-fn @dropdown-value)
-                             (fns/ps-event e)))
-            :tab-index   0
-            :aria-label  "Select the text in the search bar."}
-     [:img {:src "images/icons/icon-add.svg"}]
-     "Add"]]])
+    [add-button {:dropdown-value  dropdown-value
+                 :value-update-fn value-update-fn}]]])
 
 (defn combo-box-dropdown
   "A dropdown specific for combo boxes, including the search bar."
@@ -135,17 +140,8 @@
                  :min       min
                  :value     @value-ref
                  :class     "form-text-input-with-side-button"}]
-        [:span {:class       "side-button"
-                :on-click    (fn [_]
-                               (value-update-fn @value-ref))
-                :on-key-down (fn [e]
-                               (when (= :enter (fns/get-event-key e))
-                                 (value-update-fn @value-ref)
-                                 (fns/ps-event e)))
-                :tab-index   0
-                :aria-label  "Select the text in the search bar."}
-         [:img {:src "images/icons/icon-add.svg"}]
-         "Add"]]])))
+        [add-button {:dropdown-value  value-ref
+                     :value-update-fn value-update-fn}]]])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Top Component
