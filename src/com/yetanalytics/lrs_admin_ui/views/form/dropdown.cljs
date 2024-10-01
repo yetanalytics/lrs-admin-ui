@@ -6,6 +6,14 @@
 ;; Helpers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn make-key-down-fn*
+  [{:keys [dropdown-open?]}]
+  (fn [e]
+    (case (fns/get-event-key e)
+      :space (when-not @dropdown-open?
+               (reset! dropdown-open? true)
+               (fns/ps-event e)))))
+
 (defn make-key-down-fn
   "Return an event callback function to use for `:on-key-down`."
   [{:keys [options dropdown-focus dropdown-open? value-update-fn space-select?]}]

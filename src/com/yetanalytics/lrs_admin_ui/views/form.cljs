@@ -3,7 +3,8 @@
             [com.yetanalytics.lrs-admin-ui.functions :as fns]
             [com.yetanalytics.lrs-admin-ui.views.form.dropdown
              :as drop-form
-             :refer [make-key-down-fn
+             :refer [make-key-down-fn*
+                     make-key-down-fn
                      select-input-top
                      dropdown-items
                      combo-box-dropdown
@@ -118,18 +119,14 @@
                             (reset! dropdown-open? false)))]
     (fn []
       (let [curr-label     (str @current-value)
-            #_#_on-key-down-fn (make-key-down-fn
-                                {:options         opts-coll
-                                 :dropdown-focus  dropdown-focus
-                                 :dropdown-open?  dropdown-open?
-                                 :value-update-fn value-update-fn
-                                 :space-select?   false})]
+            on-key-down-fn (make-key-down-fn*
+                            {:dropdown-open?  dropdown-open?})]
         [:div
          [:div {:id          id
                 :disabled    disabled
                 :tab-index   0
                 :class       "form-custom-select-input"
-                #_#_:on-key-down on-key-down-fn
+                :on-key-down on-key-down-fn
                 :on-blur     on-blur-fn
                 :aria-label  "Combo Box Input"}
           [select-input-top
