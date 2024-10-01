@@ -676,18 +676,25 @@
    {:keys [identityPaths
            conditions
            template]}]
-  [:dl.reaction-ruleset
-   [:dt @(subscribe [:lang/get :reactions.details.ruleset.conditions])
+  ;; Cannot use <dl> elements here since that would cause DOM nesting errors
+  [:div.reaction-ruleset {:id "ruleset-view"}
+   ;; TODO: Properly redo divs to remove extraneous nesting
+   [:label {:for "reaction-ruleset-conditions"}
+    @(subscribe [:lang/get :reactions.details.ruleset.conditions])
     [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.ruleset.conditions])}]]
-   [:dd
+   [:div {:id "reaction-ruleset-conditions"}
     (when (contains? #{:edit :new} mode)
       [render-conditions-errors conditions])
     [render-conditions mode conditions]
     (when (contains? #{:edit :new} mode)
       [add-condition :to-add-desc ""])]
-   [:dt @(subscribe [:lang/get :reactions.template.title])
+   
+   [:label {:for "reaction-ruleset-templates"}
+    @(subscribe [:lang/get :reactions.template.title])
     [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.template])}]]
-   [:dd [t/render-or-edit-template mode template]]
+   [:div {:id "reaction-ruleset-conditions"}
+    [t/render-or-edit-template mode template]]
+   
    [render-identity-paths
     mode identityPaths]])
 
@@ -818,10 +825,10 @@
           [:<>
            [:dt @(subscribe [:lang/get :reactions.details.created])]
            [:dd (or (iso8601->local-display created) "[New]")]
-       
+
            [:dt @(subscribe [:lang/get :reactions.details.modified])]
            [:dd (or (iso8601->local-display modified) "[New]")]
-       
+
            [:dt @(subscribe [:lang/get :reactions.details.error])]
            [:dd [render-error error]]])]
        [:dt @(subscribe [:lang/get :reactions.details.title])
@@ -843,9 +850,10 @@
         (case mode
           :focus (if active "Active" "Inactive")
           [edit-status active])]
-
-       [:dt @(subscribe [:lang/get :reactions.details.ruleset])]
-       [:dd [ruleset-view mode ruleset]]]
+       
+       [:label {:for "ruleset-view"}
+        @(subscribe [:lang/get :reactions.details.ruleset])]
+       [ruleset-view mode ruleset]]
       [reaction-actions mode id error?]]]))
 
 (defn reactions

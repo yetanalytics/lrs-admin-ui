@@ -5,15 +5,15 @@
 $dl-nesting-depth: 1em;
 $condition-padding: 1em;
 
-dl.reaction-view > dd {
+div.reaction-view > span {
   padding-left: $dl-nesting-depth;
 }
 
-dl.reaction-ruleset > dd {
+div.reaction-ruleset > label {
   padding-left: $dl-nesting-depth;
 }
 
-dl.reaction-ruleset > dt {
+div.reaction-ruleset > div {
   padding-bottom: 8px;
 }
 
