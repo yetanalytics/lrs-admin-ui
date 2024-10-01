@@ -89,10 +89,10 @@
 (defn- combo-box-search
   "The top combo box search bar."
   [{:keys
-    [id dropdown-value value-update-fn search-update-fn custom-text?]}]
+    [id dropdown-value value-update-fn search-update-fn]}]
   [:div
    [:div {:class "form-select-dropdown-search-label"}
-    (if custom-text? [:p "Search or Add:"] [:p "Search:"])]
+    [:p "Search or Add:"]]
    [:div {:class "form-select-dropdown-search-box"}
     [:input {:on-change (fn [x]
                           (reset! dropdown-value (fns/ps-event-val x))
@@ -101,21 +101,18 @@
              :value     @dropdown-value
              :id        (str id "-dropdown-search")
              :name      (str id "-dropdown-search")
-             :class     (if custom-text?
-                          "form-text-input-with-side-button"
-                          "form-text-input")}]
-    (when custom-text?
-      [:span {:class       "side-button"
-              :on-click    (fn [_]
-                             (value-update-fn @dropdown-value))
-              :on-key-down (fn [e]
-                             (when (= :enter (fns/get-event-key e))
-                               (value-update-fn @dropdown-value)
-                               (fns/ps-event e)))
-              :tab-index   0
-              :aria-label  "Select the text in the search bar."}
-       [:img {:src "images/icons/icon-add.svg"}]
-       "Add"])]])
+             :class     "form-text-input-with-side-button"}]
+    [:span {:class       "side-button"
+            :on-click    (fn [_]
+                           (value-update-fn @dropdown-value))
+            :on-key-down (fn [e]
+                           (when (= :enter (fns/get-event-key e))
+                             (value-update-fn @dropdown-value)
+                             (fns/ps-event e)))
+            :tab-index   0
+            :aria-label  "Select the text in the search bar."}
+     [:img {:src "images/icons/icon-add.svg"}]
+     "Add"]]])
 
 (defn combo-box-dropdown
   "A dropdown specific for combo boxes, including the search bar."
