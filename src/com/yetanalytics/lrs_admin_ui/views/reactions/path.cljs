@@ -23,7 +23,7 @@
         v)
       parsed-int)))
 
-(defn- next-key-options [next-key-opts search-str]
+(defn- next-key-options-filter [next-key-opts search-str]
   (->> next-key-opts
        (filter (fn [{:keys [value]}] (cstr/starts-with? value search-str)))
        rfns/order-select-entries))
@@ -35,8 +35,10 @@
          seg-val
          change-fn]
       (let [id (str (random-uuid))
-            {:keys [next-keys]} (rpath/analyze-path
-                                 path-until)]
+            {:keys [next-keys]} (rpath/analyze-path path-until)
+            next-key-options (->> next-keys
+                                  (map (fn [k] {:label k :value k}))
+                                  rfns/order-select-entries)]
         [:div.path-input-segment-edit
          [:div.segment-combo
           (if (= '[idx] next-keys)
@@ -56,9 +58,9 @@
                               (change-fn (parse-selection v)))
               :on-search    (fn [v] (reset! search v))
               :options-fn   (fn []
-                              (next-key-options next-keys @search))
-              :on-filter    next-key-options
-              :options      (mapv (fn [k] {:label k :value k}) next-keys)
+                              (next-key-options-filter next-keys @search))
+              :on-filter    next-key-options-filter
+              :options      next-key-options
               :value        seg-val
               :placeholder  "(select)"
               :disabled     false
