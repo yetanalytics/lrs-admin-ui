@@ -5,6 +5,8 @@
 $dl-nesting-depth: 1em;
 $condition-padding: 1em;
 
+$error-color: pink;
+
 dl.reaction-info-panel-left > span {
   padding-left:$dl-nesting-depth;
 }
@@ -32,7 +34,7 @@ span.add-identity-path {
 }
 
 dl.reaction-error {
-  background-color: pink;
+  background-color: $error-color;
   padding: 0.5em;
   display: grid;
   gap: 1em;
@@ -223,16 +225,16 @@ div.path-input {
 }
 
 div.path-input.invalid {
-  background-color: pink;
+  background-color: $error-color;
 }
 
 ul.reaction-error-list {
-  background-color: pink;
+  background-color: $error-color;
   margin-top: 5px;
 }
 
 div.reaction-edit-invalid {
-  background-color: pink;
+  background-color: $error-color;
 }
 
 tr.reaction-row {
