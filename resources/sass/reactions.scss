@@ -49,11 +49,11 @@ ul.identity-paths {
   padding-left: 0;
 }
 
-dt.paths-collapse {
+span.paths-collapse {
   @extend .pointer;
 }
 
-dt.paths-collapse:after {
+span.paths-collapse:after {
   background: url('../images/icons/icon-expand-more.svg') no-repeat center center;
   content: '';
   display: inline-block;
@@ -65,7 +65,7 @@ dt.paths-collapse:after {
   margin: 4px 8px 0 0;
 }
 
-dt.paths-collapse.expanded:after {
+span.paths-collapse.expanded:after {
   background-image: url('../images/icons/icon-expand-less.svg');
 }
 

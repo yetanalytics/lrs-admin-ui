@@ -626,12 +626,12 @@
   (let [open? (r/atom false)]
     (fn [_mode _identity-paths]
       [:<>
-       [:dt
-        {:on-click #(swap! open? not)
-         :class (str "paths-collapse" (when @open? " expanded"))}
-        @(subscribe [:lang/get :reactions.identity-paths])
-        [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.identity-path])}]]
-       [:dd
+       [:label {:for "reaction-identity-paths"}
+        [:span {:on-click #(swap! open? not)
+                :class (str "paths-collapse" (when @open? " expanded"))}
+         @(subscribe [:lang/get :reactions.identity-paths])
+         [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.identity-path])}]]]
+       [:div {:id "reaction-identity-paths"}
         (when @open?
           (let [edit? (contains? #{:edit :new} _mode)]
             [:<>
