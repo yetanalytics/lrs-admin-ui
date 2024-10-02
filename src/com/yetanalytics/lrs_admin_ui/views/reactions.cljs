@@ -854,8 +854,6 @@
            :focus (if active "Active" "Inactive")
            [edit-status active])]]]
       
-      [:label {:for "ruleset-view"}
-       @(subscribe [:lang/get :reactions.details.ruleset])]
       [ruleset-view mode ruleset]
       [reaction-actions mode id error?]]]))
 
