@@ -5,6 +5,15 @@
 $dl-nesting-depth: 1em;
 $condition-padding: 1em;
 
+dl.reaction-info-panel-left > span {
+  padding-left:$dl-nesting-depth;
+}
+
+dl.reaction-info-panel-right {
+  float: right;
+  padding-right: 20%;
+}
+
 div.reaction-view > span {
   padding-left: $dl-nesting-depth;
 }
@@ -232,12 +241,6 @@ tr.reaction-row {
 tr.reaction-row:hover, main:not(.page-list-manager) table tbody tr:nth-child(even).reaction-row:hover {
   background-color: #888;
 }
-
-.reaction-info-panel {
-  float: right;
-  padding-right: 20%;
-}
-
 
 div.var-gen-wrapper {
   padding: 15px;

@@ -819,41 +819,44 @@
       (when error?
         [:div.reaction-edit-invalid
          @(subscribe [:lang/get :reactions.errors.invalid])])
-      [:dl.reaction-view
-       [:div {:class "reaction-info-panel"}
+      
+      [:div.reaction-info-panel
+       ;; Put right-floating item first because CSS is weird
+       (when (contains? #{:focus :edit} mode)
+         [:dl.reaction-info-panel-right
+          [:dt @(subscribe [:lang/get :reactions.details.created])]
+          [:dd (or (iso8601->local-display created) "[New]")]
+          
+          [:dt @(subscribe [:lang/get :reactions.details.modified])]
+          [:dd (or (iso8601->local-display modified) "[New]")]
+          
+          [:dt @(subscribe [:lang/get :reactions.details.error])]
+          [:dd [render-error error]]])
+       
+       [:dl.reaction-info-panel-left
+        [:dt @(subscribe [:lang/get :reactions.details.title])
+         [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.reaction-title])}]]
+        [:dd
+         (case mode
+           :focus title
+           [edit-title title])]
+
         (when (contains? #{:focus :edit} mode)
           [:<>
-           [:dt @(subscribe [:lang/get :reactions.details.created])]
-           [:dd (or (iso8601->local-display created) "[New]")]
+           [:dt @(subscribe [:lang/get :reactions.details.id])
+            [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.reaction-id])}]]
+           [:dd id]])
 
-           [:dt @(subscribe [:lang/get :reactions.details.modified])]
-           [:dd (or (iso8601->local-display modified) "[New]")]
-
-           [:dt @(subscribe [:lang/get :reactions.details.error])]
-           [:dd [render-error error]]])]
-       [:dt @(subscribe [:lang/get :reactions.details.title])
-        [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.reaction-title])}]]
-       [:dd
-        (case mode
-          :focus title
-          [edit-title title])]
-
-       (when (contains? #{:focus :edit} mode)
-         [:<>
-          [:dt @(subscribe [:lang/get :reactions.details.id])
-           [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.reaction-id])}]]
-          [:dd id]])
-
-       [:dt @(subscribe [:lang/get :reactions.details.status])
-        [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.reaction-status])}]]
-       [:dd
-        (case mode
-          :focus (if active "Active" "Inactive")
-          [edit-status active])]
-       
-       [:label {:for "ruleset-view"}
-        @(subscribe [:lang/get :reactions.details.ruleset])]
-       [ruleset-view mode ruleset]]
+        [:dt @(subscribe [:lang/get :reactions.details.status])
+         [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.reaction-status])}]]
+        [:dd
+         (case mode
+           :focus (if active "Active" "Inactive")
+           [edit-status active])]]]
+      
+      [:label {:for "ruleset-view"}
+       @(subscribe [:lang/get :reactions.details.ruleset])]
+      [ruleset-view mode ruleset]
       [reaction-actions mode id error?]]]))
 
 (defn reactions
