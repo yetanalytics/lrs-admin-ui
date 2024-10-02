@@ -557,7 +557,6 @@
 (defn- render-condition-name-errors
   [condition-name]
   (when (not (rse/keywordizable-string? condition-name))
-    
     [:ul.reaction-error-list
      [:li @(subscribe [:lang/get :reactions.errors.invalid-condition-name])]]))
 
@@ -586,7 +585,7 @@
 
 (defn- render-conditions
   [mode conditions]
-  (into [:div.reaction-conditions]
+  (into [:div.conditions]
         (map-indexed
          (fn [idx condition*]
            (let [condition-name (if (contains? #{:edit :new} mode)

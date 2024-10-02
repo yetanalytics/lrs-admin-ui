@@ -5,33 +5,19 @@
 $dl-nesting-depth: 1em;
 $condition-padding: 1em;
 
+/* Reaction Table */
+
+tr.reaction-row {
+  @extend .pointer;
+}
+
+tr.reaction-row:hover, main:not(.page-list-manager) table tbody tr:nth-child(even).reaction-row:hover {
+  background-color: #888;
+}
+
+/* Errors */
+
 $error-color: pink;
-
-dl.reaction-info-panel-left > span {
-  padding-left:$dl-nesting-depth;
-}
-
-dl.reaction-info-panel-right {
-  float: right;
-  padding-right: 20%;
-}
-
-div.reaction-view > span {
-  padding-left: $dl-nesting-depth;
-}
-
-div.reaction-ruleset > label {
-  font-size: larger;
-  padding-bottom: 8px;
-}
-
-div.reaction-ruleset > div {
-  padding-bottom: 8px;
-}
-
-span.add-identity-path {
-  padding: 0.5em;
-}
 
 dl.reaction-error {
   background-color: $error-color;
@@ -48,31 +34,40 @@ dl.reaction-error {
   }
 }
 
-ul.identity-paths {
-  padding-left: 0;
+ul.reaction-error-list {
+  background-color: $error-color;
+  margin-top: 5px;
 }
 
-span.paths-collapse {
-  @extend .pointer;
+div.reaction-edit-invalid {
+  background-color: $error-color;
 }
 
-span.paths-collapse:after {
-  background: url('../images/icons/icon-expand-more.svg') no-repeat center center;
-  content: '';
-  display: inline-block;
-  vertical-align: top;
-  width: 20px;
-  height: 20px;
-  background-size: contain;
-  text-align: left;
-  margin: 4px 8px 0 0;
+/* Info Panel */
+
+dl.reaction-info-panel-left > span {
+  padding-left:$dl-nesting-depth;
 }
 
-span.paths-collapse.expanded:after {
-  background-image: url('../images/icons/icon-expand-less.svg');
+dl.reaction-info-panel-right {
+  float: right;
+  padding-right: 20%;
 }
 
-div.reaction-conditions {
+/* Ruleset */
+
+div.reaction-ruleset > label {
+  font-size: larger;
+  padding-bottom: 8px;
+}
+
+div.reaction-ruleset > div {
+  padding-bottom: 8px;
+}
+
+/* Ruleset Conditions */
+
+div.conditions {
   > div.condition {
     border-top: 1px dashed black;
     background-color: #eee;
@@ -88,7 +83,7 @@ div.condition {
 }
 
 div.clause {
-  //border: 1px solid black;
+  // border: 1px solid black;
   padding: $condition-padding;
   position: relative;
 }
@@ -102,7 +97,7 @@ div.clause.odd {
 }
 
 div.clause-type-label {
-  padding-bottom:10px;
+  padding-bottom: 10px;
 }
 
 div.boolean {
@@ -180,6 +175,8 @@ dl.ref {
   }
 }
 
+/* Paths */
+
 $path-input-border: 2px solid #137BCE;;
 $path-input-border-radius: 4px;
 
@@ -228,27 +225,42 @@ div.path-input.invalid {
   background-color: $error-color;
 }
 
-ul.reaction-error-list {
-  background-color: $error-color;
-  margin-top: 5px;
-}
-
-div.reaction-edit-invalid {
-  background-color: $error-color;
-}
-
-tr.reaction-row {
+span.paths-collapse {
   @extend .pointer;
 }
 
-tr.reaction-row:hover, main:not(.page-list-manager) table tbody tr:nth-child(even).reaction-row:hover {
-  background-color: #888;
+span.paths-collapse:after {
+  background: url('../images/icons/icon-expand-more.svg') no-repeat center center;
+  content: '';
+  display: inline-block;
+  vertical-align: top;
+  width: 20px;
+  height: 20px;
+  background-size: contain;
+  text-align: left;
+  margin: 4px 8px 0 0;
 }
+
+span.paths-collapse.expanded:after {
+  background-image: url('../images/icons/icon-expand-less.svg');
+}
+
+span.add-identity-path {
+  padding: 0.5em;
+}
+
+ul.identity-paths {
+  padding-left: 0;
+}
+
+/* Dynamic Variables */
 
 div.var-gen-wrapper {
   padding: 15px;
   background-color: #eee;
 }
+
+/* Button Hovering */
 
 a:hover {
   color: #11375C;
