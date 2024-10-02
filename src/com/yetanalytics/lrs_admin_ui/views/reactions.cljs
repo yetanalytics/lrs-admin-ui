@@ -664,11 +664,12 @@
   [conditions]
   (let [empty-err? (empty? conditions)
         dupe-err?  (not (rse/distinct-name-vector? conditions))]
-    [:ul.reaction-error-list
-     (when empty-err?
-       [:li @(subscribe [:lang/get :reactions.errors.one-condition])])
-     (when dupe-err?
-       [:li @(subscribe [:lang/get :reactions.errors.dupe-condition-names])])]))
+    (when (or empty-err? dupe-err?)
+      [:ul.reaction-error-list
+       (when empty-err?
+         [:li @(subscribe [:lang/get :reactions.errors.one-condition])])
+       (when dupe-err?
+         [:li @(subscribe [:lang/get :reactions.errors.dupe-condition-names])])])))
 
 (defn- ruleset-view
   [mode
