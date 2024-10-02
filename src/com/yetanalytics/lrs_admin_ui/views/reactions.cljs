@@ -823,7 +823,7 @@
       [:div.reaction-info-panel
        ;; Put right-floating item first because CSS is weird
        (when (contains? #{:focus :edit} mode)
-         [:dl.reaction-info-panel-right
+         [:dl.reaction-info-panel.right
           [:dt @(subscribe [:lang/get :reactions.details.created])]
           [:dd (or (iso8601->local-display created) "[New]")]
           
@@ -833,7 +833,7 @@
           [:dt @(subscribe [:lang/get :reactions.details.error])]
           [:dd [render-error error]]])
        
-       [:dl.reaction-info-panel-left
+       [:dl.reaction-info-panel.left
         [:dt @(subscribe [:lang/get :reactions.details.title])
          [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.reaction-title])}]]
         [:dd

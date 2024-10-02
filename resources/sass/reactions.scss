@@ -45,11 +45,7 @@ div.reaction-edit-invalid {
 
 /* Info Panel */
 
-dl.reaction-info-panel-left > span {
-  padding-left:$dl-nesting-depth;
-}
-
-dl.reaction-info-panel-right {
+dl.reaction-info-panel.right {
   float: right;
   padding-right: 20%;
 }
