@@ -11,7 +11,7 @@
             [goog.string :as gstr]
             [goog.string.format]))
 
-(defn- var-gen-condition
+(defn- dynamic-var-condition
   [{:keys [on-change value]}]
   (into [:select
          {:value value
@@ -39,7 +39,7 @@
 (defn- change-segment [path new-val]
   (assoc path (dec (count path)) new-val))
 
-(defn var-gen
+(defn dynamic-variables
   []
   (let [open?     (r/atom false)
         condition (r/atom "")
@@ -59,8 +59,8 @@
           [:p [:em @(subscribe [:lang/get :reactions.template.dynamic.instruction3])]]
           [:hr]
           [:p [:b @(subscribe [:lang/get :reactions.template.dynamic.step1])]]
-          [var-gen-condition {:value     @condition
-                              :on-change #(reset! condition %)}]
+          [dynamic-var-condition {:value     @condition
+                                  :on-change #(reset! condition %)}]
           (when (seq @condition)
             [:<>
              [:hr]
@@ -89,7 +89,7 @@
 (defn edit-template
   []
   [:<>
-   [var-gen]
+   [dynamic-variables]
    [:h5 [:b @(subscribe [:lang/get :reactions.template.template-json])]
     [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.template.json])}]]
    [ed/buffered-json-editor
