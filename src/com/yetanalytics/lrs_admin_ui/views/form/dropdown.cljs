@@ -1,5 +1,6 @@
 (ns com.yetanalytics.lrs-admin-ui.views.form.dropdown
   (:require [reagent.core :as r]
+            [re-frame.core :refer [subscribe]]
             [com.yetanalytics.lrs-admin-ui.functions :as fns]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -145,7 +146,7 @@
     (fn [_]
       [:div
        [:div {:class "form-select-dropdown-search-label"}
-        [:p "Search or Add:"]]
+        [:p @(subscribe [:lang/get :form.search-or-add])]]
        [:div {:class "form-select-dropdown-search-box"}
         [:input {:on-change (fn [x]
                               (let [v (fns/ps-event-val x)]
@@ -173,6 +174,8 @@
   (let [value-ref (r/atom @dropdown-value)]
     (fn [_]
       [:div {:class "form-select-dropdown"}
+       [:div {:class "form-select-dropdown-search-label"}
+        [:p @(subscribe [:lang/get :form.add])]]
        [:div {:class "form-select-dropdown-search-box"}
         [:input {:on-change (fn [x]
                               (reset! value-ref (fns/ps-event-val x)))
