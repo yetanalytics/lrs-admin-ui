@@ -229,12 +229,12 @@ div.path-input.invalid {
   background-color: $error-color;
 }
 
-span.add-identity-path {
-  padding: 0.5em;
-}
-
 ul.identity-paths {
   padding-left: 0;
+  list-style-type: none;
+  > li {
+    padding-bottom: 8px;
+  }
 }
 
 /* Dropdown Panes (for dynamic variables + identity paths) */
@@ -262,7 +262,6 @@ span.pane-collapse.expanded:after {
 /* Dynamic Variables */
 
 div.dynamic-variables {
-  // margin-top: $condition-padding;
   margin-bottom: $condition-padding;
 }
 

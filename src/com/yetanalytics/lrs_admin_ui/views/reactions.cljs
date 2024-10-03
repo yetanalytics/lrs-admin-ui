@@ -639,15 +639,14 @@
               (map-indexed
                (fn [idx path]
                  (let [path-path [:ruleset :identityPaths idx]]
-                   [:<>
+                   [:li
                     [render-or-edit-path
                      _mode
                      path-path
                      path
                      :remove-fn
                      #(dispatch [:reaction/delete-identity-path idx])
-                     :open-next? true]
-                    (when (not edit?) [:br])]))
+                     :open-next? true]]))
                _identity-paths))
              (when edit?
                [:span.add-identity-path
