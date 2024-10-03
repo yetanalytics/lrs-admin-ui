@@ -52,7 +52,7 @@
         @(subscribe [:lang/get :reactions.template.dynamic])
         [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.template.dynamic])}]]
        (when @open?
-         [:div.dynamic-variables.inner
+         [:div.inner
           [:p [:em @(subscribe [:lang/get :reactions.template.dynamic.instruction1])]]
           [:p [:em @(subscribe [:lang/get :reactions.template.dynamic.instruction2])]]
           [:p [:code "{\"$templatePath\": [\"condition_XYZ\", \"result\", \"success\"]}"]]
