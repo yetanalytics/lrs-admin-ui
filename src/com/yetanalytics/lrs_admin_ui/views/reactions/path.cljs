@@ -1,10 +1,12 @@
 (ns com.yetanalytics.lrs-admin-ui.views.reactions.path
   (:require [reagent.core :as r]
+            [clojure.string :as cstr]
             [com.yetanalytics.lrs-admin-ui.functions :as fns]
             [com.yetanalytics.lrs-reactions.path :as rpath]
             [com.yetanalytics.lrs-admin-ui.views.form :as form]
             [goog.string :refer [format]]
-            [goog.string.format]))
+            [goog.string.format]
+            [com.yetanalytics.lrs-admin-ui.functions.reaction :as rfns]))
 
 (defn- path-input-segment
   [seg-val]
@@ -13,6 +15,19 @@
      (format "[%s]" seg-val)
      (str seg-val))])
 
+(defn- parse-selection [v]
+  (let [parsed-int (js/parseInt v)]
+    (if (js/isNaN parsed-int)
+      (if (nil? v)
+        ""
+        v)
+      parsed-int)))
+
+(defn- next-key-options-filter [next-key-opts search-str]
+  (->> next-key-opts
+       (filter (fn [{:keys [value]}] (cstr/starts-with? value search-str)))
+       rfns/order-select-entries))
+
 (defn- path-input-segment-edit
   [_ _ _]
   (let [search (r/atom "")]
@@ -20,45 +35,38 @@
          seg-val
          change-fn]
       (let [id (str (random-uuid))
-            {:keys [next-keys]} (rpath/analyze-path
-                                 path-until)]
+            {:keys [next-keys]} (rpath/analyze-path path-until)
+            next-key-options (->> next-keys
+                                  (map (fn [k] {:label k :value k}))
+                                  rfns/order-select-entries)]
         [:div.path-input-segment-edit
-         (if (= '[idx] next-keys)
-           ;; When we know it is an index, use a numeric input
-           [:input.index
-            {:type "number"
-             :min "0"
-             :value seg-val
-             :on-change (fn [e]
-                          (fns/ps-event e)
-                          (change-fn (js/parseInt (fns/ps-event-val e))))}]
-           [:div.segment-combo
-            [form/combo-box-input
-             {:id id
-              :name (format "combo-%s" id)
-              :on-change (fn [v]
-                           ;; If it can be an int, pass it as such
-                           (let [parsed-int (js/parseInt v)]
-                             (if (js/isNaN parsed-int)
-                               (change-fn v)
-                               (change-fn parsed-int))))
-              :on-search (fn [v] (reset! search v))
-              :value seg-val
+         [:div.segment-combo
+          (if (= '[idx] next-keys)
+            ;; When we know it is an index, use a numeric input
+            [form/numeric-input
+             {:id          id
+              :min         "0"
+              :on-change   (fn [v]
+                             (change-fn (parse-selection v)))
+              :value       seg-val
               :placeholder "(select)"
-              :disabled false
+              :disabled    false}]
+            [form/combo-box-input
+             {:id           id
+              :name         (format "combo-%s" id)
+              :on-change    (fn [v]
+                              (change-fn (parse-selection v)))
+              :on-search    (fn [v] (reset! search v))
+              :options-fn   (fn []
+                              (next-key-options-filter next-keys @search))
+              :on-filter    next-key-options-filter
+              :options      next-key-options
+              :value        seg-val
+              :placeholder  "(select)"
+              :disabled     false
               :custom-text? true
-              :options-fn
-              (fn []
-                (if (= ['idx] next-keys)
-                  ;; index expected
-                  (for [idx (range 10)]
-                    {:label (str idx) :value idx})
-                  (for [k next-keys
-                        :when (.startsWith k @search)]
-                    {:label k :value k})))
               ;; :tooltip "I'M A TOOLTIP OVA HEA" ;; NOT YET IMPLEMENTED, MIGHT NEVER BE
-              ;; :required true
-              :removable? false}]])]))))
+              }])]]))))
 
 (defn path-input
   [path
@@ -71,11 +79,13 @@
            del-fn (fn [_] (println 'del))
            change-fn (fn [_] (println 'change))
            validate? true}}]
-  (let [{:keys [complete? valid?]} (rpath/analyze-path path)]
+  (let [{:keys [complete? valid? leaf-type]} (rpath/analyze-path path)
+        valid-path? (and validate?
+                         (or (not valid?)
+                             (and (not= 'json leaf-type) ; disregard extensions
+                                  (not complete?))))]
     (-> [:div.path-input
-         {:class (when (and validate?
-                            (or (not valid?) (not complete?)))
-                   "invalid")}
+         {:class (when valid-path? "invalid")}
          [:div.path-input-root
           "$"]]
         ;; Intermediate path

@@ -1,7 +1,9 @@
 (ns com.yetanalytics.lrs-admin-ui.functions.reaction
-  (:require [goog.string      :refer [format]]
-            [xapi-schema.core :as xs]
-            [goog.string.format]))
+  (:require [clojure.set  :refer [rename-keys]]
+            [clojure.walk :as w]
+            [goog.string  :refer [format]]
+            [goog.string.format]
+            [xapi-schema.core :as xs]))
 
 (defn path->string
   "Given a vector of keys and/or indices, return a JSONPath string suitable for
@@ -38,52 +40,6 @@
     (nil? val)
     "null"))
 
-(defn index-conditions
-  "Provide sort-indices for reaction conditions editing. Base order on prior
-  indices if available."
-  [reaction]
-  (update-in
-   reaction
-   [:ruleset :conditions]
-   (fn [conditions]
-     (reduce
-      (fn [m
-           [idx
-            [condition-key
-             condition-val]]]
-        (assoc
-         m
-         condition-key
-         (assoc condition-val :sort-idx idx)))
-      {}
-      (map-indexed
-       vector
-       (sort-by
-        (comp :sort-idx val)
-        conditions))))))
-
-(defn strip-condition-indices
-  "Remove all indices from conditions."
-  [reaction]
-  (update-in
-   reaction
-   [:ruleset :conditions]
-   (fn [conditions]
-     (reduce-kv
-      (fn [m k v]
-        (assoc m k (dissoc v :sort-idx)))
-      {}
-      conditions))))
-
-(defn fix-ruleset-in-path
-  "Clojure spec adds an array idx to the :in path on failures of map-of specs.
-  This function takes a reaction ruleset condition path and adds the idx,
-  making the path usable for finding things."
-  [[seg0 seg1 seg2 & rest-seg :as path]]
-  (if (and (= [:ruleset :conditions] [seg0 seg1]) seg2)
-    (into [seg0 seg1 seg2 1] rest-seg)
-    path))
-
 (defn validate-template-xapi
   "Take raw JSON str of an xAPI Statement and issue a vec of error maps for 
    any schema violations. Returns `nil` if `raw-json` is valid."
@@ -109,3 +65,83 @@
               {:message (format "xAPI Validation Error in: %s" path)}))))
        []
        (-> e ex-data :error :cljs.spec.alpha/problems)))))
+
+;; Conversion functions
+
+(defn- vectorize-conditions
+  [conditions]
+  (reduce-kv
+   (fn [acc cond-name condition]
+     (conj acc (assoc condition :name (name cond-name))))
+   []
+   conditions))
+
+(defn- mapify-conditions
+  [conditions]
+  (reduce
+   (fn [m {cond-name :name :as condition}]
+     (assoc m (keyword cond-name) (dissoc condition :name)))
+   {}
+   conditions))
+
+(defn db->focus-form
+  "Convert `reaction` from how it is stored in the LRS backend into its
+   UI view form."
+  [reaction]
+  (-> reaction
+      (update-in [:ruleset :template] w/stringify-keys)))
+
+(defn focus->edit-form
+  "Convert `reaction` from its UI view form to its edit form."
+  [reaction]
+  (-> reaction
+      (update-in [:ruleset :conditions] vectorize-conditions)))
+
+(defn focus->download-form
+  "Convert `reaction` from its UI view form to its download form."
+  [reaction]
+  (-> reaction
+      (select-keys [:title :ruleset :active])))
+
+(defn upload->edit-form
+  "Convert `reaction` from an upload form to its edit form."
+  [reaction]
+  (-> reaction
+      (select-keys [:title :ruleset :active])
+      (update-in [:ruleset :template] w/stringify-keys)
+      (update-in [:ruleset :conditions] vectorize-conditions)))
+
+(defn edit->db-form
+  "Convert `reaction` from its edit form to how it is stored in the
+   LRS backend."
+  [reaction]
+  (-> reaction
+      (select-keys [:id :title :active :ruleset])
+      (rename-keys {:id :reactionId})
+      (update-in [:ruleset :conditions] mapify-conditions)))
+
+;; Path selection dropdown ordering
+
+(def selection-order
+  {"id"          0
+   "name"        1
+   "display"     2
+   "definition"  3
+   "description" 4})
+
+(defn order-select-entries
+  "Order path segment select entries by placing ID and lang map properties at
+   the top, then alphabetically for the rest."
+  [selects]
+  (sort-by :label
+           (fn [x y]
+             (let [x-order (get selection-order x)
+                   y-order (get selection-order y)]
+               (cond
+                 (and x-order
+                      y-order)
+                 (< x-order y-order)
+                 x-order true
+                 y-order false
+                 :else   (< x y))))
+           selects))
