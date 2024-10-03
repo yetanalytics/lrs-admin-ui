@@ -67,8 +67,10 @@ div.reaction-ruleset > div {
 
 div.conditions {
   > div.condition {
-    border-top: 1px dashed black;
     background-color: #eee;
+  }
+  > div.condition:not(:first-child) {
+    border-top: 1px dashed black;
   }
 }
 
