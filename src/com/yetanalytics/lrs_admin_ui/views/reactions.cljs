@@ -627,7 +627,7 @@
       [:<>
        [:label {:for "reaction-identity-paths"}
         [:span {:on-click #(swap! open? not)
-                :class (str "paths-collapse" (when @open? " expanded"))}
+                :class (str "pane-collapse" (when @open? " expanded"))}
          @(subscribe [:lang/get :reactions.identity-paths])
          [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.identity-path])}]]]
        [:div {:id "reaction-identity-paths"}

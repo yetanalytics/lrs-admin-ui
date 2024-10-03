@@ -48,7 +48,7 @@
       [:<>
        [:span
         {:on-click #(swap! open? not)
-         :class (str "paths-collapse" (when @open? " expanded"))}
+         :class (str "pane-collapse" (when @open? " expanded"))}
         @(subscribe [:lang/get :reactions.template.dynamic])
         [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.template.dynamic])}]]
        (when @open?

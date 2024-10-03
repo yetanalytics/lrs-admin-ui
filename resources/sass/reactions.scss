@@ -229,11 +229,21 @@ div.path-input.invalid {
   background-color: $error-color;
 }
 
-span.paths-collapse {
+span.add-identity-path {
+  padding: 0.5em;
+}
+
+ul.identity-paths {
+  padding-left: 0;
+}
+
+/* Dropdown Panes (for dynamic variables + identity paths) */
+
+span.pane-collapse {
   @extend .pointer;
 }
 
-span.paths-collapse:after {
+span.pane-collapse:after {
   background: url('../images/icons/icon-expand-more.svg') no-repeat center center;
   content: '';
   display: inline-block;
@@ -245,16 +255,8 @@ span.paths-collapse:after {
   margin: 4px 8px 0 0;
 }
 
-span.paths-collapse.expanded:after {
+span.pane-collapse.expanded:after {
   background-image: url('../images/icons/icon-expand-less.svg');
-}
-
-span.add-identity-path {
-  padding: 0.5em;
-}
-
-ul.identity-paths {
-  padding-left: 0;
 }
 
 /* Dynamic Variables */
