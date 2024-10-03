@@ -90,7 +90,7 @@
   []
   [:<>
    [dynamic-variables]
-   [:h5 [:b @(subscribe [:lang/get :reactions.template.template-json])]
+   [:h5 @(subscribe [:lang/get :reactions.template.template-json])
     [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.template.json])}]]
    [ed/buffered-json-editor
     {:buffer   (subscribe [:reaction/edit-template-buffer])
