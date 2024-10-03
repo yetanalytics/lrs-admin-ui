@@ -678,6 +678,8 @@
   ;; Cannot use <dl> elements here since that would cause DOM nesting errors
   [:div.reaction-ruleset {:id "ruleset-view"}
    ;; TODO: Properly redo divs to remove extraneous nesting
+   [:hr]
+
    [:label {:for "reaction-ruleset-conditions"}
     @(subscribe [:lang/get :reactions.details.ruleset.conditions])
     [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.ruleset.conditions])}]]
@@ -688,12 +690,16 @@
     (when (contains? #{:edit :new} mode)
       [add-condition :to-add-desc ""])]
    
+   [:hr]
+
    [:label {:for "reaction-ruleset-templates"}
     @(subscribe [:lang/get :reactions.template.title])
     [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.template])}]]
    [:div {:id "reaction-ruleset-conditions"}
     [t/render-or-edit-template mode template]]
    
+   [:hr]
+
    [render-identity-paths
     mode identityPaths]])
 
