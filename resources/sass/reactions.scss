@@ -3,6 +3,7 @@
 *********************************************/
 
 $dl-nesting-depth: 1em;
+$ruleset-padding: 1rem;
 $condition-padding: 1em;
 
 /* Reaction Table */
@@ -58,7 +59,7 @@ div.reaction-ruleset > label {
 }
 
 div.reaction-ruleset > div {
-  padding-bottom: 8px;
+  padding-bottom: $ruleset-padding;
 }
 
 /* Ruleset Conditions */
@@ -93,7 +94,7 @@ div.clause.odd {
 }
 
 div.clause-type-label {
-  padding-bottom: 10px;
+  padding-bottom: $condition-padding;
 }
 
 div.boolean {
@@ -128,6 +129,7 @@ div.add-icon {
       max-height: 1.4em;
     }
   }
+  padding-top: $condition-padding;
 }
 
 div.add-clause {
