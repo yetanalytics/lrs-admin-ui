@@ -173,6 +173,12 @@ dl.ref {
   }
 }
 
+div.val {
+  > select {
+    margin-right: 4px;
+  }
+}
+
 /* Paths */
 
 $path-input-border: 2px solid #137BCE;;
