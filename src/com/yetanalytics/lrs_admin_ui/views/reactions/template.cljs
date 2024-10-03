@@ -46,7 +46,7 @@
         path      (r/atom [""])]
     (fn []
       [:<>
-       [:dt
+       [:span
         {:on-click #(swap! open? not)
          :class (str "paths-collapse" (when @open? " expanded"))}
         @(subscribe [:lang/get :reactions.template.dynamic])
