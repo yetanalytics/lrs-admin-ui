@@ -5,6 +5,7 @@
 $dl-nesting-depth: 1em;
 $ruleset-padding: 1rem;
 $condition-padding: 1em;
+$border-color: #ddd;
 
 /* Reaction Table */
 
@@ -237,6 +238,11 @@ ul.identity-paths {
   }
 }
 
+ul.identity-paths.view {
+  padding: $ruleset-padding;
+  border: 1px solid $border-color;
+}
+
 /* Dropdown Panes (for dynamic variables + identity paths) */
 
 span.pane-collapse {
@@ -268,6 +274,13 @@ div.dynamic-variables {
 div.dynamic-variables.inner {
   padding: 15px;
   background-color: #eee;
+}
+
+/* Template */
+
+pre.template {
+  padding: $ruleset-padding;
+  border: 1px solid $border-color;
 }
 
 /* Button Hovering */

@@ -635,7 +635,7 @@
           (let [edit? (contains? #{:edit :new} _mode)]
             [:<>
              (into
-              [:ul.identity-paths]
+              [:ul.identity-paths {:class (when (not edit?) "view")}]
               (map-indexed
                (fn [idx path]
                  (let [path-path [:ruleset :identityPaths idx]]
