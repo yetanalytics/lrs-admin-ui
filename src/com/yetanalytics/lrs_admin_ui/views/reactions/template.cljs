@@ -45,14 +45,14 @@
         condition (r/atom "")
         path      (r/atom [""])]
     (fn []
-      [:<>
+      [:div.dynamic-variables
        [:span
         {:on-click #(swap! open? not)
          :class (str "pane-collapse" (when @open? " expanded"))}
         @(subscribe [:lang/get :reactions.template.dynamic])
         [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.template.dynamic])}]]
        (when @open?
-         [:div.var-gen-wrapper
+         [:div.dynamic-variables.inner
           [:p [:em @(subscribe [:lang/get :reactions.template.dynamic.instruction1])]]
           [:p [:em @(subscribe [:lang/get :reactions.template.dynamic.instruction2])]]
           [:p [:code "{\"$templatePath\": [\"condition_XYZ\", \"result\", \"success\"]}"]]

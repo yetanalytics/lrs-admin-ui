@@ -261,7 +261,12 @@ span.pane-collapse.expanded:after {
 
 /* Dynamic Variables */
 
-div.var-gen-wrapper {
+div.dynamic-variables {
+  // margin-top: $condition-padding;
+  margin-bottom: $condition-padding;
+}
+
+div.dynamic-variables.inner {
   padding: 15px;
   background-color: #eee;
 }
