@@ -117,8 +117,7 @@
                            (fns/ps-event e)))
           :tab-index   0
           :aria-label  "Select the text in the search bar."}
-   [:img {:src "images/icons/icon-add.svg"}]
-   "Add"])
+   [:img {:src "images/icons/icon-add.svg"}]])
 
 (defn items-dropdown
   "The list of items in a dropdown."
