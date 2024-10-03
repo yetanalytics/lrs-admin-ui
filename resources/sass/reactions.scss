@@ -109,6 +109,10 @@ div.clause-type-label {
   padding-bottom: $condition-padding;
 }
 
+div.clause-type-label.empty {
+  padding-bottom: 0;
+}
+
 div.boolean {
   > div.boolean-label {
     padding-bottom: $condition-padding;

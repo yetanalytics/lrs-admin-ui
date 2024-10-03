@@ -291,6 +291,9 @@
    reaction-path
    type-key]
   [:div.clause-type-label
+   {:class (when (and (not (contains? #{:edit :new} mode)) ; FIXME: Refactor
+                      (not (contains? #{:and :or :not} type-key)))
+             "empty")}
    (if (contains? #{:edit :new} mode)
      [:<>
       [:select
