@@ -20,6 +20,7 @@ tr.reaction-row:hover, main:not(.page-list-manager) table tbody tr:nth-child(eve
 /* Errors */
 
 $error-color: pink;
+$error-padding: 0.2em;
 
 dl.reaction-error {
   background-color: $error-color;
@@ -39,10 +40,16 @@ dl.reaction-error {
 ul.reaction-error-list {
   background-color: $error-color;
   margin-top: 5px;
+  padding-top: $error-padding;
+  padding-bottom: $error-padding;
 }
 
 div.reaction-edit-invalid {
   background-color: $error-color;
+  margin-bottom: $ruleset-padding;
+  padding-left: 1em;
+  padding-top: $error-padding;
+  padding-bottom: $error-padding;
 }
 
 /* Info Panel */
