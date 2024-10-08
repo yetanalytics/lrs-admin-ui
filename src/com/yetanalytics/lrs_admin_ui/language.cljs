@@ -109,8 +109,7 @@
    :reactions.details.title {:en-US "Title"}
    :reactions.details.id {:en-US "ID"}
    :reactions.details.status {:en-US "Status"}
-   :reactions.details.ruleset {:en-US "Ruleset"}
-   :reactions.details.ruleset.conditions {:en-US "Conditions"}
+   :reactions.details.ruleset.conditions {:en-US "Ruleset Conditions"}
    :reactions.details.conditions.delete-button {:en-US "Delete %s "}
    :reactions.details.conditions.add-clause {:en-US "Add %sclause to %s"}
    :reactions.details.conditions.add-condition {:en-US "Add New Condition "}
@@ -122,7 +121,7 @@
    :reactions.details.conditions.value {:en-US "Value"}
    :reactions.details.conditions.reference {:en-US "Reference"}
 
-   :reactions.identity-paths {:en-US "Identity Paths (Advanced)"}
+   :reactions.identity-paths {:en-US "Ruleset Identity Paths (Advanced)"}
    :reactions.identity-paths.add {:en-US "Add New Identity Path "}
    :reactions.buttons.edit {:en-US "EDIT"}
    :reactions.buttons.save {:en-US "SAVE"}
@@ -132,7 +131,7 @@
    :reactions.buttons.download {:en-US "DOWNLOAD"}
    :reactions.buttons.upload {:en-US "UPLOAD"}
 
-   :reactions.template.title {:en-US "Template"}
+   :reactions.template.title {:en-US "Ruleset Template"}
    :reactions.template.template-json {:en-US "Template JSON"}
    :reactions.template.dynamic {:en-US "Dynamic Variables"}
    :reactions.template.dynamic.instruction1 {:en-US "Reactions templates can be made dynamic by the use of injectable variables. These variables must come from a statement matching one of the conditions above."}

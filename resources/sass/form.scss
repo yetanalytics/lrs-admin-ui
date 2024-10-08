@@ -178,23 +178,23 @@ span.form-select-top-right {
 .form-select-dropdown-search-box {
   margin: 8px;
   overflow: auto;
+  display: flex;
+  align-items: center;
 }
 
 .form-text-input-with-side-button {
   @extend .form-text-input;
-  width: 85%;
   float: left;
+  width: 85%;
+  margin-right: 4px;
 }
 
 span.side-button {
   float: right;
-  display: flex;
-  align-items: center;
   font-family: RobotoCondensed;
   font-size: 20px;
   cursor: pointer;
   img {
-    margin-right: 4px;
     height: 30px;
     width: 30px;
   }

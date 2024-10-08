@@ -11,7 +11,7 @@
             [goog.string :as gstr]
             [goog.string.format]))
 
-(defn- var-gen-condition
+(defn- dynamic-var-condition
   [{:keys [on-change value]}]
   (into [:select
          {:value value
@@ -39,28 +39,28 @@
 (defn- change-segment [path new-val]
   (assoc path (dec (count path)) new-val))
 
-(defn var-gen
+(defn dynamic-variables
   []
   (let [open?     (r/atom false)
         condition (r/atom "")
         path      (r/atom [""])]
     (fn []
-      [:<>
-       [:dt
+      [:div.dynamic-variables
+       [:span
         {:on-click #(swap! open? not)
-         :class (str "paths-collapse" (when @open? " expanded"))}
+         :class (str "pane-collapse" (when @open? " expanded"))}
         @(subscribe [:lang/get :reactions.template.dynamic])
         [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.template.dynamic])}]]
        (when @open?
-         [:div.var-gen-wrapper
+         [:div.inner
           [:p [:em @(subscribe [:lang/get :reactions.template.dynamic.instruction1])]]
           [:p [:em @(subscribe [:lang/get :reactions.template.dynamic.instruction2])]]
           [:p [:code "{\"$templatePath\": [\"condition_XYZ\", \"result\", \"success\"]}"]]
           [:p [:em @(subscribe [:lang/get :reactions.template.dynamic.instruction3])]]
           [:hr]
           [:p [:b @(subscribe [:lang/get :reactions.template.dynamic.step1])]]
-          [var-gen-condition {:value     @condition
-                              :on-change #(reset! condition %)}]
+          [dynamic-var-condition {:value     @condition
+                                  :on-change #(reset! condition %)}]
           (when (seq @condition)
             [:<>
              [:hr]
@@ -89,8 +89,8 @@
 (defn edit-template
   []
   [:<>
-   [var-gen]
-   [:h5 [:b @(subscribe [:lang/get :reactions.template.template-json])]
+   [dynamic-variables]
+   [:h5 @(subscribe [:lang/get :reactions.template.template-json])
     [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.template.json])}]]
    [ed/buffered-json-editor
     {:buffer   (subscribe [:reaction/edit-template-buffer])
