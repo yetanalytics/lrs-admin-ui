@@ -11,7 +11,6 @@
             [com.yetanalytics.lrs-admin-ui.functions.password :as pass]
             [com.yetanalytics.lrs-admin-ui.functions.oidc     :as oidc]
             [com.yetanalytics.lrs-admin-ui.functions.time     :as t]
-            [com.yetanalytics.lrs-admin-ui.functions.reaction :as rfns]
             [com.yetanalytics.re-oidc                         :as re-oidc]
             [ajax.core                                        :as ajax]
             [cljs.spec.alpha                                  :refer [valid?]]
@@ -19,11 +18,10 @@
             [goog.string                                      :refer [format]]
             goog.string.format
             [clojure.walk                                     :as w]
-            [com.yetanalytics.lrs-admin-ui.spec.reaction-edit :as rse]
             [com.yetanalytics.lrs-admin-ui.language           :as lang]
-            [com.yetanalytics.lrs-reactions.path              :as rpath]
             [com.yetanalytics.lrs-admin-ui.handlers.util :refer [global-interceptors
-                                                                 page-fx]]))
+                                                                 page-fx]]
+            com.yetanalytics.lrs-admin-ui.handlers.reaction))
 
 (re-frame/reg-event-fx
  :db/init
