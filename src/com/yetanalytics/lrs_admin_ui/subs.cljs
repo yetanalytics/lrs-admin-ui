@@ -1,12 +1,12 @@
 (ns com.yetanalytics.lrs-admin-ui.subs
-  (:require [re-frame.core :refer [reg-sub subscribe]]
-            [com.yetanalytics.lrs-admin-ui.db :as db]
+  (:require [re-frame.core      :refer [reg-sub subscribe]]
+            [clojure.spec.alpha :as s :include-macros true]
+            [com.yetanalytics.lrs-admin-ui.db    :as db]
             [com.yetanalytics.lrs-admin-ui.input :as i]
             [com.yetanalytics.lrs-admin-ui.spec.reaction-edit]
-            [clojure.spec.alpha :as s :include-macros true]
-            com.yetanalytics.lrs-admin-ui.subs.browser
-            com.yetanalytics.lrs-admin-ui.subs.reaction
-            com.yetanalytics.lrs-admin-ui.subs.status))
+            [com.yetanalytics.lrs-admin-ui.subs.browser]
+            [com.yetanalytics.lrs-admin-ui.subs.reaction]
+            [com.yetanalytics.lrs-admin-ui.subs.status]))
 
 (reg-sub
  :db/get-db

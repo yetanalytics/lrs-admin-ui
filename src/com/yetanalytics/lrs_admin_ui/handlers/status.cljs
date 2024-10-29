@@ -1,13 +1,13 @@
 (ns com.yetanalytics.lrs-admin-ui.handlers.status
-  (:require [re-frame.core                                    :as re-frame]
-            [com.yetanalytics.lrs-admin-ui.db                 :as db]
+  (:require [re-frame.core :as re-frame]
+            [ajax.core     :as ajax]
+            [clojure.walk  :as w]
             [day8.re-frame.http-fx]
-            [com.yetanalytics.lrs-admin-ui.functions.http     :as httpfn]
-            [com.yetanalytics.lrs-admin-ui.functions.time     :as t]
-            [ajax.core                                        :as ajax]
-            [clojure.walk                                     :as w]
-            [com.yetanalytics.lrs-admin-ui.handlers.util :refer [global-interceptors
-                                                                 page-fx]]))
+            [com.yetanalytics.lrs-admin-ui.db             :as db]
+            [com.yetanalytics.lrs-admin-ui.functions.http :as httpfn]
+            [com.yetanalytics.lrs-admin-ui.functions.time :as t]
+            [com.yetanalytics.lrs-admin-ui.handlers.util  :refer [global-interceptors
+                                                                  page-fx]]))
 
 (re-frame/reg-event-fx
  :status/get-data

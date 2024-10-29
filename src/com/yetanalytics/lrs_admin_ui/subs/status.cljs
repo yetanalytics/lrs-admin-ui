@@ -1,6 +1,6 @@
 (ns com.yetanalytics.lrs-admin-ui.subs.status
   (:require [re-frame.core :refer [reg-sub]]
-            [com.yetanalytics.lrs-admin-ui.db :as db]
+            [com.yetanalytics.lrs-admin-ui.db             :as db]
             [com.yetanalytics.lrs-admin-ui.functions.time :as t]))
 
 (reg-sub

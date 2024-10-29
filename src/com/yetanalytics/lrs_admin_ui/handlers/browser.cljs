@@ -1,10 +1,10 @@
 (ns com.yetanalytics.lrs-admin-ui.handlers.browser
-  (:require [re-frame.core                                    :as re-frame]
-            [com.yetanalytics.lrs-admin-ui.db                 :as db]
+  (:require [re-frame.core :as re-frame]
+            [ajax.core     :as ajax]
             [day8.re-frame.http-fx]
-            [com.yetanalytics.lrs-admin-ui.functions.http     :as httpfn]
-            [ajax.core                                        :as ajax]
-            [com.yetanalytics.lrs-admin-ui.handlers.util :refer [global-interceptors]]))
+            [com.yetanalytics.lrs-admin-ui.db             :as db]
+            [com.yetanalytics.lrs-admin-ui.functions.http :as httpfn]
+            [com.yetanalytics.lrs-admin-ui.handlers.util  :refer [global-interceptors]]))
 
 (re-frame/reg-event-fx
  :browser/load-xapi

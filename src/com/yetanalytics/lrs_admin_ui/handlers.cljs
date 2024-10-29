@@ -1,27 +1,27 @@
 (ns com.yetanalytics.lrs-admin-ui.handlers
-  (:require [re-frame.core                                    :as re-frame]
-            [reagent.core                                     :as r]
+  (:require [re-frame.core   :as re-frame]
+            [reagent.core    :as r]
+            [ajax.core       :as ajax]
+            [cljs.spec.alpha :refer [valid?]]
+            [clojure.string  :refer [split]]
+            [goog.string     :refer [format]]
+            [goog.string.format]
+            [day8.re-frame.http-fx]
+            [com.yetanalytics.re-oidc                         :as re-oidc]
             [com.yetanalytics.lrs-admin-ui.db                 :as db]
             [com.yetanalytics.lrs-admin-ui.input              :as input]
-            [day8.re-frame.http-fx]
             [com.yetanalytics.lrs-admin-ui.functions          :as fns]
             [com.yetanalytics.lrs-admin-ui.functions.download :as download]
             [com.yetanalytics.lrs-admin-ui.functions.http     :as httpfn]
             [com.yetanalytics.lrs-admin-ui.functions.storage  :as stor]
             [com.yetanalytics.lrs-admin-ui.functions.password :as pass]
             [com.yetanalytics.lrs-admin-ui.functions.oidc     :as oidc]
-            [com.yetanalytics.re-oidc                         :as re-oidc]
-            [ajax.core                                        :as ajax]
-            [cljs.spec.alpha                                  :refer [valid?]]
-            [clojure.string                                   :refer [split]]
-            [goog.string                                      :refer [format]]
-            goog.string.format
             [com.yetanalytics.lrs-admin-ui.language           :as lang]
-            [com.yetanalytics.lrs-admin-ui.handlers.util :refer [global-interceptors
-                                                                 page-fx]]
-            com.yetanalytics.lrs-admin-ui.handlers.browser
-            com.yetanalytics.lrs-admin-ui.handlers.reaction
-            com.yetanalytics.lrs-admin-ui.handlers.status))
+            [com.yetanalytics.lrs-admin-ui.handlers.util      :refer [global-interceptors
+                                                                      page-fx]]
+            [com.yetanalytics.lrs-admin-ui.handlers.browser]
+            [com.yetanalytics.lrs-admin-ui.handlers.reaction]
+            [com.yetanalytics.lrs-admin-ui.handlers.status]))
 
 (re-frame/reg-event-fx
  :db/init

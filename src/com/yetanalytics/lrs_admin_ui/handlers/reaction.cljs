@@ -1,14 +1,14 @@
 (ns com.yetanalytics.lrs-admin-ui.handlers.reaction
-  (:require [re-frame.core                                    :as re-frame]
-            [com.yetanalytics.lrs-admin-ui.db                 :as db]
+  (:require [re-frame.core   :as re-frame]
+            [ajax.core       :as ajax]
+            [cljs.spec.alpha :refer [valid?]]
+            [goog.string     :refer [format]]
+            [goog.string.format]
             [day8.re-frame.http-fx]
+            [com.yetanalytics.lrs-admin-ui.db                 :as db]
             [com.yetanalytics.lrs-admin-ui.functions          :as fns]
             [com.yetanalytics.lrs-admin-ui.functions.http     :as httpfn]
             [com.yetanalytics.lrs-admin-ui.functions.reaction :as rfns]
-            [ajax.core                                        :as ajax]
-            [cljs.spec.alpha                                  :refer [valid?]]
-            [goog.string                                      :refer [format]]
-            goog.string.format
             [com.yetanalytics.lrs-admin-ui.spec.reaction-edit :as rse]
             [com.yetanalytics.lrs-reactions.path              :as rpath]
             [com.yetanalytics.lrs-admin-ui.handlers.util      :refer [global-interceptors

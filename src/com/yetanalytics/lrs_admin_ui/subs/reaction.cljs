@@ -1,7 +1,7 @@
 (ns com.yetanalytics.lrs-admin-ui.subs.reaction
-  (:require [re-frame.core :refer [reg-sub]]
+  (:require [re-frame.core      :refer [reg-sub]]
             [clojure.spec.alpha :as s :include-macros true]
-            [com.yetanalytics.lrs-admin-ui.db :as db]
+            [com.yetanalytics.lrs-admin-ui.db                 :as db]
             [com.yetanalytics.lrs-admin-ui.functions.reaction :as rfns]))
 
 
