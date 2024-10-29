@@ -357,7 +357,7 @@
 ;; Api Key Management
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; TODO: This is a separate page; consider a separate handler namespace?
+;; This is view-specific; we can move handlers + subs to a separate ns if needed
 
 (re-frame/reg-event-db
  :credentials/set-credentials
@@ -470,7 +470,7 @@
 ;; Account Management
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; TODO: This is a separate page; consider a separate handler namespace?
+;; This is view-specific; we can move handlers + subs to a separate ns if needed
 
 (re-frame/reg-event-fx
  :accounts/load-accounts
@@ -655,7 +655,7 @@
 ;; Delete Actor
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; TODO: This is a separate page; consider a separate handler namespace?
+;; This is view-specific; we can move handlers + subs to a separate ns if needed
 
 (re-frame/reg-event-fx
  :delete-actor/delete-actor
