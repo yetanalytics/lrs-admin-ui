@@ -24,6 +24,20 @@
    (::db/proxy-path db)))
 
 (reg-sub
+ :db/stmt-get-max
+ (fn [db _]
+   (::db/stmt-get-max db)))
+
+(reg-sub
+ :notifications/get-notifications
+ (fn [db _]
+   (::db/notifications db)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Language
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(reg-sub
  :db/language
  (fn [db _]
    (::db/language db)))
@@ -34,11 +48,6 @@
    (::db/pref-lang db)))
 
 (reg-sub
- :db/stmt-get-max
- (fn [db _]
-   (::db/stmt-get-max db)))
-
-(reg-sub
  :lang/get
  :<- [:db/language]
  :<- [:db/pref-lang]
@@ -47,6 +56,10 @@
      (or (get langmap pref-lang)
          (get langmap :en-US)
          (get langmap (-> langmap keys first))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Session/Page
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (reg-sub
  :session/get-page
@@ -83,10 +96,9 @@
              preferred_username))
        username)))
 
-(reg-sub
- :notifications/get-notifications
- (fn [db _]
-   (::db/notifications db)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Accounts/Login
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (reg-sub
  :db/get-login
@@ -140,6 +152,10 @@
  (fn [login _]
    (:password login)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; API Keys
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (reg-sub
  :db/get-credentials
  (fn [db _]
@@ -152,7 +168,10 @@
  (fn [credentials [_ idx]]
    (get-in credentials [idx])))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; OIDC State
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (reg-sub
  :oidc/login-available?
  :<- [:com.yetanalytics.re-oidc/status]
@@ -188,14 +207,18 @@
  (fn [show-local-login? _]
    show-local-login?))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Delete Actor
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (reg-sub
  :delete-actor/enabled?
  (fn [db _]
    (::db/enable-admin-delete-actor db false)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Dialog
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (reg-sub
  :dialog/data
