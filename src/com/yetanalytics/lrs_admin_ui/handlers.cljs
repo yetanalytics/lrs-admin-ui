@@ -23,6 +23,10 @@
             [com.yetanalytics.lrs-admin-ui.handlers.reaction]
             [com.yetanalytics.lrs-admin-ui.handlers.status]))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Init
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (re-frame/reg-event-fx
  :db/init
  global-interceptors
@@ -112,6 +116,27 @@
           ?oidc (conj [:dispatch [:oidc/init ?oidc]])
           no-val? (conj [:dispatch [:session/proxy-token-init]]))
     :session/store ["proxy-path" proxy-path]}))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Error Handling
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(re-frame/reg-event-fx
+ :server-error
+ (fn [_ [_ {:keys [response status]}]]
+   ;;extract the error and present it in a notification. If 401 or 0, log out.
+   (let [err (get response "error"
+                  ;; If no error is provided, pass status
+                  (format "Unknown Error, status: %s" status))
+         message (cond (= status 0)
+                       "Could not connect to LRS!"
+                       (and err (< (count err) 100))
+                       (str "Error from server: " err)
+                       :else
+                       "An unexpected error has occured!")]
+     {:fx (cond-> [[:dispatch [:notification/notify true message]]]
+            (some #(= status %) [0 401])
+            (merge [:dispatch [:session/set-token nil]]))})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Login / Auth
@@ -225,32 +250,8 @@
      (stor/remove-item! key))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; General
+;; Logout
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(re-frame/reg-event-fx
- :session/set-page
- global-interceptors
- (fn [{:keys [db]} [_ page :as qvec]]
-   {:db (assoc-in db [::db/session :page] page)
-    :fx (page-fx qvec)}))
-
-(re-frame/reg-event-fx
- :server-error
- (fn [_ [_ {:keys [response status]}]]
-   ;;extract the error and present it in a notification. If 401 or 0, log out.
-   (let [err (get response "error"
-                  ;; If no error is provided, pass status
-                  (format "Unknown Error, status: %s" status))
-         message (cond (= status 0)
-                       "Could not connect to LRS!"
-                       (and err (< (count err) 100))
-                       (str "Error from server: " err)
-                       :else
-                       "An unexpected error has occured!")]
-     {:fx (cond-> [[:dispatch [:notification/notify true message]]]
-            (some #(= status %) [0 401])
-            (merge [:dispatch [:session/set-token nil]]))})))
 
 (re-frame/reg-event-fx
  :session/logout
@@ -271,6 +272,17 @@
  :session/no-val-logout-redirect
  (fn [{:keys [logout-url]}]
    (set! (.-location js/window) logout-url)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Page Set
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(re-frame/reg-event-fx
+ :session/set-page
+ global-interceptors
+ (fn [{:keys [db]} [_ page :as qvec]]
+   {:db (assoc-in db [::db/session :page] page)
+    :fx (page-fx qvec)}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Notifications / Alert Bar
@@ -295,7 +307,6 @@
              (fn []
                (re-frame/dispatch dispatch))
              ms)))))
-
 
 (defn remove-notice
   "Given a notice id and a collection of notifications return the collection
@@ -345,6 +356,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Api Key Management
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; TODO: This is a separate page; consider a separate handler namespace?
 
 (re-frame/reg-event-db
  :credentials/set-credentials
@@ -457,6 +470,7 @@
 ;; Account Management
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; TODO: This is a separate page; consider a separate handler namespace?
 
 (re-frame/reg-event-fx
  :accounts/load-accounts
@@ -640,6 +654,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Delete Actor
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; TODO: This is a separate page; consider a separate handler namespace?
+
 (re-frame/reg-event-fx
  :delete-actor/delete-actor
  (fn [{{server-host ::db/server-host
