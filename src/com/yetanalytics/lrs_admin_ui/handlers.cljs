@@ -171,12 +171,19 @@
 (re-frame/reg-event-fx
  :session/set-token
  global-interceptors
- (fn [{:keys [db]} [_ token
-                    & {:keys [store?]
-                       :or {store? true}}]]
+ (fn [{:keys [db]} [_ token & {:keys [store?]
+                               :or   {store? true}}]]
    (cond-> {:db (assoc-in db [::db/session :token] token)
             :fx [[:dispatch [:session/get-me]]]}
      store? (assoc :session/store ["lrs-jwt" token]))))
+
+(re-frame/reg-event-fx
+ :session/clear-token
+ global-interceptors
+ (fn [{:keys [db]} [_ & {:keys [store?]
+                         :or   {store? true}}]]
+   (cond-> {:db (assoc-in db [::db/session :token] nil)}
+     store? (assoc :session/store ["lrs-jwt" nil]))))
 
 (re-frame/reg-event-fx
  :session/get-me
@@ -214,12 +221,18 @@
 (re-frame/reg-event-fx
  :session/set-username
  global-interceptors
- (fn [{:keys [db]} [_ username
-                    & {:keys [store?]
-                       :or {store? true}}]]
-   (cond-> {:db (assoc-in db [::db/session :username]
-                          username)}
+ (fn [{:keys [db]} [_ username & {:keys [store?]
+                                  :or   {store? true}}]]
+   (cond-> {:db (assoc-in db [::db/session :username] username)}
      store? (assoc :session/store ["username" username]))))
+
+(re-frame/reg-event-fx
+ :session/clear-username
+ global-interceptors
+ (fn [{:keys [db]} [_ & {:keys [store?]
+                         :or   {store? true}}]]
+   (cond-> {:db (assoc-in db [::db/session :username] nil)}
+     store? (assoc :session/store ["username" nil]))))
 
 (re-frame/reg-fx
  :session/store
@@ -273,13 +286,13 @@
      (cond
        ;; OIDC login
        (oidc/logged-in? db)
-       {:fx [[:dispatch [:session/set-token nil]] ; TODO: Use clear-token effect to avoid redundant warning
-             [:dispatch [:session/set-username nil]]
+       {:fx [[:dispatch [:session/clear-token]]
+             [:dispatch [:session/clear-username]]
              [:dispatch [::re-oidc/logout]]]}
        ;; Proxy JWT login
        ?no-val-logout-url
-       {:fx [[:dispatch [:session/set-token nil]]
-             [:dispatch [:session/set-username nil]]
+       {:fx [[:dispatch [:session/clear-token]]
+             [:dispatch [:session/clear-username]]
              [:session/no-val-logout-redirect
               {:logout-url ?no-val-logout-url}]]}
        ;; Regular JWT login
@@ -300,8 +313,8 @@
 (re-frame/reg-event-fx
  :session/logout-success-handler
  (fn [_ _]
-   {:fx [[:dispatch [:session/set-token nil]]
-         [:dispatch [:session/set-username nil]]
+   {:fx [[:dispatch [:session/clear-token]]
+         [:dispatch [:session/clear-username]]
          [:dispatch [:notification/notify false "You have logged out."]]]}))
 
 (re-frame/reg-event-fx
@@ -867,8 +880,8 @@
  :oidc/user-unloaded
  global-interceptors
  (fn [_ _]
-   {:fx [[:dispatch [:session/set-token nil]]
-         [:dispatch [:session/set-username nil]]]}))
+   {:fx [[:dispatch [:session/clear-token]]
+         [:dispatch [:session/clear-username]]]}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Status Dashboard
