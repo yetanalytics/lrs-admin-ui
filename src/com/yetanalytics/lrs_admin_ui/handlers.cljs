@@ -267,17 +267,47 @@
 (re-frame/reg-event-fx
  :session/logout
  (fn [{:keys [db]} _]
-   (let [{?no-val-logout-url ::db/no-val-logout-url} db]
-     {:fx [[:dispatch [:session/set-token nil]]
-           [:dispatch [:session/set-username nil]]
-           ;; For OIDC logouts, which contain a redirect, notification is
-           ;; triggered by logout success
-           (cond
-             (oidc/logged-in? db) [:dispatch [::re-oidc/logout]]
-             ?no-val-logout-url [:session/no-val-logout-redirect
-                                 {:logout-url ?no-val-logout-url}]
-             :else
-             [:dispatch [:notification/notify false "You have logged out."]])]})))
+   (let [{server-host        ::db/server-host
+          proxy-path         ::db/proxy-path
+          ?no-val-logout-url ::db/no-val-logout-url} db]
+     (cond
+       ;; OIDC login
+       (oidc/logged-in? db)
+       {:fx [[:dispatch [:session/set-token nil]] ; TODO: Use clear-token effect to avoid redundant warning
+             [:dispatch [:session/set-username nil]]
+             [:dispatch [::re-oidc/logout]]]}
+       ;; Proxy JWT login
+       ?no-val-logout-url
+       {:fx [[:dispatch [:session/set-token nil]]
+             [:dispatch [:session/set-username nil]]
+             [:session/no-val-logout-redirect
+              {:logout-url ?no-val-logout-url}]]}
+       ;; Regular JWT login
+       :else
+       {:http-xhrio
+        {:method          :post
+         :uri             (httpfn/serv-uri
+                           server-host
+                           "/admin/account/logout"
+                           proxy-path)
+         :params          {}
+         :format          (ajax/json-request-format)
+         :response-format (ajax/json-response-format {:keywords? true})
+         :on-success      [:session/logout-success-handler]
+         :on-failure      [:session/logout-error-handler]
+         :interceptors    [httpfn/add-jwt-interceptor]}}))))
+
+(re-frame/reg-event-fx
+ :session/logout-success-handler
+ (fn [_ _]
+   {:fx [[:dispatch [:session/set-token nil]]
+         [:dispatch [:session/set-username nil]]
+         [:dispatch [:notification/notify false "You have logged out."]]]}))
+
+(re-frame/reg-event-fx
+ :session/logout-error-handler
+ (fn [_ _]
+   {:fx [[:dispatch [:notification/notify true "Logout error occured."]]]}))
 
 (re-frame/reg-fx
  :session/no-val-logout-redirect
