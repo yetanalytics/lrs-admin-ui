@@ -191,6 +191,7 @@
                           ::login
                           ::browser
                           ::accounts
+                          ::new-account
                           ::server-host
                           ::xapi-prefix
                           ::proxy-path
