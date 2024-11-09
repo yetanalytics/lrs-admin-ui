@@ -24,8 +24,28 @@
             [com.yetanalytics.lrs-admin-ui.language           :as lang]
             [com.yetanalytics.lrs-reactions.path              :as rpath]))
 
+(def interaction-interceptor
+  (re-frame/on-changes
+   (fn [& _] (.now js/Date))
+   [::db/last-interaction-time]
+   ;; Places in app-db to detect changes
+   [::db/session :page]
+   [::db/login]
+   [::db/credentials]
+   [::db/accounts]
+   [::db/new-account]
+   [::db/browser]
+   [::db/status]
+   [::db/reactions]
+   [::db/reaction-focus]
+   [::db/editing-reaction]
+   [::db/editing-reaction-template-json]))
+
 (re-frame/reg-global-interceptor
  db/check-spec-interceptor)
+
+(re-frame/reg-global-interceptor
+ interaction-interceptor)
 
 (re-frame/reg-event-fx
  :db/init
