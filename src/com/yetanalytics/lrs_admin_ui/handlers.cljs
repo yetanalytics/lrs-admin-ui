@@ -24,12 +24,11 @@
             [com.yetanalytics.lrs-admin-ui.language           :as lang]
             [com.yetanalytics.lrs-reactions.path              :as rpath]))
 
-(def global-interceptors
-  [db/check-spec-interceptor])
+(re-frame/reg-global-interceptor
+ db/check-spec-interceptor)
 
 (re-frame/reg-event-fx
  :db/init
- global-interceptors
  (fn [_  [_ server-host]]
    {:db {::db/session {:page :credentials
                        :token (stor/get-item "lrs-jwt")
@@ -66,7 +65,6 @@
 
 (re-frame/reg-event-fx
  :db/get-env
- global-interceptors
  (fn [{{server-host ::db/server-host} :db} _]
    (let [path-parts (split js/window.location.pathname "/")]
      {:http-xhrio {:method          :get
@@ -84,7 +82,6 @@
 
 (re-frame/reg-event-fx
  :db/set-env
- global-interceptors
  (fn [{:keys [db]} [_ {:keys             [url-prefix
                                           proxy-path
                                           enable-admin-status
@@ -123,7 +120,6 @@
 
 (re-frame/reg-event-fx
  :session/proxy-token-init
- global-interceptors
  (fn [_ _]
    ;; In this mode the token will be overwritten, so just store something and
    ;; move on. For testing the feature, this placeholder token has "username",
@@ -133,19 +129,16 @@
 
 (re-frame/reg-event-db
  :login/set-username
- global-interceptors
  (fn [db [_ username]]
    (assoc-in db [::db/login :username] username)))
 
 (re-frame/reg-event-db
  :login/set-password
- global-interceptors
  (fn [db [_ password]]
    (assoc-in db [::db/login :password] password)))
 
 (re-frame/reg-event-fx
  :session/authenticate
- global-interceptors
  (fn [{{server-host ::db/server-host
         proxy-path  ::db/proxy-path
         :as db} :db} _]
@@ -162,7 +155,6 @@
 
 (re-frame/reg-event-fx
  :login/success-handler
- global-interceptors
  (fn [_ [_ {:keys [json-web-token]}]]
    {:fx [[:dispatch [:session/set-token json-web-token]]
          [:dispatch [:login/set-password nil]]
@@ -170,7 +162,6 @@
 
 (re-frame/reg-event-fx
  :session/set-token
- global-interceptors
  (fn [{:keys [db]} [_ token & {:keys [store?]
                                :or   {store? true}}]]
    (cond-> {:db (assoc-in db [::db/session :token] token)
@@ -179,7 +170,6 @@
 
 (re-frame/reg-event-fx
  :session/clear-token
- global-interceptors
  (fn [{:keys [db]} [_ & {:keys [store?]
                          :or   {store? true}}]]
    (cond-> {:db (assoc-in db [::db/session :token] nil)}
@@ -187,7 +177,6 @@
 
 (re-frame/reg-event-fx
  :session/get-me
- global-interceptors
  (fn [{{server-host ::db/server-host
         proxy-path  ::db/proxy-path :as db} :db} _]
    (when (not (get db ::db/oidc-auth))
@@ -203,13 +192,11 @@
 
 (re-frame/reg-event-fx
  :session/me-success-handler
- global-interceptors
  (fn [_ [_ {:keys [username]}]]
    {:fx [[:dispatch [:session/set-username username]]]}))
 
 (re-frame/reg-event-fx
  :login/error-handler
- global-interceptors
  (fn [_ [_ {:keys [status] :as error}]]
    ;; For auth, if its badly formed or not authorized give a specific error,
    ;; otherwise default to typical server error notice handling
@@ -220,7 +207,6 @@
 
 (re-frame/reg-event-fx
  :session/set-username
- global-interceptors
  (fn [{:keys [db]} [_ username & {:keys [store?]
                                   :or   {store? true}}]]
    (cond-> {:db (assoc-in db [::db/session :username] username)}
@@ -228,7 +214,6 @@
 
 (re-frame/reg-event-fx
  :session/clear-username
- global-interceptors
  (fn [{:keys [db]} [_ & {:keys [store?]
                          :or   {store? true}}]]
    (cond-> {:db (assoc-in db [::db/session :username] nil)}
@@ -255,7 +240,6 @@
 
 (re-frame/reg-event-fx
  :session/set-page
- global-interceptors
  (fn [{:keys [db]} [_ page :as qvec]]
    {:db (assoc-in db [::db/session :page] page)
     :fx (page-fx qvec)}))
@@ -403,7 +387,6 @@
 
 (re-frame/reg-event-fx
  :browser/load-xapi
- global-interceptors
  (fn [{{server-host ::db/server-host
         proxy-path  ::db/proxy-path
         xapi-prefix ::db/xapi-prefix} :db} [_ {:keys [path params]}]]
@@ -424,7 +407,6 @@
 
 (re-frame/reg-event-db
  :browser/load-stmts-success
- global-interceptors
  (fn [db [_ {:strs [statements more]}]]
    (update-in db [::db/browser] assoc
               :content   statements
@@ -432,7 +414,6 @@
 
 (re-frame/reg-event-fx
  :browser/more
- global-interceptors
  (fn [{:keys [db]} _]
    ;; Convert more link into params and request new data.
    (let [more-params
@@ -444,7 +425,6 @@
 
 (re-frame/reg-event-fx
  :browser/back
- global-interceptors
  (fn [{:keys [db]} _]
    ;; Pop most recent from stack
    (let [back-stack (get-in db [::db/browser :back-stack])
@@ -454,7 +434,6 @@
 
 (re-frame/reg-event-fx
  :browser/add-filter
- global-interceptors
  (fn [{:keys [db]} [_ param-key param-value]]
    (let [address (get-in db [::db/browser :address])
          params (-> (httpfn/extract-params address)
@@ -466,7 +445,6 @@
 
 (re-frame/reg-event-fx
  :browser/clear-filters
- global-interceptors
  (fn [{:keys [db]} _]
    {;; Clear back-stack and reset query
     :db (assoc-in db [::db/browser :back-stack] [])
@@ -474,7 +452,6 @@
 
 (re-frame/reg-event-fx
  :browser/update-credential
- global-interceptors
  (fn [{:keys [db]} [_ key]]
    (let [credential (first (filter #(= key (:api-key %))
                                    (::db/credentials db)))]
@@ -488,7 +465,6 @@
 
 (re-frame/reg-event-fx
  :browser/refresh
- global-interceptors
  (fn [{:keys [db]} _]
    (when (get-in db [::db/browser :credential])
      ;; Clear backstack
@@ -497,7 +473,6 @@
 
 (re-frame/reg-event-fx
  :browser/update-batch-size
- global-interceptors
  (fn [{:keys [db]} [_ batch-size]]
    ;; Clear from and limit
    (let [address (get-in db [::db/browser :address])
@@ -516,13 +491,11 @@
 
 (re-frame/reg-event-db
  :credentials/set-credentials
- global-interceptors
  (fn [db [_ credentials]]
    (assoc db ::db/credentials credentials)))
 
 (re-frame/reg-event-fx
  :credentials/load-credentials
- global-interceptors
  (fn [{{server-host ::db/server-host
         proxy-path  ::db/proxy-path} :db} _]
    {:http-xhrio {:method          :get
@@ -537,13 +510,11 @@
 
 (re-frame/reg-event-db
  :credentials/update-credential
- global-interceptors
  (fn [db [_ idx credential]]
    (assoc-in db [::db/credentials idx] credential)))
 
 (re-frame/reg-event-fx
  :credentials/save-credential
- global-interceptors
  (fn [{{server-host ::db/server-host
         proxy-path  ::db/proxy-path} :db} [_ credential]]
    {:http-xhrio {:method          :put
@@ -561,7 +532,6 @@
 
 (re-frame/reg-event-fx
  :credentials/save-success
- global-interceptors
  (fn [_ [_ {:keys [api-key]}]]
    {:fx [[:dispatch [:credentials/load-credentials]]
          [:dispatch [:notification/notify false
@@ -570,7 +540,6 @@
 
 (re-frame/reg-event-fx
  :credentials/create-credential
- global-interceptors
  (fn [{{server-host ::db/server-host
         proxy-path  ::db/proxy-path} :db} [_ credential]]
    {:http-xhrio {:method          :post
@@ -587,7 +556,6 @@
 
 (re-frame/reg-event-fx
  :credentials/create-success
- global-interceptors
  (fn [_ [_ {:keys [api-key]}]]
    {:fx [[:dispatch [:credentials/load-credentials]]
          [:dispatch [:notification/notify false
@@ -596,7 +564,6 @@
 
 (re-frame/reg-event-fx
  :credentials/delete-credential
- global-interceptors
  (fn [{{server-host ::db/server-host
         proxy-path  ::db/proxy-path} :db} [_ credential]]
    {:http-xhrio {:method          :delete
@@ -613,7 +580,6 @@
 
 (re-frame/reg-event-fx
  :credentials/delete-success
- global-interceptors
  (fn [_ [_ {:keys [api-key]}]]
    {:fx [[:dispatch [:credentials/load-credentials]]
          [:dispatch [:notification/notify false
@@ -628,7 +594,6 @@
 
 (re-frame/reg-event-fx
  :accounts/load-accounts
- global-interceptors
  (fn [{{server-host ::db/server-host
         proxy-path  ::db/proxy-path} :db} _]
    {:http-xhrio {:method          :get
@@ -643,7 +608,6 @@
 
 (re-frame/reg-event-fx
  :accounts/delete-account
- global-interceptors
  (fn [{{server-host ::db/server-host
         proxy-path  ::db/proxy-path} :db} [_ {:keys [account-id username]}]]
    {:http-xhrio {:method          :delete
@@ -660,7 +624,6 @@
 
 (re-frame/reg-event-fx
  :accounts/delete-success
- global-interceptors
  (fn [_ [_ username _]]
    {:fx [[:dispatch [:accounts/load-accounts]]
          [:dispatch [:notification/notify false
@@ -668,13 +631,11 @@
 
 (re-frame/reg-event-db
  :accounts/set-accounts
- global-interceptors
  (fn [db [_ accounts]]
    (assoc db ::db/accounts accounts)))
 
 (re-frame/reg-event-fx
  :accounts/create-account
- global-interceptors
  (fn [{{server-host ::db/server-host
         proxy-path  ::db/proxy-path
         :as db} :db} _]
@@ -697,13 +658,11 @@
 
 (re-frame/reg-event-db
  :new-account/set-new-account
- global-interceptors
  (fn [db [_ new-account]]
    (assoc db ::db/new-account new-account)))
 
 (re-frame/reg-event-fx
  :accounts/create-success
- global-interceptors
  (fn [_ [_ username _]]
    {:fx [[:dispatch [:accounts/load-accounts]]
          [:dispatch [:new-account/set-new-account
@@ -714,7 +673,6 @@
 
 (re-frame/reg-event-fx
  :accounts/create-error
- global-interceptors
  (fn [_ [_ {:keys [status] :as error}]]
    ;; For account creation, if its malformed give a specific error,
    ;; otherwise default to typical server error notice handling
@@ -725,50 +683,42 @@
 
 (re-frame/reg-event-db
  :new-account/set-username
- global-interceptors
  (fn [db [_ username]]
    (assoc-in db [::db/new-account :username] username)))
 
 (re-frame/reg-event-db
  :new-account/set-password
- global-interceptors
  (fn [db [_ password]]
    (assoc-in db [::db/new-account :password] password)))
 
 (re-frame/reg-event-fx
  :new-account/generate-password
- global-interceptors
  (fn [_ _]
    {:dispatch [:new-account/set-password (pass/pass-gen 12)]}))
 
 (re-frame/reg-event-db
  :update-password/set-old-password
- global-interceptors
  (fn [db [_ password]]
    (assoc-in db [::db/update-password :old-password] password)))
 
 (re-frame/reg-event-db
  :update-password/set-new-password
- global-interceptors
  (fn [db [_ password]]
    (assoc-in db [::db/update-password :new-password] password)))
 
 (re-frame/reg-event-db
  :update-password/clear
- global-interceptors
  (fn [db _]
    (assoc db ::db/update-password {:old-password nil
                                    :new-password nil})))
 
 (re-frame/reg-event-fx
  :update-password/generate-password
- global-interceptors
  (fn [_ _]
    {:dispatch [:update-password/set-new-password (pass/pass-gen 12)]}))
 
 (re-frame/reg-event-fx
  :update-password/update-password!
- global-interceptors
  (fn [{{server-host ::db/server-host
         proxy-path  ::db/proxy-path
         :as db} :db} _]
@@ -790,7 +740,6 @@
 
 (re-frame/reg-event-fx
  :update-password/update-success
- global-interceptors
  (fn [_ _]
    {:fx [[:dispatch [:update-password/clear]]
          [:dispatch [:session/set-page :credentials]]
@@ -799,7 +748,6 @@
 
 (re-frame/reg-event-fx
  :update-password/update-error
- global-interceptors
  (fn [_ _]
    {:fx [[:dispatch [:notification/notify true
                      "Password update failed. Please try again."]]]}))
@@ -858,13 +806,11 @@
 
 (re-frame/reg-event-fx
  :oidc/login-success
- global-interceptors
  (fn [_ _]
    {:fx [[:oidc/clear-search-fx {}]]}))
 
 (re-frame/reg-event-fx
  :oidc/user-loaded
- global-interceptors
  (fn [{:keys [db]} _]
    (if-let [{:keys [access-token]
              {:strs [sub]} :profile} (::re-oidc/user db)]
@@ -878,7 +824,6 @@
 
 (re-frame/reg-event-fx
  :oidc/user-unloaded
- global-interceptors
  (fn [_ _]
    {:fx [[:dispatch [:session/clear-token]]
          [:dispatch [:session/clear-username]]]}))
@@ -889,7 +834,6 @@
 
 (re-frame/reg-event-fx
  :status/get-data
- global-interceptors
  (fn [{{server-host      ::db/server-host
         proxy-path       ::db/proxy-path
         {:keys [params]} ::db/status
@@ -922,7 +866,6 @@
 
 (re-frame/reg-event-fx
  :status/server-error
- global-interceptors
  (fn [{:keys [db]} [_ include error]]
    {:db (reduce
          (fn [db' k]
@@ -946,7 +889,6 @@
 
 (re-frame/reg-event-fx
  :status/get-all-data
- global-interceptors
  (fn [_ _]
    {:fx status-dispatch-all}))
 
@@ -965,7 +907,6 @@
 
 (re-frame/reg-event-fx
  :status/set-data
- global-interceptors
  (fn [{:keys [db]} [_ include status-data]]
    {:db (reduce
          (fn [db' k]
@@ -985,14 +926,12 @@
 
 (re-frame/reg-event-fx
  :status/set-timeline-unit
- global-interceptors
  (fn [{:keys [db]} [_ unit]]
    {:db (assoc-in db [::db/status :params :timeline-unit] unit)
     :fx [timeline-control-fx]}))
 
 (re-frame/reg-event-fx
  :status/set-timeline-since
- global-interceptors
  (fn [{{{{:keys [timeline-until]
           :or   {timeline-until (t/timeline-until-default)}}
          :params} ::db/status
@@ -1012,7 +951,6 @@
 
 (re-frame/reg-event-fx
  :status/set-timeline-until
- global-interceptors
  (fn [{{{{:keys [timeline-since]
           :or   {timeline-since (t/timeline-since-default)}}
          :params} ::db/status
@@ -1040,7 +978,6 @@
 
 (re-frame/reg-event-fx
  :reaction/load-reactions
- global-interceptors
  (fn [{{server-host ::db/server-host
         proxy-path  ::db/proxy-path} :db} _]
    {:http-xhrio {:method          :get
@@ -1055,7 +992,6 @@
 
 (re-frame/reg-event-db
  :reaction/set-reactions
- global-interceptors
  (fn [db [_ {:keys [reactions]}]]
    (assoc db
           ::db/reactions
@@ -1066,13 +1002,11 @@
 
 (re-frame/reg-event-db
  :reaction/set-focus
- global-interceptors
  (fn [db [_ reaction-id]]
    (assoc db ::db/reaction-focus reaction-id)))
 
 (re-frame/reg-event-db
  :reaction/unset-focus
- global-interceptors
  (fn [db _]
    (dissoc db ::db/reaction-focus)))
 
@@ -1097,7 +1031,6 @@
 ;; TODO: Currently unimplemented
 #_(re-frame/reg-event-fx
  :reaction/download-all
- global-interceptors
  (fn [{:keys [db]}]
    (let [reactions (->> (::db/reactions db)
                         (map rfns/index-conditions) ; sort by sort-idx, then remove
@@ -1107,7 +1040,6 @@
 
 (re-frame/reg-event-fx
  :reaction/download
- global-interceptors
  (fn [{:keys [db]} [_ reaction-id]]
    (if-let [reaction (some-> (find-reaction db reaction-id)
                              rfns/index-conditions ; sort by sort-idx, then remove
@@ -1119,13 +1051,11 @@
 
 (re-frame/reg-event-fx
  :reaction/upload
- global-interceptors
  (fn [{:keys [db]}]
    {:db db}))
 
 (re-frame/reg-event-fx
  :reaction/edit
- global-interceptors
  (fn [{:keys [db]} [_ reaction-id]]
    (if-let [reaction (some-> (find-reaction db reaction-id)
                              rfns/index-conditions)]
@@ -1139,7 +1069,6 @@
 
 (re-frame/reg-event-fx
  :reaction/new
- global-interceptors
  (fn [{:keys [db]} _]
    (let [reaction {:title  (format "reaction_%s"
                                    (fns/rand-alpha-str 8))
@@ -1164,7 +1093,6 @@
 
 (re-frame/reg-event-fx
  :reaction/upload-edit
- global-interceptors
  (fn [{:keys [db]} [_ upload-data]]
    (if-some [edn-data (try
                           (js->clj (js/JSON.parse upload-data)
@@ -1186,7 +1114,6 @@
 
 (re-frame/reg-event-fx
  :reaction/revert-edit
- global-interceptors
  (fn [{:keys [db]} _]
    (when-let [reaction-id (get-in db [::db/editing-reaction :id])]
      (when-let [reaction (some-> (find-reaction db reaction-id)
@@ -1199,7 +1126,6 @@
 
 (re-frame/reg-event-fx
  :reaction/server-error
- global-interceptors
  (fn [_ [_ {:keys [response status]}]]
    (if (= 400 status)
      {:fx [[:dispatch
@@ -1210,7 +1136,6 @@
 
 (re-frame/reg-event-fx
  :reaction/save-edit
- global-interceptors
  (fn [{{server-host       ::db/server-host
         proxy-path        ::db/proxy-path
         ?editing-reaction ::db/editing-reaction} :db} _]
@@ -1248,7 +1173,6 @@
 
 (re-frame/reg-event-fx
  :reaction/save-edit-success
- global-interceptors
  (fn [{:keys [db]} [_ {:keys [reactionId]}]]
    {:db (-> db
             cancel-edit
@@ -1259,7 +1183,6 @@
 
 (re-frame/reg-event-fx
  :reaction/delete-confirm
- global-interceptors
  (fn [{:keys [db]} [_ reaction-id]]
    (let [{:keys [title]} (find-reaction db reaction-id)]
      {:fx [[:dispatch
@@ -1273,7 +1196,6 @@
 
 (re-frame/reg-event-fx
  :reaction/delete
- global-interceptors
  (fn [{{server-host       ::db/server-host
         proxy-path        ::db/proxy-path} :db} [_ reaction-id]]
    {:http-xhrio {:method          :delete
@@ -1290,7 +1212,6 @@
 
 (re-frame/reg-event-fx
  :reaction/delete-success
- global-interceptors
  (fn [_ _]
    {:fx [[:dispatch [:reaction/load-reactions]]
          [:dispatch [:reaction/back-to-list]]
@@ -1299,13 +1220,11 @@
 
 (re-frame/reg-event-db
  :reaction/cancel-edit
- global-interceptors
  (fn [db _]
    (cancel-edit db)))
 
 (re-frame/reg-event-fx
  :reaction/back-to-list
- global-interceptors
  (fn [_ _]
    ;; TODO: Whatever new needs to clear
    {:fx [[:dispatch [:reaction/unset-focus]]
@@ -1313,13 +1232,11 @@
 
 (re-frame/reg-event-db
  :reaction/edit-title
- global-interceptors
  (fn [db [_ title]]
    (assoc-in db [::db/editing-reaction :title] title)))
 
 (re-frame/reg-event-db
  :reaction/edit-status
- global-interceptors
  (fn [db [_ select-result]]
    (assoc-in db [::db/editing-reaction :active]
              (case select-result
@@ -1333,7 +1250,6 @@
 
 (re-frame/reg-event-db
  :reaction/delete-identity-path
- global-interceptors
  (fn [db [_ idx]]
    (update-in db
               [::db/editing-reaction :ruleset :identityPaths]
@@ -1342,7 +1258,6 @@
 
 (re-frame/reg-event-db
  :reaction/add-identity-path
- global-interceptors
  (fn [db _]
    (update-in db
               [::db/editing-reaction :ruleset :identityPaths]
@@ -1383,7 +1298,6 @@
 
 (re-frame/reg-event-db
  :reaction/add-path-segment
- global-interceptors
  (fn [db [_ path-path]]
    (let [full-path (into [::db/editing-reaction]
                          path-path)
@@ -1401,7 +1315,6 @@
 
 (re-frame/reg-event-db
  :reaction/del-path-segment
- global-interceptors
  (fn [db [_ path-path]]
    (let [full-path (into [::db/editing-reaction]
                          path-path)
@@ -1416,7 +1329,6 @@
 
 (re-frame/reg-event-fx
  :reaction/change-path-segment
- global-interceptors
  (fn [{:keys [db]} [_ path-path new-seg-val open-next?]]
    (let [full-path           (into [::db/editing-reaction]
                                    path-path)
@@ -1435,7 +1347,6 @@
 
 (re-frame/reg-event-db
  :reaction/set-op
- global-interceptors
  (fn [db [_ op-path new-op]]
    (let [full-path (into [::db/editing-reaction]
                          op-path)]
@@ -1443,7 +1354,6 @@
 
 (re-frame/reg-event-db
  :reaction/set-val-type
- global-interceptors
  (fn [db [_ val-path new-type]]
    (let [full-path (into [::db/editing-reaction]
                          val-path)]
@@ -1452,7 +1362,6 @@
 
 (re-frame/reg-event-db
  :reaction/set-val
- global-interceptors
  (fn [db [_ val-path new-val]]
    (let [full-path (into [::db/editing-reaction]
                          val-path)]
@@ -1460,7 +1369,6 @@
 
 (re-frame/reg-event-db
  :reaction/set-ref-condition
- global-interceptors
  (fn [db [_ condition-path new-condition]]
    (let [full-path (into [::db/editing-reaction]
                          condition-path)]
@@ -1468,7 +1376,6 @@
 
 (re-frame/reg-event-db
  :reaction/set-val-or-ref
- global-interceptors
  (fn [db [_ clause-path set-to]]
    (let [full-path (into [::db/editing-reaction]
                          clause-path)
@@ -1501,7 +1408,6 @@
 
 (re-frame/reg-event-db
  :reaction/set-clause-type
- global-interceptors
  (fn [db [_ clause-path clause-type]] ;; #{"and" "or" "not" "logic"}
    (let [full-path (into [::db/editing-reaction]
                          clause-path)
@@ -1523,7 +1429,6 @@
 
 (re-frame/reg-event-db
  :reaction/set-condition-name
- global-interceptors
  (fn [db [_ old-name new-name]]
    (let [reaction (::db/editing-reaction db)
          all-names (-> reaction
@@ -1548,7 +1453,6 @@
 
 (re-frame/reg-event-db
  :reaction/delete-clause
- global-interceptors
  (fn [db [_ clause-path]]
    (let [full-path (into [::db/editing-reaction]
                          clause-path)
@@ -1566,7 +1470,6 @@
 
 (re-frame/reg-event-db
  :reaction/add-condition
- global-interceptors
  (fn [db [_ ?condition-key]]
    (let [k (or ?condition-key (keyword (format "condition_%s"
                                                (fns/rand-alpha-str 8))))]
@@ -1582,7 +1485,6 @@
 
 (re-frame/reg-event-db
  :reaction/delete-condition
- global-interceptors
  (fn [db [_ condition-key]]
    (-> db
        (update-in
@@ -1594,7 +1496,6 @@
 
 (re-frame/reg-event-db
  :reaction/add-clause
- global-interceptors
  (fn [db [_ parent-path clause-type]] ;; :and, :or, :not, :logic
    (let [pkey (last parent-path) ;; :and, :or, :not, <condition name>
          full-path (into [::db/editing-reaction]
@@ -1615,7 +1516,6 @@
 
 (re-frame/reg-event-db
  :reaction/update-template
- global-interceptors
  (fn [db [_ new-value]]
    (-> db
        (dissoc ::db/editing-reaction-template-errors)
@@ -1623,19 +1523,16 @@
 
 (re-frame/reg-event-db
  :reaction/set-template-errors
- global-interceptors
  (fn [db [_ errors]]
    (assoc db ::db/editing-reaction-template-errors errors)))
 
 (re-frame/reg-event-db
  :reaction/clear-template-errors
- global-interceptors
  (fn [db _]
    (dissoc db ::db/editing-reaction-template-errors)))
 
 (re-frame/reg-event-fx
  :reaction/set-template-json
- global-interceptors
  (fn [{:keys [db]} [_ json]]
    (let [xapi-errors (rfns/validate-template-xapi json)]
      (cond-> {:db (assoc db ::db/editing-reaction-template-json json)}
@@ -1644,7 +1541,6 @@
 
 (re-frame/reg-event-db
  :reaction/clear-template-json
- global-interceptors
  (fn [db _]
    (dissoc db ::db/editing-reaction-template-json)))
 
@@ -1654,13 +1550,11 @@
 
 (re-frame/reg-event-db
  :dialog/set-ref
- global-interceptors
  (fn [db [_ dialog-ref]]
    (assoc db ::db/dialog-ref dialog-ref)))
 
 (re-frame/reg-event-db
  :dialog/clear-data
- global-interceptors
  (fn [db _]
    (dissoc db ::db/dialog-data)))
 
@@ -1682,7 +1576,6 @@
 
 (re-frame/reg-event-fx
  :dialog/present
- global-interceptors
  (fn [{:keys [db]} [_ dialog-data]]
    (when-let [dialog-ref (::db/dialog-ref db)]
      {:db          (assoc db ::db/dialog-data dialog-data)
@@ -1690,7 +1583,6 @@
 
 (re-frame/reg-event-fx
  :dialog/cancel
- global-interceptors
  (fn [{:keys [db]} _]
    (let [dialog-ref (::db/dialog-ref db)]
      {:dialog/close {:dialog-ref dialog-ref}})))
