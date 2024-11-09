@@ -186,6 +186,8 @@
 
 (s/def ::no-val-logout-url string?)
 
+(s/def ::last-interaction-time int?)
+
 (s/def ::db (s/keys :req [::session
                           ::credentials
                           ::login
@@ -206,7 +208,8 @@
                           ::status
                           ::update-password
                           ::enable-reactions
-                          ::reactions]
+                          ::reactions
+                          ::last-interaction-time]
                     :opt [::reaction-focus
                           ::editing-reaction
                           ::editing-reaction-template-errors

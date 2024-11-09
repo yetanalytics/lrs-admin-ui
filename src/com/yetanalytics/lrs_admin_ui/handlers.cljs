@@ -80,7 +80,8 @@
          ::db/enable-admin-status false
          ::db/status {}
          ::db/enable-reactions false
-         ::db/reactions []}
+         ::db/reactions []
+         ::db/last-interaction-time (.now js/Date)}
     :fx [[:dispatch [:db/get-env]]]}))
 
 (re-frame/reg-event-fx
