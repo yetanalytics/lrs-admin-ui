@@ -25,6 +25,9 @@
             [com.yetanalytics.lrs-reactions.path              :as rpath]))
 
 (def interaction-interceptor
+  "Update `::db/last-interaction-time` to the current time whenever a change is
+   made to the specified paths to the app-db. This is a heuristic that will
+   detect some, but not all, user interactions with the UI."
   (re-frame/on-changes
    (fn [& _] (.now js/Date))
    [::db/last-interaction-time]
