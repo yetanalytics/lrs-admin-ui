@@ -186,6 +186,7 @@
 
 (s/def ::no-val-logout-url string?)
 
+(s/def ::jwt-exp-time int?)
 (s/def ::last-interaction-time int?)
 
 (s/def ::db (s/keys :req [::session
@@ -209,6 +210,7 @@
                           ::update-password
                           ::enable-reactions
                           ::reactions
+                          ::jwt-exp-time
                           ::last-interaction-time]
                     :opt [::reaction-focus
                           ::editing-reaction

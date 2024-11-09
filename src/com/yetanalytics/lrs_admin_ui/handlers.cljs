@@ -75,6 +75,7 @@
          ::db/proxy-path (stor/get-item "proxy-path")
          ::db/language lang/language
          ::db/pref-lang :en-US
+         ::db/jwt-exp-time 3600
          ::db/stmt-get-max 10
          ::db/enable-admin-delete-actor false
          ::db/notifications []
@@ -106,7 +107,8 @@
 
 (re-frame/reg-event-fx
  :db/set-env
- (fn [{:keys [db]} [_ {:keys             [url-prefix
+ (fn [{:keys [db]} [_ {:keys             [jwt-exp-time
+                                          url-prefix
                                           proxy-path
                                           enable-admin-status
                                           enable-reactions
@@ -119,6 +121,7 @@
                        ?oidc             :oidc
                        ?oidc-local-admin :oidc-enable-local-admin}]]
    {:db (cond-> (assoc db
+                       ::db/jwt-exp-time (* jwt-exp-time 1000) ; sec -> ms
                        ::db/xapi-prefix url-prefix
                        ::db/proxy-path proxy-path
                        ::db/oidc-enable-local-admin (or ?oidc-local-admin false)
@@ -133,7 +136,8 @@
           (and no-val?
                (not-empty no-val-logout-url))
           (assoc ::db/no-val-logout-url no-val-logout-url))
-    :fx (cond-> []
+    :fx (cond-> [[:dispatch-later {:ms       (- (* jwt-exp-time 1000) 1000) ; TODO: Make variable
+                                   :dispatch [:login/try-renew]}]]
           ?oidc (conj [:dispatch [:oidc/init ?oidc]])
           no-val? (conj [:dispatch [:session/proxy-token-init]]))
     :session/store ["proxy-path" proxy-path]}))
@@ -285,6 +289,10 @@
             (some #(= status %) [0 401])
             (merge [:dispatch [:session/set-token nil]]))})))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Logout + Renewal
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (re-frame/reg-event-fx
  :session/logout
  (fn [{:keys [db]} _]
@@ -334,6 +342,49 @@
  :session/no-val-logout-redirect
  (fn [{:keys [logout-url]}]
    (set! (.-location js/window) logout-url)))
+
+(re-frame/reg-event-fx
+ :login/try-renew
+ (fn [{:keys [db]}]
+   (let [{last-int-time ::db/last-interaction-time} db
+         current-time (.now js/Date)]
+     ;; Ten minutes, TODO: Make variable
+     (if (< (- current-time 600000) last-int-time current-time)
+       {:fx [[:dispatch [:login/renew]]]}
+       {:fx [[:dispatch [:session/logout]]]}))))
+
+(re-frame/reg-event-fx
+ :login/renew
+ (fn [{:keys [db]}]
+   (let [{server-host ::db/server-host
+          proxy-path  ::db/proxy-path} db]
+     {:http-xhrio
+      {:method          :get
+       :uri             (httpfn/serv-uri
+                         server-host
+                         "/admin/account/renew"
+                         proxy-path)
+       :format          (ajax/json-request-format)
+       :response-format (ajax/json-response-format {:keywords? true})
+       :on-success      [:login/renew-success]
+       :on-failure      [:login/renew-error]
+       :interceptors    [httpfn/add-jwt-interceptor]}})))
+
+(re-frame/reg-event-fx
+ :login/renew-success
+ (fn [{:keys [db]} [_ {:keys [json-web-token]}]]
+   (let [jwt-exp-time (::db/jwt-exp-time db)]
+     {:fx [[:dispatch [:session/set-token json-web-token]]
+           [:dispatch-later {:ms (- jwt-exp-time 1000) ; TODO: Make variable
+                             :dispatch [:login/try-renew]}]]})))
+
+(re-frame/reg-event-fx
+ :login/renew-error
+ (fn [_ [_ {:keys [status] :as error}]]
+   (if (= 401 status)
+     {:fx [[:dispatch [:notification/notify true
+                       "Congratulations on being SQL LRS's biggest fan!"]]]}
+     {:fx [[:dispatch [:server-error error]]]})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Notifications / Alert Bar
