@@ -338,7 +338,7 @@
                        "An unexpected error has occured!")]
      {:fx (cond-> [[:dispatch [:notification/notify true message]]]
             (some #(= status %) [0 401])
-            (merge [:dispatch [:session/set-token nil]]))})))
+            (merge [:dispatch [:session/clear-token]]))})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Logout + Renewal
