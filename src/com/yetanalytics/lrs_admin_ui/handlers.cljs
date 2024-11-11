@@ -157,8 +157,11 @@
  (fn [{{server-host ::db/server-host
         proxy-path  ::db/proxy-path} :db} _]
    ;; Token should be empty for OIDC auth
+   ;; If there are, then we get an error, which is appropriate for such an
+   ;; incongrous mix of authentication procedures.
    (let [curr-token (stor/get-item "lrs-jwt")
          curr-uname (stor/get-item "username")]
+     (println "Current token:" curr-token)
      (if (some? curr-token)
        {:http-xhrio
         {:method          :get
@@ -277,8 +280,9 @@
 (re-frame/reg-event-fx
  :session/get-me
  (fn [{{server-host ::db/server-host
-        proxy-path  ::db/proxy-path :as db} :db} _]
-   (when (not (get db ::db/oidc-auth))
+        proxy-path  ::db/proxy-path
+        ?oidc-auth  ::db/oidc-auth} :db} _]
+   (when-not ?oidc-auth
      {:http-xhrio {:method          :get
                    :uri             (httpfn/serv-uri
                                      server-host
@@ -540,18 +544,20 @@
 (re-frame/reg-event-fx
  :browser/try-load-xapi
  (fn [{{server-host ::db/server-host
-        proxy-path  ::db/proxy-path} :db} [_ opts]]
-   ;; TODO: What to do for OIDC auth?
-   {:http-xhrio
-    {:method          :get
-     :uri             (httpfn/serv-uri
-                       server-host
-                       "/admin/verify"
-                       proxy-path)
-     :response-format (ajax/json-response-format {:keywords? true})
-     :on-success      [:browser/load-xapi opts]
-     :on-failure      [:browser/load-xapi-error]
-     :interceptors    [httpfn/add-jwt-interceptor]}}))
+        proxy-path  ::db/proxy-path
+        ?oidc-auth  ::db/oidc-auth} :db} [_ opts]]
+   (if-not ?oidc-auth
+     {:http-xhrio
+      {:method          :get
+       :uri             (httpfn/serv-uri
+                         server-host
+                         "/admin/verify"
+                         proxy-path)
+       :response-format (ajax/json-response-format {:keywords? true})
+       :on-success      [:browser/load-xapi opts]
+       :on-failure      [:browser/load-xapi-error]
+       :interceptors    [httpfn/add-jwt-interceptor]}}
+     {:fx [[:dispatch [:browser/load-xapi opts]]]})))
 
 (re-frame/reg-event-fx
  :browser/load-xapi
