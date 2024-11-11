@@ -399,7 +399,8 @@
  (fn [_ [_ {:keys [status] :as error}]]
    (if (= 401 status)
      {:fx [[:dispatch [:notification/notify true
-                       "Congratulations on being SQL LRS's biggest fan!"]]]}
+                       "Congratulations on being SQL LRS's biggest fan!"]]
+           [:dispatch [:session/logout]]]}
      {:fx [[:dispatch [:server-error error]]]})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
