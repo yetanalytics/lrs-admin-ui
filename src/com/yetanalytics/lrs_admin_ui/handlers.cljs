@@ -478,6 +478,22 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (re-frame/reg-event-fx
+ :browser/try-load-xapi
+ (fn [{{server-host ::db/server-host
+        proxy-path  ::db/proxy-path} :db} [_ opts]]
+   ;; TODO: What to do for OIDC auth?
+   {:http-xhrio
+    {:method          :get
+     :uri             (httpfn/serv-uri
+                       server-host
+                       "/admin/verify"
+                       proxy-path)
+     :response-format (ajax/json-response-format {:keywords? true})
+     :on-success      [:browser/load-xapi opts]
+     :on-failure      [:browser/load-xapi-error]
+     :interceptors    [httpfn/add-jwt-interceptor]}}))
+
+(re-frame/reg-event-fx
  :browser/load-xapi
  (fn [{{server-host ::db/server-host
         proxy-path  ::db/proxy-path
@@ -491,6 +507,15 @@
                    :on-success      [:browser/load-stmts-success]
                    :on-failure      [:server-error]
                    :interceptors    [httpfn/req-xapi-interceptor]}})))
+
+(re-frame/reg-event-fx
+ :browser/load-xapi-error
+ (fn [_ [_ {:keys [status] :as error}]]
+   (if (= status 401)
+     {:fx [[:dispatch [:notification/notify true
+                       "Cannot browser xAPI when logged out."]]
+           [:dispatch [:session/logout]]]}
+     {:fx [[:dispatch [:server-error error]]]})))
 
 (re-frame/reg-event-db
  :browser/set-address
@@ -513,7 +538,7 @@
          address (get-in db [::db/browser :address])]
      ;; Push current address into stack
      {:db (update-in db [::db/browser :back-stack] conj address)
-      :dispatch [:browser/load-xapi {:params more-params}]})))
+      :dispatch [:browser/try-load-xapi {:params more-params}]})))
 
 (re-frame/reg-event-fx
  :browser/back
@@ -522,7 +547,7 @@
    (let [back-stack (get-in db [::db/browser :back-stack])
          back-params (httpfn/extract-params (peek back-stack))]
      {:db (update-in db [::db/browser :back-stack] pop)
-      :dispatch [:browser/load-xapi {:params back-params}]})))
+      :dispatch [:browser/try-load-xapi {:params back-params}]})))
 
 (re-frame/reg-event-fx
  :browser/add-filter
@@ -533,14 +558,14 @@
                     (assoc param-key param-value))]
      ;; Clear back-stack
      {:db (assoc-in db [::db/browser :back-stack] [])
-      :dispatch [:browser/load-xapi {:params params}]})))
+      :dispatch [:browser/try-load-xapi {:params params}]})))
 
 (re-frame/reg-event-fx
  :browser/clear-filters
  (fn [{:keys [db]} _]
    {;; Clear back-stack and reset query
     :db (assoc-in db [::db/browser :back-stack] [])
-    :dispatch [:browser/load-xapi]}))
+    :dispatch [:browser/try-load-xapi]}))
 
 (re-frame/reg-event-fx
  :browser/update-credential
@@ -553,7 +578,7 @@
                        :credential credential
                        :back-stack []
                        :batch-size 10)
-        :dispatch [:browser/load-xapi]}))))
+        :dispatch [:browser/try-load-xapi]}))))
 
 (re-frame/reg-event-fx
  :browser/refresh
@@ -561,7 +586,7 @@
    (when (get-in db [::db/browser :credential])
      ;; Clear backstack
      {:db (assoc-in db [::db/browser :back-stack] [])
-      :dispatch [:browser/load-xapi]})))
+      :dispatch [:browser/try-load-xapi]})))
 
 (re-frame/reg-event-fx
  :browser/update-batch-size
@@ -574,7 +599,7 @@
      {:db (update-in db [::db/browser] assoc
                      :batch-size batch-size
                      :back-stack [])
-      :dispatch [:browser/load-xapi {:params params}]})))
+      :dispatch [:browser/try-load-xapi {:params params}]})))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -870,7 +895,8 @@
  :delete-actor/delete-success
  (fn [_ [_ actor-ifi]]
    {:fx [[:dispatch [:notification/notify false (str "Successfully deleted " actor-ifi)]]
-         [:dispatch [:browser/load-xapi]]]}))
+         [:dispatch [:browser/try-load-xapi]]]}))
+
 (re-frame/reg-event-fx
  :delete-actor/server-error
  (fn [_ [_ actor-ifi _err]]
