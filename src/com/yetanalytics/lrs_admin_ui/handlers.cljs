@@ -121,11 +121,7 @@
                                      stmt-get-max
                                      custom-language]
                        ?oidc        :oidc
-                       ?oidc-enable :oidc-enable-local-admin
-                       :as env}]]
-                       (println env)
-   (println "JWT refresh interval:" jwt-refresh-interval)
-   (println "JWT interaction window:" jwt-interaction-window)
+                       ?oidc-enable :oidc-enable-local-admin}]]
    (let [jwt-refresh-interval*    (* 1000 jwt-refresh-interval)
          jwt-interaction-window*  (* 1000 jwt-interaction-window)
          oidc-enable-local-admin? (or ?oidc-enable false)
