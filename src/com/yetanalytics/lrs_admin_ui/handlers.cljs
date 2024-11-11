@@ -75,7 +75,8 @@
          ::db/proxy-path (stor/get-item "proxy-path")
          ::db/language lang/language
          ::db/pref-lang :en-US
-         ::db/jwt-exp-time 3600
+         ::db/jwt-refresh-interval 3540
+         ::db/jwt-interaction-window 600
          ::db/stmt-get-max 10
          ::db/enable-admin-delete-actor false
          ::db/notifications []
@@ -107,40 +108,48 @@
 
 (re-frame/reg-event-fx
  :db/set-env
- (fn [{:keys [db]} [_ {:keys             [jwt-exp-time
-                                          url-prefix
-                                          proxy-path
-                                          enable-admin-status
-                                          enable-reactions
-                                          no-val?
-                                          no-val-logout-url
-                                          enable-admin-delete-actor
-                                          admin-language-code
-                                          stmt-get-max
-                                          custom-language]
-                       ?oidc             :oidc
-                       ?oidc-local-admin :oidc-enable-local-admin}]]
-   {:db (cond-> (assoc db
-                       ::db/jwt-exp-time (* jwt-exp-time 1000) ; sec -> ms
-                       ::db/xapi-prefix url-prefix
-                       ::db/proxy-path proxy-path
-                       ::db/oidc-enable-local-admin (or ?oidc-local-admin false)
-                       ::db/enable-admin-status enable-admin-status
-                       ::db/enable-reactions enable-reactions
-                       ::db/enable-admin-delete-actor enable-admin-delete-actor
-                       ::db/stmt-get-max stmt-get-max
-                       ::db/pref-lang (keyword admin-language-code)
-                       ::db/language (merge-with merge
-                                                 lang/language
-                                                 custom-language))
-          (and no-val?
-               (not-empty no-val-logout-url))
-          (assoc ::db/no-val-logout-url no-val-logout-url))
-    :fx (cond-> [[:dispatch-later {:ms       (- (* jwt-exp-time 1000) 1000) ; TODO: Make variable
-                                   :dispatch [:login/try-renew]}]]
-          ?oidc (conj [:dispatch [:oidc/init ?oidc]])
-          no-val? (conj [:dispatch [:session/proxy-token-init]]))
-    :session/store ["proxy-path" proxy-path]}))
+ (fn [{:keys [db]} [_ {:keys        [jwt-refresh-interval
+                                     jwt-interaction-window
+                                     url-prefix
+                                     proxy-path
+                                     enable-admin-status
+                                     enable-reactions
+                                     no-val?
+                                     no-val-logout-url
+                                     enable-admin-delete-actor
+                                     admin-language-code
+                                     stmt-get-max
+                                     custom-language]
+                       ?oidc        :oidc
+                       ?oidc-enable :oidc-enable-local-admin}]]
+   (let [jwt-refresh-interval*    (* 1000 jwt-refresh-interval)
+         jwt-interaction-window*  (* 1000 jwt-interaction-window)
+         oidc-enable-local-admin? (or ?oidc-enable false)
+         admin-lang-keyword       (keyword admin-language-code)
+         language-map             (merge-with merge
+                                              lang/language
+                                              custom-language)]
+     ;; TODO: Put env vars in their own map
+     {:db (cond-> (assoc db
+                         ::db/jwt-refresh-interval jwt-refresh-interval*
+                         ::db/jwt-interaction-window jwt-interaction-window*
+                         ::db/xapi-prefix url-prefix
+                         ::db/proxy-path proxy-path
+                         ::db/oidc-enable-local-admin oidc-enable-local-admin?
+                         ::db/enable-admin-status enable-admin-status
+                         ::db/enable-reactions enable-reactions
+                         ::db/enable-admin-delete-actor enable-admin-delete-actor
+                         ::db/stmt-get-max stmt-get-max
+                         ::db/pref-lang admin-lang-keyword
+                         ::db/language language-map)
+            (and no-val?
+                 (not-empty no-val-logout-url))
+            (assoc ::db/no-val-logout-url no-val-logout-url))
+      :fx (cond-> [[:dispatch-later {:ms       jwt-refresh-interval*
+                                     :dispatch [:login/try-renew]}]]
+            ?oidc (conj [:dispatch [:oidc/init ?oidc]])
+            no-val? (conj [:dispatch [:session/proxy-token-init]]))
+      :session/store ["proxy-path" proxy-path]})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Login / Auth
@@ -346,10 +355,10 @@
 (re-frame/reg-event-fx
  :login/try-renew
  (fn [{:keys [db]}]
-   (let [{last-int-time ::db/last-interaction-time} db
+   (let [{int-window    ::db/jwt-interaction-window
+          last-int-time ::db/last-interaction-time} db
          current-time (.now js/Date)]
-     ;; Ten minutes, TODO: Make variable
-     (if (< (- current-time 600000) last-int-time current-time)
+     (if (< (- current-time int-window) last-int-time current-time)
        {:fx [[:dispatch [:login/renew]]]}
        {:fx [[:dispatch [:session/logout]]]}))))
 
@@ -373,9 +382,9 @@
 (re-frame/reg-event-fx
  :login/renew-success
  (fn [{:keys [db]} [_ {:keys [json-web-token]}]]
-   (let [jwt-exp-time (::db/jwt-exp-time db)]
+   (let [jwt-refresh-interval (::db/jwt-refresh-interval db)]
      {:fx [[:dispatch [:session/set-token json-web-token]]
-           [:dispatch-later {:ms (- jwt-exp-time 1000) ; TODO: Make variable
+           [:dispatch-later {:ms jwt-refresh-interval
                              :dispatch [:login/try-renew]}]]})))
 
 (re-frame/reg-event-fx
