@@ -54,8 +54,8 @@
  :db/init
  (fn [_  [_ server-host]]
    {:db {::db/session {:page :credentials
-                       :token (stor/get-item "lrs-jwt")
-                       :username (stor/get-item "username")}
+                       :token nil #_(stor/get-item "lrs-jwt")
+                       :username nil #_(stor/get-item "username")}
          ::db/login {:username nil
                      :password nil}
          ::db/credentials []
@@ -87,7 +87,8 @@
          ::db/enable-reactions false
          ::db/reactions []
          ::db/last-interaction-time (.now js/Date)}
-    :fx [[:dispatch [:db/get-env]]]}))
+    :fx [[:dispatch [:db/verify-login]]
+         [:dispatch [:db/get-env]]]}))
 
 (re-frame/reg-event-fx
  :db/get-env
@@ -150,6 +151,44 @@
             no-val? (conj [:dispatch [:session/proxy-token-init]]))
       :session/store ["proxy-path" proxy-path]})))
 
+(re-frame/reg-event-fx
+ :db/verify-login
+ (fn [{{server-host ::db/server-host
+        proxy-path  ::db/proxy-path} :db} _]
+   ;; Token should be empty for OIDC auth
+   (let [curr-token (stor/get-item "lrs-jwt")
+         curr-uname (stor/get-item "username")]
+     (if (some? curr-token)
+       {:http-xhrio
+        {:method          :get
+         :uri             (httpfn/serv-uri
+                           server-host
+                           "/admin/verify"
+                           proxy-path)
+         :response-format (ajax/json-response-format {:keywords? true})
+         :on-success      [:db/verify-login-success curr-token curr-uname]
+         :on-failure      [:db/verify-login-error]
+         :interceptors    [(httpfn/add-jwt-interceptor* curr-token)]}}
+       ;; No JWT in local storage, no-op
+       {}))))
+
+(re-frame/reg-event-db
+ :db/verify-login-success
+ (fn [db [_ curr-token curr-uname _]]
+   (-> db
+       (assoc-in [::db/session :token] curr-token)
+       (assoc-in [::db/session :username] curr-uname))))
+
+(re-frame/reg-event-fx
+ :db/verify-login-error
+ (fn [_ [_ {:keys [status] :as error}]]
+   (if (= 401 status)
+     {:fx [[:dispatch [:notification/notify true
+                       "Current login has expired"]]
+           [:dispatch [:session/clear-token]]
+           [:dispatch [:session/clear-username]]]}
+     {:fx [[:dispatch [:server-error error]]]})))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Login / Auth
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -198,6 +237,13 @@
            [:dispatch [:login/set-username nil]]
            [:dispatch-later {:ms       jwt-refresh-interval
                              :dispatch [:login/try-renew]}]]})))
+
+(comment
+  "Login JWT:
+   eyJhbGciOiJIUzI1NiJ9.eyJhY2MiOiIwMTkzMWM5Yi0yMDEwLTg3ZTMtOGY0MC1kYmJjM2E0Nzk0ZGIiLCJpYXQiOjE3MzEzNTIxNjEsImV4cCI6MTczMTM1NTc2MX0.scOscENM3-pvwYc2TOUS2IvN8RMO6Uww_lnFq2pP9FE"
+  
+  "Current JWT:
+   eyJhbGciOiJIUzI1NiJ9.eyJhY2MiOiIwMTkzMWM5Yi0yMDEwLTg3ZTMtOGY0MC1kYmJjM2E0Nzk0ZGIiLCJpYXQiOjE3MzEzNTIxNjEsImV4cCI6MTczMTM1NTc2MX0.scOscENM3-pvwYc2TOUS2IvN8RMO6Uww_lnFq2pP9FE")
 
 (re-frame/reg-event-fx
  :session/set-token
