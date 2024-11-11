@@ -239,13 +239,6 @@
            [:dispatch-later {:ms       jwt-refresh-interval
                              :dispatch [:login/try-renew]}]]})))
 
-(comment
-  "Login JWT:
-   eyJhbGciOiJIUzI1NiJ9.eyJhY2MiOiIwMTkzMWM5Yi0yMDEwLTg3ZTMtOGY0MC1kYmJjM2E0Nzk0ZGIiLCJpYXQiOjE3MzEzNTIxNjEsImV4cCI6MTczMTM1NTc2MX0.scOscENM3-pvwYc2TOUS2IvN8RMO6Uww_lnFq2pP9FE"
-  
-  "Current JWT:
-   eyJhbGciOiJIUzI1NiJ9.eyJhY2MiOiIwMTkzMWM5Yi0yMDEwLTg3ZTMtOGY0MC1kYmJjM2E0Nzk0ZGIiLCJpYXQiOjE3MzEzNTIxNjEsImV4cCI6MTczMTM1NTc2MX0.scOscENM3-pvwYc2TOUS2IvN8RMO6Uww_lnFq2pP9FE")
-
 (re-frame/reg-event-fx
  :session/set-token
  (fn [{:keys [db]} [_ token & {:keys [store?]
