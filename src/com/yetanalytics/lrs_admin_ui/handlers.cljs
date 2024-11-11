@@ -363,9 +363,14 @@
  (fn [{:keys [db]}]
    (let [{int-window    ::db/jwt-interaction-window
           last-int-time ::db/last-interaction-time} db
-         current-time (.now js/Date)]
-     (if (< (- current-time int-window) last-int-time current-time)
+         current-token (get-in db [::db/session :token])
+         current-time  (.now js/Date)]
+     (cond
+       (nil? current-token) ; logged out or non-JWT login
+       {}
+       (< (- current-time int-window) last-int-time current-time)
        {:fx [[:dispatch [:login/renew]]]}
+       :else
        {:fx [[:dispatch [:session/logout]]]}))))
 
 (re-frame/reg-event-fx
