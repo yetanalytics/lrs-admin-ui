@@ -121,7 +121,11 @@
                                      stmt-get-max
                                      custom-language]
                        ?oidc        :oidc
-                       ?oidc-enable :oidc-enable-local-admin}]]
+                       ?oidc-enable :oidc-enable-local-admin
+                       :as env}]]
+                       (println env)
+   (println "JWT refresh interval:" jwt-refresh-interval)
+   (println "JWT interaction window:" jwt-interaction-window)
    (let [jwt-refresh-interval*    (* 1000 jwt-refresh-interval)
          jwt-interaction-window*  (* 1000 jwt-interaction-window)
          oidc-enable-local-admin? (or ?oidc-enable false)
@@ -145,8 +149,7 @@
             (and no-val?
                  (not-empty no-val-logout-url))
             (assoc ::db/no-val-logout-url no-val-logout-url))
-      :fx (cond-> [[:dispatch-later {:ms       jwt-refresh-interval*
-                                     :dispatch [:login/try-renew]}]]
+      :fx (cond-> []
             ?oidc (conj [:dispatch [:oidc/init ?oidc]])
             no-val? (conj [:dispatch [:session/proxy-token-init]]))
       :session/store ["proxy-path" proxy-path]})))
@@ -192,10 +195,13 @@
 
 (re-frame/reg-event-fx
  :login/success-handler
- (fn [_ [_ {:keys [json-web-token]}]]
-   {:fx [[:dispatch [:session/set-token json-web-token]]
-         [:dispatch [:login/set-password nil]]
-         [:dispatch [:login/set-username nil]]]}))
+ (fn [{:keys [db]} [_ {:keys [json-web-token]}]]
+   (let [jwt-refresh-interval (::db/jwt-refresh-interval db)]
+     {:fx [[:dispatch [:session/set-token json-web-token]]
+           [:dispatch [:login/set-password nil]]
+           [:dispatch [:login/set-username nil]]
+           [:dispatch-later {:ms       jwt-refresh-interval
+                             :dispatch [:login/try-renew]}]]})))
 
 (re-frame/reg-event-fx
  :session/set-token
