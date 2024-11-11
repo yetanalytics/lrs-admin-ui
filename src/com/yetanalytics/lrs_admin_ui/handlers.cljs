@@ -53,9 +53,10 @@
 (re-frame/reg-event-fx
  :db/init
  (fn [_  [_ server-host]]
-   {:db {::db/session {:page :credentials
-                       :token nil #_(stor/get-item "lrs-jwt")
-                       :username nil #_(stor/get-item "username")}
+   {:db {::db/session {:page     :credentials
+                       ;; Token and username will be set in `:db/verify-login`
+                       :token    nil
+                       :username nil}
          ::db/login {:username nil
                      :password nil}
          ::db/credentials []
