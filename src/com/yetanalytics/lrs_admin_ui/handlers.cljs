@@ -194,14 +194,34 @@
 ;; Login / Auth
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(def placeholder-token
+  "Sample token used for testing no-val JWT mode. This token has this body:
+   ```
+   {
+     \"domain\": \"https://unsecure.yetanalytics.com/realm\",
+     \"perms\": [\"ADMIN\"],
+     \"username\": \"CLIFF.CASEY.1234567890\"
+   }
+   ```
+   which correspond to the following values in lrsql config:
+   ```
+   {
+     \"jwtNoVal\": true,
+     \"jwtNoValUname\": \"username\",
+     \"jwtNoValIssuer\": \"domain\",
+     \"jwtNoValRoleKey\": \"perms\",
+     \"jwtNoValRole\": \"ADMIN\"
+   }
+   ```
+   "
+  "eyJhbGciOiJIUzI1NiJ9.eyJkb21haW4iOiJodHRwczovL3Vuc2VjdXJlLnlldGFuYWx5dGljcy5jb20vcmVhbG0iLCJwZXJtcyI6WyJBRE1JTiJdLCJ1c2VybmFtZSI6IkNMSUZGLkNBU0VZLjEyMzQ1Njc4OTAifQ.2gRn_tDFBfJx2RE0pgvPM4wH__RnHf1E9kjsNlkLrnQ")
+
 (re-frame/reg-event-fx
  :session/proxy-token-init
  (fn [_ _]
    ;; In this mode the token will be overwritten, so just store something and
-   ;; move on. For testing the feature, this placeholder token has "username",
-   ;; "perms" array containing "ADMIN" perm, and "domain" as the issuer
-   (let [placeholder-token "eyJhbGciOiJIUzI1NiJ9.eyJkb21haW4iOiJodHRwczovL3Vuc2VjdXJlLnlldGFuYWx5dGljcy5jb20vcmVhbG0iLCJwZXJtcyI6WyJBRE1JTiJdLCJ1c2VybmFtZSI6IkNMSUZGLkNBU0VZLjEyMzQ1Njc4OTAifQ.2gRn_tDFBfJx2RE0pgvPM4wH__RnHf1E9kjsNlkLrnQ"]
-     {:fx [[:dispatch [:session/set-token placeholder-token]]]})))
+   ;; move on.
+   {:fx [[:dispatch [:session/set-token placeholder-token]]]}))
 
 (re-frame/reg-event-db
  :login/set-username
