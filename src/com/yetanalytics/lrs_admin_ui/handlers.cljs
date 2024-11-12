@@ -194,142 +194,6 @@
      {:fx [[:dispatch [:server-error error]]]})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Login / Auth
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(def placeholder-token
-  "Sample token used for testing no-val JWT mode. This token has this body:
-   ```
-   {
-     \"domain\": \"https://unsecure.yetanalytics.com/realm\",
-     \"perms\": [\"ADMIN\"],
-     \"username\": \"CLIFF.CASEY.1234567890\"
-   }
-   ```
-   which correspond to the following values in lrsql config:
-   ```
-   {
-     \"jwtNoVal\": true,
-     \"jwtNoValUname\": \"username\",
-     \"jwtNoValIssuer\": \"domain\",
-     \"jwtNoValRoleKey\": \"perms\",
-     \"jwtNoValRole\": \"ADMIN\"
-   }
-   ```
-   "
-  "eyJhbGciOiJIUzI1NiJ9.eyJkb21haW4iOiJodHRwczovL3Vuc2VjdXJlLnlldGFuYWx5dGljcy5jb20vcmVhbG0iLCJwZXJtcyI6WyJBRE1JTiJdLCJ1c2VybmFtZSI6IkNMSUZGLkNBU0VZLjEyMzQ1Njc4OTAifQ.2gRn_tDFBfJx2RE0pgvPM4wH__RnHf1E9kjsNlkLrnQ")
-
-(re-frame/reg-event-fx
- :session/proxy-token-init
- (fn [_ _]
-   ;; In this mode the token will be overwritten, so just store something and
-   ;; move on.
-   {:fx [[:dispatch [:session/set-token placeholder-token]]]}))
-
-(re-frame/reg-event-db
- :login/set-username
- (fn [db [_ username]]
-   (assoc-in db [::db/login :username] username)))
-
-(re-frame/reg-event-db
- :login/set-password
- (fn [db [_ password]]
-   (assoc-in db [::db/login :password] password)))
-
-(re-frame/reg-event-fx
- :session/authenticate
- (fn [{{server-host ::db/server-host
-        proxy-path  ::db/proxy-path
-        :as db} :db} _]
-   {:http-xhrio {:method          :post
-                 :uri             (httpfn/serv-uri
-                                   server-host
-                                   "/admin/account/login"
-                                   proxy-path)
-                 :format          (ajax/json-request-format)
-                 :response-format (ajax/json-response-format {:keywords? true})
-                 :params          (::db/login db)
-                 :on-success      [:login/success-handler]
-                 :on-failure      [:login/error-handler]}}))
-
-(re-frame/reg-event-fx
- :login/success-handler
- (fn [{:keys [db]} [_ {:keys [json-web-token]}]]
-   (let [jwt-refresh-interval (::db/jwt-refresh-interval db)]
-     {:fx [[:dispatch [:session/set-token json-web-token]]
-           [:dispatch [:login/set-password nil]]
-           [:dispatch [:login/set-username nil]]
-           [:dispatch-later {:ms       jwt-refresh-interval
-                             :dispatch [:login/try-renew]}]]})))
-
-(re-frame/reg-event-fx
- :session/set-token
- (fn [{:keys [db]} [_ token & {:keys [store?]
-                               :or   {store? true}}]]
-   (cond-> {:db (assoc-in db [::db/session :token] token)
-            :fx [[:dispatch [:session/get-me]]]}
-     store? (assoc :session/store ["lrs-jwt" token]))))
-
-(re-frame/reg-event-fx
- :session/clear-token
- (fn [{:keys [db]} [_ & {:keys [store?]
-                         :or   {store? true}}]]
-   (cond-> {:db (assoc-in db [::db/session :token] nil)}
-     store? (assoc :session/store ["lrs-jwt" nil]))))
-
-(re-frame/reg-event-fx
- :session/get-me
- (fn [{{server-host ::db/server-host
-        proxy-path  ::db/proxy-path
-        ?oidc-auth  ::db/oidc-auth} :db} _]
-   (when-not ?oidc-auth
-     {:http-xhrio {:method          :get
-                   :uri             (httpfn/serv-uri
-                                     server-host
-                                     "/admin/me"
-                                     proxy-path)
-                   :response-format (ajax/json-response-format {:keywords? true})
-                   :on-success      [:session/me-success-handler]
-                   :on-failure      [:login/error-handler]
-                   :interceptors    [httpfn/add-jwt-interceptor]}})))
-
-(re-frame/reg-event-fx
- :session/me-success-handler
- (fn [_ [_ {:keys [username]}]]
-   {:fx [[:dispatch [:session/set-username username]]]}))
-
-(re-frame/reg-event-fx
- :login/error-handler
- (fn [_ [_ {:keys [status] :as error}]]
-   ;; For auth, if its badly formed or not authorized give a specific error,
-   ;; otherwise default to typical server error notice handling
-   (if (or (= status 401) (= status 400))
-     {:fx [[:dispatch [:notification/notify true
-                       "Please enter a valid username and password!"]]]}
-     {:fx [[:dispatch [:server-error error]]]})))
-
-(re-frame/reg-event-fx
- :session/set-username
- (fn [{:keys [db]} [_ username & {:keys [store?]
-                                  :or   {store? true}}]]
-   (cond-> {:db (assoc-in db [::db/session :username] username)}
-     store? (assoc :session/store ["username" username]))))
-
-(re-frame/reg-event-fx
- :session/clear-username
- (fn [{:keys [db]} [_ & {:keys [store?]
-                         :or   {store? true}}]]
-   (cond-> {:db (assoc-in db [::db/session :username] nil)}
-     store? (assoc :session/store ["username" nil]))))
-
-(re-frame/reg-fx
- :session/store
- (fn [[key value]]
-   (if value
-     (stor/set-item! key value)
-     (stor/remove-item! key))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; General
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -365,58 +229,125 @@
             (merge [:dispatch [:session/clear-token]]))})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Logout + Renewal
+;; Login / Auth
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(re-frame/reg-event-fx
- :session/logout
- (fn [{:keys [db]} _]
-   (let [{server-host        ::db/server-host
-          proxy-path         ::db/proxy-path
-          ?no-val-logout-url ::db/no-val-logout-url} db]
-     (cond
-       ;; OIDC login
-       (oidc/logged-in? db)
-       {:fx [[:dispatch [:session/clear-token]]
-             [:dispatch [:session/clear-username]]
-             [:dispatch [::re-oidc/logout]]]}
-       ;; Proxy JWT login
-       ?no-val-logout-url
-       {:fx [[:dispatch [:session/clear-token]]
-             [:dispatch [:session/clear-username]]
-             [:session/no-val-logout-redirect
-              {:logout-url ?no-val-logout-url}]]}
-       ;; Regular JWT login
-       :else
-       {:http-xhrio
-        {:method          :post
-         :uri             (httpfn/serv-uri
-                           server-host
-                           "/admin/account/logout"
-                           proxy-path)
-         :params          {}
-         :format          (ajax/json-request-format)
-         :response-format (ajax/json-response-format {:keywords? true})
-         :on-success      [:session/logout-success-handler]
-         :on-failure      [:session/logout-error-handler]
-         :interceptors    [httpfn/add-jwt-interceptor]}}))))
-
-(re-frame/reg-event-fx
- :session/logout-success-handler
- (fn [_ _]
-   {:fx [[:dispatch [:session/clear-token]]
-         [:dispatch [:session/clear-username]]
-         [:dispatch [:notification/notify false "You have logged out."]]]}))
-
-(re-frame/reg-event-fx
- :session/logout-error-handler
- (fn [_ _]
-   {:fx [[:dispatch [:notification/notify true "Logout error occured."]]]}))
+;; Localstore values: JWT and Username ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (re-frame/reg-fx
- :session/no-val-logout-redirect
- (fn [{:keys [logout-url]}]
-   (set! (.-location js/window) logout-url)))
+ :session/store
+ (fn [[key value]]
+   (if value
+     (stor/set-item! key value)
+     (stor/remove-item! key))))
+
+(re-frame/reg-event-fx
+ :session/set-token
+ (fn [{:keys [db]} [_ token & {:keys [store?]
+                               :or   {store? true}}]]
+   (cond-> {:db (assoc-in db [::db/session :token] token)
+            :fx [[:dispatch [:session/get-me]]]}
+     store? (assoc :session/store ["lrs-jwt" token]))))
+
+(re-frame/reg-event-fx
+ :session/clear-token
+ (fn [{:keys [db]} [_ & {:keys [store?]
+                         :or   {store? true}}]]
+   (cond-> {:db (assoc-in db [::db/session :token] nil)}
+     store? (assoc :session/store ["lrs-jwt" nil]))))
+
+(re-frame/reg-event-fx
+ :session/set-username
+ (fn [{:keys [db]} [_ username & {:keys [store?]
+                                  :or   {store? true}}]]
+   (cond-> {:db (assoc-in db [::db/session :username] username)}
+     store? (assoc :session/store ["username" username]))))
+
+(re-frame/reg-event-fx
+ :session/clear-username
+ (fn [{:keys [db]} [_ & {:keys [store?]
+                         :or   {store? true}}]]
+   (cond-> {:db (assoc-in db [::db/session :username] nil)}
+     store? (assoc :session/store ["username" nil]))))
+
+;; /admin/me call - gets username
+
+(re-frame/reg-event-fx
+ :session/get-me
+ (fn [{{server-host ::db/server-host
+        proxy-path  ::db/proxy-path
+        ?oidc-auth  ::db/oidc-auth} :db} _]
+   (when-not ?oidc-auth
+     {:http-xhrio
+      {:method          :get
+       :uri             (httpfn/serv-uri
+                         server-host
+                         "/admin/me"
+                         proxy-path)
+       :response-format (ajax/json-response-format {:keywords? true})
+       :on-success      [:session/me-success-handler]
+       :on-failure      [:login/error-handler]
+       :interceptors    [httpfn/add-jwt-interceptor]}})))
+
+(re-frame/reg-event-fx
+ :session/me-success-handler
+ (fn [_ [_ {:keys [username]}]]
+   {:fx [[:dispatch [:session/set-username username]]]}))
+
+(re-frame/reg-event-fx
+ :login/error-handler
+ (fn [_ [_ {:keys [status] :as error}]]
+   ;; For auth, if its badly formed or not authorized give a specific error,
+   ;; otherwise default to typical server error notice handling
+   (if (or (= status 401) (= status 400))
+     {:fx [[:dispatch [:notification/notify true
+                       "Please enter a valid username and password!"]]]}
+     {:fx [[:dispatch [:server-error error]]]})))
+
+;; Regular JWT Login ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Username + Password Buffer
+
+(re-frame/reg-event-db
+ :login/set-username
+ (fn [db [_ username]]
+   (assoc-in db [::db/login :username] username)))
+
+(re-frame/reg-event-db
+ :login/set-password
+ (fn [db [_ password]]
+   (assoc-in db [::db/login :password] password)))
+
+;; Login
+
+(re-frame/reg-event-fx
+ :session/authenticate
+ (fn [{{server-host ::db/server-host
+        proxy-path  ::db/proxy-path
+        :as         db} :db} _]
+   {:http-xhrio
+    {:method          :post
+     :uri             (httpfn/serv-uri
+                       server-host
+                       "/admin/account/login"
+                       proxy-path)
+     :format          (ajax/json-request-format)
+     :response-format (ajax/json-response-format {:keywords? true})
+     :params          (::db/login db)
+     :on-success      [:login/success-handler]
+     :on-failure      [:login/error-handler]}}))
+
+(re-frame/reg-event-fx
+ :login/success-handler
+ (fn [{:keys [db]} [_ {:keys [json-web-token]}]]
+   (let [jwt-refresh-interval (::db/jwt-refresh-interval db)]
+     {:fx [[:dispatch [:session/set-token json-web-token]]
+           [:dispatch [:login/set-password nil]]
+           [:dispatch [:login/set-username nil]]
+           [:dispatch-later {:ms       jwt-refresh-interval
+                             :dispatch [:login/try-renew]}]]})))
+
+;; Renewal
 
 (re-frame/reg-event-fx
  :login/try-renew
@@ -431,7 +362,7 @@
        (< (- current-time int-window) last-int-time current-time)
        {:fx [[:dispatch [:login/renew]]]}
        :else
-       {:fx [[:dispatch [:session/logout]]]}))))
+       {:fx [[:dispatch [:logout/logout]]]}))))
 
 (re-frame/reg-event-fx
  :login/renew
@@ -464,8 +395,133 @@
    (if (= 401 status)
      {:fx [[:dispatch [:notification/notify true
                        "Congratulations on being SQL LRS's biggest fan!"]]
-           [:dispatch [:session/logout]]]}
+           [:dispatch [:logout/logout]]]}
      {:fx [[:dispatch [:server-error error]]]})))
+
+;; Proxy JWT Login ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(def placeholder-token
+  "Sample token used for testing no-val JWT mode. This token has this body:
+   ```
+   {
+     \"domain\": \"https://unsecure.yetanalytics.com/realm\",
+     \"perms\": [\"ADMIN\"],
+     \"username\": \"CLIFF.CASEY.1234567890\"
+   }
+   ```
+   which correspond to the following values in lrsql config:
+   ```
+   {
+     \"jwtNoVal\": true,
+     \"jwtNoValUname\": \"username\",
+     \"jwtNoValIssuer\": \"domain\",
+     \"jwtNoValRoleKey\": \"perms\",
+     \"jwtNoValRole\": \"ADMIN\"
+   }
+   ```
+   "
+  "eyJhbGciOiJIUzI1NiJ9.eyJkb21haW4iOiJodHRwczovL3Vuc2VjdXJlLnlldGFuYWx5dGljcy5jb20vcmVhbG0iLCJwZXJtcyI6WyJBRE1JTiJdLCJ1c2VybmFtZSI6IkNMSUZGLkNBU0VZLjEyMzQ1Njc4OTAifQ.2gRn_tDFBfJx2RE0pgvPM4wH__RnHf1E9kjsNlkLrnQ")
+
+(re-frame/reg-event-fx
+ :session/proxy-token-init
+ (fn [_ _]
+   ;; In this mode the token will be overwritten, so just store something and
+   ;; move on.
+   {:fx [[:dispatch [:session/set-token placeholder-token]]]}))
+
+;; OIDC Login ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(re-frame/reg-event-fx
+ :oidc/init
+ (fn [{:keys [db]} [_ remote-config]]
+   (let [?search (not-empty js/window.location.search)]
+     {:db (assoc db ::db/oidc-auth true)
+      :dispatch-n
+      (cond-> [[::re-oidc/init (oidc/init-config remote-config)]]
+        ?search (conj [::re-oidc/login-callback
+                       oidc/static-config
+                       ?search]))})))
+
+(re-frame/reg-fx
+ :oidc/clear-search-fx
+ (fn [_]
+   (oidc/push-state js/window.location.pathname)))
+
+(re-frame/reg-event-fx
+ :oidc/login-success
+ (fn [_ _]
+   {:fx [[:oidc/clear-search-fx {}]]}))
+
+(re-frame/reg-event-fx
+ :oidc/user-loaded
+ (fn [{:keys [db]} _]
+   (if-let [{:keys [access-token]
+             {:strs [sub]} :profile} (::re-oidc/user db)]
+     {:fx [[:dispatch [:session/set-token access-token
+                       :store? false]]
+           [:dispatch [:session/set-username sub
+                       :store? false]]
+           [:dispatch [:login/set-password nil]]
+           [:dispatch [:login/set-username nil]]]}
+     {})))
+
+(re-frame/reg-event-fx
+ :oidc/user-unloaded
+ (fn [_ _]
+   {:fx [[:dispatch [:session/clear-token]]
+         [:dispatch [:session/clear-username]]]}))
+
+;; Logout ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(re-frame/reg-event-fx
+ :logout/logout
+ (fn [{:keys [db]} _]
+   (let [{server-host        ::db/server-host
+          proxy-path         ::db/proxy-path
+          ?no-val-logout-url ::db/no-val-logout-url} db]
+     (cond
+       ;; OIDC login
+       (oidc/logged-in? db)
+       {:fx [[:dispatch [:session/clear-token]]
+             [:dispatch [:session/clear-username]]
+             [:dispatch [::re-oidc/logout]]]}
+       ;; Proxy JWT login
+       ?no-val-logout-url
+       {:fx [[:dispatch [:session/clear-token]]
+             [:dispatch [:session/clear-username]]
+             [:logout/no-val-logout-redirect
+              {:logout-url ?no-val-logout-url}]]}
+       ;; Regular JWT login
+       :else
+       {:http-xhrio
+        {:method          :post
+         :uri             (httpfn/serv-uri
+                           server-host
+                           "/admin/account/logout"
+                           proxy-path)
+         :params          {}
+         :format          (ajax/json-request-format)
+         :response-format (ajax/json-response-format {:keywords? true})
+         :on-success      [:logout/success-handler]
+         :on-failure      [:logout/error-handler]
+         :interceptors    [httpfn/add-jwt-interceptor]}}))))
+
+(re-frame/reg-event-fx
+ :logout/success-handler
+ (fn [_ _]
+   {:fx [[:dispatch [:session/clear-token]]
+         [:dispatch [:session/clear-username]]
+         [:dispatch [:notification/notify false "You have logged out."]]]}))
+
+(re-frame/reg-event-fx
+ :logout/error-handler
+ (fn [_ _]
+   {:fx [[:dispatch [:notification/notify true "Logout error occured."]]]}))
+
+(re-frame/reg-fx
+ :logout/no-val-logout-redirect
+ (fn [{:keys [logout-url]}]
+   (set! (.-location js/window) logout-url)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Notifications / Alert Bar
@@ -580,7 +636,7 @@
    (if (= status 401)
      {:fx [[:dispatch [:notification/notify true
                        "Cannot browser xAPI when logged out."]]
-           [:dispatch [:session/logout]]]}
+           [:dispatch [:logout/logout]]]}
      {:fx [[:dispatch [:server-error error]]]})))
 
 (re-frame/reg-event-db
@@ -967,50 +1023,6 @@
  :delete-actor/server-error
  (fn [_ [_ actor-ifi _err]]
    {:fx [[:dispatch  [:notification/notify true  (str "Error when attempting to delete actor " actor-ifi)]]]}))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; OIDC Support
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(re-frame/reg-event-fx
- :oidc/init
- (fn [{:keys [db]} [_ remote-config]]
-   (let [?search (not-empty js/window.location.search)]
-     {:db (assoc db ::db/oidc-auth true)
-      :dispatch-n
-      (cond-> [[::re-oidc/init (oidc/init-config remote-config)]]
-        ?search (conj [::re-oidc/login-callback
-                       oidc/static-config
-                       ?search]))})))
-
-(re-frame/reg-fx
- :oidc/clear-search-fx
- (fn [_]
-   (oidc/push-state js/window.location.pathname)))
-
-(re-frame/reg-event-fx
- :oidc/login-success
- (fn [_ _]
-   {:fx [[:oidc/clear-search-fx {}]]}))
-
-(re-frame/reg-event-fx
- :oidc/user-loaded
- (fn [{:keys [db]} _]
-   (if-let [{:keys [access-token]
-             {:strs [sub]} :profile} (::re-oidc/user db)]
-     {:fx [[:dispatch [:session/set-token access-token
-                       :store? false]]
-           [:dispatch [:session/set-username sub
-                       :store? false]]
-           [:dispatch [:login/set-password nil]]
-           [:dispatch [:login/set-username nil]]]}
-     {})))
-
-(re-frame/reg-event-fx
- :oidc/user-unloaded
- (fn [_ _]
-   {:fx [[:dispatch [:session/clear-token]]
-         [:dispatch [:session/clear-username]]]}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Status Dashboard

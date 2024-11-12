@@ -28,5 +28,5 @@
            :href "#"
            :on-click (fn [e]
                        (fns/ps-event e)
-                       (dispatch-sync [:session/logout]))}
+                       (dispatch-sync [:logout/logout]))}
        @(subscribe [:lang/get :header.logout])]]]]])
