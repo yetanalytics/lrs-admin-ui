@@ -1,6 +1,7 @@
 (ns com.yetanalytics.lrs-admin-ui.handlers
   (:require [re-frame.core                                    :as re-frame]
             [reagent.core                                     :as r]
+            [com.yetanalytics.re-route                        :as re-route]
             [com.yetanalytics.lrs-admin-ui.db                 :as db]
             [com.yetanalytics.lrs-admin-ui.input              :as input]
             [day8.re-frame.http-fx]
@@ -22,6 +23,7 @@
             [com.yetanalytics.lrs-admin-ui.spec.reaction      :as rs]
             [com.yetanalytics.lrs-admin-ui.spec.reaction-edit :as rse]
             [com.yetanalytics.lrs-admin-ui.language           :as lang]
+            [com.yetanalytics.lrs-admin-ui.routes             :refer [routes]]
             [com.yetanalytics.lrs-reactions.path              :as rpath]))
 
 (def global-interceptors
@@ -62,7 +64,8 @@
          ::db/status {}
          ::db/enable-reactions false
          ::db/reactions []}
-    :fx [[:dispatch [:db/get-env]]]}))
+    :fx [[:dispatch [::re-route/init routes :not-found {:enabled? false}]]
+         [:dispatch [:db/get-env]]]}))
 
 (re-frame/reg-event-fx
  :db/get-env
