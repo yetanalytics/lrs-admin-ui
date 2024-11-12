@@ -1,6 +1,7 @@
 (ns com.yetanalytics.lrs-admin-ui.handlers
   (:require [re-frame.core                                    :as re-frame]
             [reagent.core                                     :as r]
+            [com.yetanalytics.re-route                        :as re-route]
             [com.yetanalytics.lrs-admin-ui.db                 :as db]
             [com.yetanalytics.lrs-admin-ui.input              :as input]
             [day8.re-frame.http-fx]
@@ -750,7 +751,7 @@
  global-interceptors
  (fn [_ _]
    {:fx [[:dispatch [:update-password/clear]]
-         [:dispatch [:session/set-page :credentials]]
+         [:dispatch [::re-route/navigate :credentials]]
          [:dispatch [:notification/notify false
                      "Password updated."]]]}))
 

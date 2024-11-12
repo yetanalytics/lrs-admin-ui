@@ -1,6 +1,7 @@
 (ns com.yetanalytics.lrs-admin-ui.views.update-password
   (:require [reagent.core :as r]
             [re-frame.core :refer [subscribe dispatch]]
+            [com.yetanalytics.re-route :as re-route]
             [com.yetanalytics.lrs-admin-ui.functions :as fns]
             [com.yetanalytics.lrs-admin-ui.functions.copy :refer [copy-text]]
             [com.yetanalytics.lrs-admin-ui.functions.password :as pass]
@@ -69,7 +70,7 @@
    [:div {:class "update-password-actions"}
     [:input {:type "button",
              :class "btn-brand-bold",
-             :on-click #(dispatch [:session/set-page :accounts])
+             :on-click #(dispatch [::re-route/navigate :accounts])
              :value @(subscribe [:lang/get :account-mgmt.update-password.cancel])}]
     [:input {:type "button",
              :class "btn-brand-bold",

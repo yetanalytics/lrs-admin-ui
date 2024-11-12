@@ -2,6 +2,7 @@
   (:require
    [reagent.core :as r]
    [re-frame.core :refer [subscribe dispatch]]
+   [com.yetanalytics.re-route :as re-route]
    [com.yetanalytics.lrs-admin-ui.functions :as fns]
    [com.yetanalytics.lrs-admin-ui.functions.copy :refer [copy-text]]
    [com.yetanalytics.lrs-admin-ui.input :refer [p-min-len u-min-len]]
@@ -39,10 +40,7 @@
                @(subscribe [:lang/get :accounts.delete])]])
            (when (= username current-username)
              [:li
-              [:a {:href "#!"
-                   :on-click (fn [e]
-                               (fns/ps-event e)
-                               (dispatch [:session/set-page :update-password]))
+              [:a {:href @(subscribe [::re-route/href :update-password])
                    :class "icon-edit"}
                @(subscribe [:lang/get :accounts.password.update])]])]]]]])))
 
