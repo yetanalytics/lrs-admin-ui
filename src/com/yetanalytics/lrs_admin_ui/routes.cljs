@@ -19,22 +19,16 @@
    ["/credentials"
     {:name        :credentials
      :view        credentials
-     :controllers [{:identity (fn [_] nil)
-                    :stop     (fn [_] nil)
-                    :start    (fn [_]
-                                (dispatch [:credentials/load-credentials]))}]}]
+     :controllers [{:start (fn [_]
+                             (dispatch [:credentials/load-credentials]))}]}]
    ["/accounts"
     {:name        :accounts
      :view        accounts
-     :controllers [{:identity (fn [_] nil)
-                    :stop     (fn [_] nil)
-                    :start    (fn [_] (dispatch [:accounts/load-accounts]))}]}]
+     :controllers [{:start (fn [_] (dispatch [:accounts/load-accounts]))}]}]
    ["/password"
     {:name        :update-password
      :view        update-password
-     :controllers [{:identity (fn [_] nil)
-                    :stop     (fn [_] nil)
-                    :start    (fn [_] (dispatch [:update-password/clear]))}]}]
+     :controllers [{:stop (fn [_] (dispatch [:update-password/clear]))}]}]
    ["/browser"
     {:name :browser
      :view browser}]

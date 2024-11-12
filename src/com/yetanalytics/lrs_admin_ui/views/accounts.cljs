@@ -94,7 +94,6 @@
                  :class "icon-gen"} [:i @(subscribe [:lang/get :accounts.new.password.generate])]]]]]]))))
 
 (defn accounts []
-  (dispatch [:accounts/load-accounts])
   (let [accounts @(subscribe [:db/get-accounts])]
     [:div {:class "left-content-wrapper"}
      [:h2 {:class "content-title"}

@@ -10,7 +10,6 @@
             goog.string.format))
 
 (defn form []
-  (dispatch [:update-password/clear])
   (let [hide-pass (r/atom true)]
     (fn []
       (let [new-password @(subscribe [:update-password/new-password])]
