@@ -1,7 +1,8 @@
 ^{:watch-dirs ["src" "test"]
   :css-dirs ["resources/public/css"]
   :auto-testing true
-  :auto-bundle :webpack}
+  :auto-bundle :webpack
+  :ring-handler dev.lrs-admin-ui-server/handler}
 {:main            com.yetanalytics.lrs-admin-ui.core
  :closure-defines {"re_frame.trace.trace_enabled_QMARK_" true}
  :preloads        [day8.re-frame-10x.preload]}
