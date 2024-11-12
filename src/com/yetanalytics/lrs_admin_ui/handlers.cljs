@@ -214,16 +214,17 @@
 (re-frame/reg-event-fx
  :server-error
  (fn [_ [_ {:keys [response status]}]]
-   ;;extract the error and present it in a notification. If 401 or 0, log out.
-   (let [err (get response "error"
-                  ;; If no error is provided, pass status
-                  (format "Unknown Error, status: %s" status))
-         message (cond (= status 0)
-                       "Could not connect to LRS!"
-                       (and err (< (count err) 100))
-                       (str "Error from server: " err)
-                       :else
-                       "An unexpected error has occured!")]
+   (let [unk-msg (format "Unknown Error, status: %s" status)
+         err-msg (get response "error" unk-msg)
+         message (cond
+                   (= 0 status)
+                   "Could not connect to LRS!"
+                   (= 401 status)
+                   "Unauthorized action, please log in!"
+                   (and err-msg (< (count err-msg) 100))
+                   (str "Error from server: " err-msg)
+                   :else
+                   "An unexpected error has occured!")]
      {:fx (cond-> [[:dispatch [:notification/notify true message]]]
             (some #(= status %) [0 401])
             (merge [:dispatch [:session/clear-token]]))})))
@@ -389,12 +390,14 @@
            [:dispatch-later {:ms jwt-refresh-interval
                              :dispatch [:login/try-renew]}]]})))
 
+(def ^:private renew-error-msg
+  "Can no longer renew login. Congratulations on being SQL LRS's biggest fan!")
+
 (re-frame/reg-event-fx
  :login/renew-error
  (fn [_ [_ {:keys [status] :as error}]]
    (if (= 401 status)
-     {:fx [[:dispatch [:notification/notify true
-                       "Congratulations on being SQL LRS's biggest fan!"]]
+     {:fx [[:dispatch [:notification/notify true renew-error-msg]]
            [:dispatch [:logout/logout]]]}
      {:fx [[:dispatch [:server-error error]]]})))
 
@@ -503,7 +506,7 @@
          :format          (ajax/json-request-format)
          :response-format (ajax/json-response-format {:keywords? true})
          :on-success      [:logout/success-handler]
-         :on-failure      [:logout/error-handler]
+         :on-failure      [:server-error]
          :interceptors    [httpfn/add-jwt-interceptor]}}))))
 
 (re-frame/reg-event-fx
@@ -512,11 +515,6 @@
    {:fx [[:dispatch [:session/clear-token]]
          [:dispatch [:session/clear-username]]
          [:dispatch [:notification/notify false "You have logged out."]]]}))
-
-(re-frame/reg-event-fx
- :logout/error-handler
- (fn [_ _]
-   {:fx [[:dispatch [:notification/notify true "Logout error occured."]]]}))
 
 (re-frame/reg-fx
  :logout/no-val-logout-redirect
@@ -611,7 +609,7 @@
                          proxy-path)
        :response-format (ajax/json-response-format {:keywords? true})
        :on-success      [:browser/load-xapi opts]
-       :on-failure      [:browser/load-xapi-error]
+       :on-failure      [:server-error]
        :interceptors    [httpfn/add-jwt-interceptor]}}
      {:fx [[:dispatch [:browser/load-xapi opts]]]})))
 
@@ -629,15 +627,6 @@
                    :on-success      [:browser/load-stmts-success]
                    :on-failure      [:server-error]
                    :interceptors    [httpfn/req-xapi-interceptor]}})))
-
-(re-frame/reg-event-fx
- :browser/load-xapi-error
- (fn [_ [_ {:keys [status] :as error}]]
-   (if (= status 401)
-     {:fx [[:dispatch [:notification/notify true
-                       "Cannot browser xAPI when logged out."]]
-           [:dispatch [:logout/logout]]]}
-     {:fx [[:dispatch [:server-error error]]]})))
 
 (re-frame/reg-event-db
  :browser/set-address
