@@ -1,6 +1,8 @@
 (ns com.yetanalytics.lrs-admin-ui.routes
   (:require
    [re-frame.core :refer [dispatch]]
+   [reitit.core :as r]
+   [reitit.frontend :as rf]
    [com.yetanalytics.lrs-admin-ui.views.accounts        :refer [accounts]]
    [com.yetanalytics.lrs-admin-ui.views.browser         :refer [browser]]
    [com.yetanalytics.lrs-admin-ui.views.credentials     :refer [credentials]]
@@ -14,14 +16,22 @@
   [["/credentials"
     {:name        :credentials
      :view        credentials
-     :controllers [{:start (fn [_] (dispatch [:credentials/load-credentials]))}]}]
+     :controllers [{:identity (fn [_] nil)
+                    :stop     (fn [_] nil)
+                    :start    (fn [_]
+                                (dispatch [:credentials/load-credentials]))}]}]
    ["/accounts"
     {:name        :accounts
      :view        accounts
-     :controllers [{:start (fn [_] (dispatch [:accounts/load-accounts]))}]}]
+     :controllers [{:identity (fn [_] nil)
+                    :stop     (fn [_] nil)
+                    :start    (fn [_] (dispatch [:accounts/load-accounts]))}]}]
    ["/password"
-    {:name :update-password
-     :view update-password}]
+    {:name        :update-password
+     :view        update-password
+     :controllers [{:identity (fn [_] nil)
+                    :stop     (fn [_] nil)
+                    :start    (fn [_] (dispatch [:update-password/clear]))}]}]
    ["/browser"
     {:name :browser
      :view browser}]
@@ -31,21 +41,22 @@
    ["/status"
     {:name        :status
      :view        status
-     :controllers [{:start
-                    (fn [_]
-                      (dispatch [:status/get-data "statement-count"])
-                      (dispatch [:status/get-data "actor-count"])
-                      (dispatch [:status/get-data "last-statement-stored"])
-                      (dispatch [:status/get-data "timeline"])
-                      (dispatch [:status/get-data "platform-frequency"]))}]}]
+     :controllers [{:identity (fn [_] nil)
+                    :stop     (fn [_] nil)
+                    :start    (fn [_]
+                                (dispatch [:status/get-data ["statement-count"]])
+                                (dispatch [:status/get-data ["actor-count"]])
+                                (dispatch [:status/get-data ["last-statement-stored"]])
+                                (dispatch [:status/get-data ["timeline"]])
+                                (dispatch [:status/get-data ["platform-frequency"]]))}]}]
    ["/reactions"
     {:name        :reactions
      :view        reactions
-     :parameters  {}
-     :controllers [{:start
-                    (fn [_]
-                      (dispatch [:reaction/back-to-list])
-                      (dispatch [:reaction/load-reactions]))}]}]
+     :controllers [{:identity (fn [_] nil)
+                    :stop     (fn [_] nil)
+                    :start    (fn [_]
+                                (dispatch [:reaction/back-to-list])
+                                (dispatch [:reaction/load-reactions]))}]}]
    ["/not-found"
     {:name :not-found
      :view not-found}]])
