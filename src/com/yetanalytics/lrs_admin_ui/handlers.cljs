@@ -890,6 +890,15 @@
     :fx [[:dispatch
           [:server-error error]]]}))
 
+(re-frame/reg-event-fx
+ :status/get-all-data
+ (fn [_]
+   {:fx [[:dispatch [:status/get-data ["statement-count"]]]
+         [:dispatch [:status/get-data ["actor-count"]]]
+         [:dispatch [:status/get-data ["last-statement-stored"]]]
+         [:dispatch [:status/get-data ["timeline"]]]
+         [:dispatch [:status/get-data ["platform-frequency"]]]]}))
+
 (def status-dispatch-all
   (into []
         (for [status-query ["statement-count"

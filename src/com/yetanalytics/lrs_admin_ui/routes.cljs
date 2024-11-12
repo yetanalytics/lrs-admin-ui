@@ -24,11 +24,13 @@
    ["/accounts"
     {:name        :accounts
      :view        accounts
-     :controllers [{:start (fn [_] (dispatch [:accounts/load-accounts]))}]}]
+     :controllers [{:start (fn [_]
+                             (dispatch [:accounts/load-accounts]))}]}]
    ["/password"
     {:name        :update-password
      :view        update-password
-     :controllers [{:stop (fn [_] (dispatch [:update-password/clear]))}]}]
+     :controllers [{:stop (fn [_]
+                            (dispatch [:update-password/clear]))}]}]
    ["/browser"
     {:name :browser
      :view browser}]
@@ -38,22 +40,14 @@
    ["/status"
     {:name        :status
      :view        status
-     :controllers [{:identity (fn [_] nil)
-                    :stop     (fn [_] nil)
-                    :start    (fn [_]
-                                (dispatch [:status/get-data ["statement-count"]])
-                                (dispatch [:status/get-data ["actor-count"]])
-                                (dispatch [:status/get-data ["last-statement-stored"]])
-                                (dispatch [:status/get-data ["timeline"]])
-                                (dispatch [:status/get-data ["platform-frequency"]]))}]}]
+     :controllers [{:start (fn [_]
+                             (dispatch [:status/get-all-data]))}]}]
    ["/reactions"
     {:name        :reactions
      :view        reactions
-     :controllers [{:identity (fn [_] nil)
-                    :stop     (fn [_] nil)
-                    :start    (fn [_]
-                                (dispatch [:reaction/back-to-list])
-                                (dispatch [:reaction/load-reactions]))}]}]
+     :controllers [{:start (fn [_]
+                             (dispatch [:reaction/back-to-list])
+                             (dispatch [:reaction/load-reactions]))}]}]
    ["/not-found"
     {:name :not-found
      :view not-found}]])
