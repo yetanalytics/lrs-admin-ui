@@ -26,7 +26,7 @@
      :view        accounts
      :controllers [{:start (fn [_]
                              (dispatch [:accounts/load-accounts]))}]}]
-   ["/password"
+   ["/accounts/password"
     {:name        :update-password
      :view        update-password
      :controllers [{:stop (fn [_]
