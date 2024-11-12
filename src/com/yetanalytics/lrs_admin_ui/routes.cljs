@@ -1,8 +1,6 @@
 (ns com.yetanalytics.lrs-admin-ui.routes
   (:require
    [re-frame.core :refer [dispatch]]
-   [reitit.core :as r]
-   [reitit.frontend :as rf]
    [com.yetanalytics.lrs-admin-ui.views.accounts        :refer [accounts]]
    [com.yetanalytics.lrs-admin-ui.views.browser         :refer [browser]]
    [com.yetanalytics.lrs-admin-ui.views.credentials     :refer [credentials]]
@@ -13,7 +11,12 @@
    [com.yetanalytics.lrs-admin-ui.views.update-password :refer [update-password]]))
 
 (def routes
-  [["/credentials"
+  [["/"
+    {:name        :home
+     :view        credentials
+     :controllers [{:start (fn [_]
+                             (dispatch [:credentials/load-credentials]))}]}]
+   ["/credentials"
     {:name        :credentials
      :view        credentials
      :controllers [{:identity (fn [_] nil)
