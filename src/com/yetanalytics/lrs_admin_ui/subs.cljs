@@ -48,13 +48,6 @@
          (get langmap (-> langmap keys first))))))
 
 (reg-sub
- :session/get-page
- (fn [_ _]
-   (subscribe [:db/get-session]))
- (fn [session _]
-   (:page session)))
-
-(reg-sub
  :session/get-token
  (fn [_ _]
    (subscribe [:db/get-session]))

@@ -32,8 +32,7 @@
  :db/init
  global-interceptors
  (fn [_  [_ server-host]]
-   {:db {::db/session {:page :credentials
-                       :token (stor/get-item "lrs-jwt")
+   {:db {::db/session {:token (stor/get-item "lrs-jwt")
                        :username (stor/get-item "username")}
          ::db/login {:username nil
                      :password nil}
@@ -232,21 +231,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; General
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defmulti page-fx
-  "Given a set-page event query vector, adds any effects of moving to that page.
-  Note that you can use overloads beyond just the page keyword in your methods."
-  (fn [[_ page]]
-    page))
-
-(defmethod page-fx :default [_] [])
-
-(re-frame/reg-event-fx
- :session/set-page
- global-interceptors
- (fn [{:keys [db]} [_ page :as qvec]]
-   {:db (assoc-in db [::db/session :page] page)
-    :fx (page-fx qvec)}))
 
 (re-frame/reg-event-fx
  :server-error
@@ -899,24 +883,6 @@
          [:dispatch [:status/get-data ["timeline"]]]
          [:dispatch [:status/get-data ["platform-frequency"]]]]}))
 
-(def status-dispatch-all
-  (into []
-        (for [status-query ["statement-count"
-                            "actor-count"
-                            "last-statement-stored"
-                            "timeline"
-                            "platform-frequency"]]
-          [:dispatch [:status/get-data [status-query]]])))
-
-(defmethod page-fx :status [_]
-  status-dispatch-all)
-
-(re-frame/reg-event-fx
- :status/get-all-data
- global-interceptors
- (fn [_ _]
-   {:fx status-dispatch-all}))
-
 (defn- coerce-status-data
   "Convert string keys in status data to keyword where appropriate."
   [status-data]
@@ -1000,10 +966,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Reaction Management
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defmethod page-fx :reactions [_]
-  [[:dispatch [:reaction/back-to-list]]
-   [:dispatch [:reaction/load-reactions]]])
 
 (re-frame/reg-event-fx
  :reaction/load-reactions
