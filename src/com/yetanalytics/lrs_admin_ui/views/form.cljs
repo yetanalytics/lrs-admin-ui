@@ -121,7 +121,7 @@
           :or {options     []
                select-fn   (fn [v] (println 'select v))
                label-left? false
-               icon-src    "images/icons/add.svg"
+               icon-src    "/images/icons/add.svg"
                class       ""}}]
       [:div.action-dropdown
        {:on-blur (fn [_]
