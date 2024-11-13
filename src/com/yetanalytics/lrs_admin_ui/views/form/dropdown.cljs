@@ -138,8 +138,8 @@
           placeholder)]]
    [:span {:class "form-select-top-right"}
     [:img {:src (if @dropdown-open?
-                  "images/icons/icon-expand-less.svg"
-                  "images/icons/icon-expand-more.svg")}]]])
+                  "/images/icons/icon-expand-less.svg"
+                  "/images/icons/icon-expand-more.svg")}]]])
 
 (defn multi-select-input-top
   "The top pane of a multiple-selection combo box."
@@ -164,7 +164,7 @@
                [:span {:class "form-multi-select-array-item"}
                 ;; TODO: Better solution to value-label discrepancy
                 [:p (or (get-label options val) val)
-                 [:img {:src "images/icons/icon-close-black.svg"
+                 [:img {:src "/images/icons/icon-close-black.svg"
                         :on-click (fn [e]
                                     (fns/ps-event e)
                                     (value-update-fn val))}]]]))
@@ -173,5 +173,5 @@
       [:p placeholder])]
    [:div {:class "form-multi-select-top-right"}
     [:img {:src (if @dropdown-open?
-                  "images/icons/icon-expand-less.svg"
-                  "images/icons/icon-expand-more.svg")}]]])
+                  "/images/icons/icon-expand-less.svg"
+                  "/images/icons/icon-expand-more.svg")}]]])

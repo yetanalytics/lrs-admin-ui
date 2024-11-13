@@ -21,18 +21,18 @@
 (defn- type->icon-path
   [validation-type]
   (case validation-type
-    :valid "images/icons/valid.svg"
-    :warning "images/icons/warning.svg"
-    :error "images/icons/invalid.svg"
-    :invalid "images/icons/invalid.svg"
-    :loading "images/icons/loading.svg"))
+    :valid "/images/icons/valid.svg"
+    :warning "/images/icons/warning.svg"
+    :error "/images/icons/invalid.svg"
+    :invalid "/images/icons/invalid.svg"
+    :loading "/images/icons/loading.svg"))
 
 (defn- type->item-icon-path
   [validation-type]
   (case validation-type
-    :warning "images/icons/warning-item.svg"
-    :error "images/icons/error-item.svg"
-    :invalid "images/icons/error-item.svg"))
+    :warning "/images/icons/warning-item.svg"
+    :error "/images/icons/error-item.svg"
+    :invalid "/images/icons/error-item.svg"))
 
 (defn validation-static-display
   [validation-type message]
