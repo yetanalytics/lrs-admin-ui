@@ -1,4 +1,4 @@
-(ns dev.lrs-admin-ui-server
+(ns com.yetanalytics.lrs-admin-ui.server
   "Ring handler only for dev/figwheel to serve multiple paths"
   (:require [ring.util.response :refer [file-response]]))
 
