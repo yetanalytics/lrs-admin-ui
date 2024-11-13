@@ -105,7 +105,7 @@
                                (fns/ps-event e)))
               :tab-index   0
               :aria-label  "Select the text in the search bar."}
-       [:img {:src "images/icons/icon-add.svg"}]
+       [:img {:src "/images/icons/icon-add.svg"}]
        "Add"])]])
 
 (defn combo-box-dropdown

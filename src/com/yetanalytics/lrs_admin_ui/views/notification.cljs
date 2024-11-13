@@ -16,7 +16,7 @@
     [:span {:class "close-alert pointer"
             :on-click #(dispatch [:notification/hide id])}
      [:img {:class "close-alert"
-            :src (format "images/icons/icon-close-%s.svg"
+            :src (format "/images/icons/icon-close-%s.svg"
                          (cond
                            error? "black"
                            :else "white"))}]]]])
