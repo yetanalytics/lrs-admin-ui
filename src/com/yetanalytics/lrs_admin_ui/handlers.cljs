@@ -4,6 +4,7 @@
             [com.yetanalytics.re-route                        :as re-route]
             [com.yetanalytics.lrs-admin-ui.db                 :as db]
             [com.yetanalytics.lrs-admin-ui.input              :as input]
+            [com.yetanalytics.lrs-admin-ui.routes             :refer [routes]]
             [day8.re-frame.http-fx]
             [com.yetanalytics.lrs-admin-ui.functions          :as fns]
             [com.yetanalytics.lrs-admin-ui.functions.download :as download]
@@ -87,35 +88,42 @@
  global-interceptors
  (fn [{:keys [db]} [_ {:keys             [url-prefix
                                           proxy-path
+                                          enable-admin-delete-actor
                                           enable-admin-status
                                           enable-reactions
                                           no-val?
                                           no-val-logout-url
-                                          enable-admin-delete-actor
                                           admin-language-code
                                           stmt-get-max
                                           custom-language]
                        ?oidc             :oidc
-                       ?oidc-local-admin :oidc-enable-local-admin}]]
-   {:db (cond-> (assoc db
-                       ::db/xapi-prefix url-prefix
-                       ::db/proxy-path proxy-path
-                       ::db/oidc-enable-local-admin (or ?oidc-local-admin false)
-                       ::db/enable-admin-status enable-admin-status
-                       ::db/enable-reactions enable-reactions
-                       ::db/enable-admin-delete-actor enable-admin-delete-actor
-                       ::db/stmt-get-max stmt-get-max
-                       ::db/pref-lang (keyword admin-language-code)
-                       ::db/language (merge-with merge
-                                                 lang/language
-                                                 custom-language))
-          (and no-val?
-               (not-empty no-val-logout-url))
-          (assoc ::db/no-val-logout-url no-val-logout-url))
-    :fx (cond-> []
-          ?oidc (conj [:dispatch [:oidc/init ?oidc]])
-          no-val? (conj [:dispatch [:session/proxy-token-init]]))
-    :session/store ["proxy-path" proxy-path]}))
+                       ?oidc-local-admin :oidc-enable-local-admin
+                       :as               env}]]
+   (let [routes (routes (select-keys env [:enable-admin-delete-actor
+                                          :enable-admin-status
+                                          :enable-reactions]))]
+     {:db (cond-> (assoc db
+                         ::db/xapi-prefix url-prefix
+                         ::db/proxy-path proxy-path
+                         ::db/oidc-enable-local-admin (or ?oidc-local-admin false)
+                         ::db/enable-admin-status enable-admin-status
+                         ::db/enable-reactions enable-reactions
+                         ::db/enable-admin-delete-actor enable-admin-delete-actor
+                         ::db/stmt-get-max stmt-get-max
+                         ::db/pref-lang (keyword admin-language-code)
+                         ::db/language (merge-with merge
+                                                   lang/language
+                                                   custom-language))
+            (and no-val?
+                 (not-empty no-val-logout-url))
+            (assoc ::db/no-val-logout-url no-val-logout-url))
+      :fx (cond-> [[:dispatch [::re-route/init
+                               routes
+                               :not-found
+                               {:enabled? false}]]]
+            ?oidc   (conj [:dispatch [:oidc/init ?oidc]])
+            no-val? (conj [:dispatch [:session/proxy-token-init]]))
+      :session/store ["proxy-path" proxy-path]})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Login / Auth
