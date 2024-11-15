@@ -10,45 +10,56 @@
    [com.yetanalytics.lrs-admin-ui.views.status          :refer [status]]
    [com.yetanalytics.lrs-admin-ui.views.update-password :refer [update-password]]))
 
-(def routes
-  ["/admin/ui"
-   [""
-    {:name        :home
-     :view        credentials
-     :controllers [{:start (fn [_]
-                             (dispatch [:credentials/load-credentials]))}]}]
-   ["/credentials"
-    {:name        :credentials
-     :view        credentials
-     :controllers [{:start (fn [_]
-                             (dispatch [:credentials/load-credentials]))}]}]
-   ["/accounts"
-    {:name        :accounts
-     :view        accounts
-     :controllers [{:start (fn [_]
-                             (dispatch [:accounts/load-accounts]))}]}]
-   ["/accounts/password"
-    {:name        :update-password
-     :view        update-password
-     :controllers [{:stop (fn [_]
-                            (dispatch [:update-password/clear]))}]}]
-   ["/browser"
-    {:name :browser
-     :view browser}]
-   ["/data-management"
-    {:name :data-management
-     :view data-management}]
-   ["/status"
-    {:name        :status
-     :view        status
-     :controllers [{:start (fn [_]
-                             (dispatch [:status/get-all-data]))}]}]
-   ["/reactions"
-    {:name        :reactions
-     :view        reactions
-     :controllers [{:start (fn [_]
+(defn routes [{:keys [enable-admin-delete-actor
+                      enable-admin-status
+                      enable-reactions]}]
+  (cond-> ["/admin/ui"
+           [""
+            {:name        :home
+             :view        credentials
+             :controllers [{:start
+                            (fn [_]
+                              (dispatch [:credentials/load-credentials]))}]}]
+           ["/credentials"
+            {:name        :credentials
+             :view        credentials
+             :controllers [{:start
+                            (fn [_]
+                              (dispatch [:credentials/load-credentials]))}]}]
+           ["/accounts"
+            {:name        :accounts
+             :view        accounts
+             :controllers [{:start
+                            (fn [_]
+                              (dispatch [:accounts/load-accounts]))}]}]
+           ["/accounts/password"
+            {:name        :update-password
+             :view        update-password
+             :controllers [{:stop
+                            (fn [_]
+                              (dispatch [:update-password/clear]))}]}]
+           ["/browser"
+            {:name :browser
+             :view browser}]
+           ["/not-found"
+            {:name :not-found
+             :view not-found}]]
+    enable-admin-delete-actor
+    (conj ["/data-management"
+           {:name :data-management
+            :view data-management}])
+    enable-admin-status
+    (conj ["/status"
+           {:name        :status
+            :view        status
+            :controllers [{:start
+                           (fn [_]
+                             (dispatch [:status/get-all-data]))}]}])
+    enable-reactions
+    (conj ["/reactions"
+           {:name        :reactions
+            :view        reactions
+            :controllers [{:start
+                           (fn [_]
                              (dispatch [:reaction/back-to-list])
-                             (dispatch [:reaction/load-reactions]))}]}]
-   ["/not-found"
-    {:name :not-found
-     :view not-found}]])
+                             (dispatch [:reaction/load-reactions]))}]}])))
