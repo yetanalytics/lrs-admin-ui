@@ -11,7 +11,8 @@
    [com.yetanalytics.lrs-admin-ui.views.update-password :refer [update-password]]))
 
 (def routes
-  [["/"
+  ["/ui"
+   [""
     {:name        :home
      :view        credentials
      :controllers [{:start (fn [_]
