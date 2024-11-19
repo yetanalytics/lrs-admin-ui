@@ -68,14 +68,15 @@
  :db/get-env
  global-interceptors
  (fn [{{server-host ::db/server-host} :db} _]
-   (let [path-parts (split js/window.location.pathname "/")]
+   (let [?window-host (->> js/window.location.pathname
+                           (re-matches #"(.+)/admin/ui.*")
+                           second)]
      {:http-xhrio {:method          :get
-                   ;; Check if this is prod or dev. If prod and at admin path
-                   ;; then use "env" relative path to account for proxy. If dev
-                   ;; use absolute.
-                   :uri             (if (and (some #(= "admin" %) path-parts)
-                                             (= server-host ""))
-                                      "env"
+                   ;; Check if this is prod or dev. If prod, then `server-host`
+                   ;; is empty, so take the host from the browser URL.
+                   :uri             (if (and (= server-host "")
+                                             (some? ?window-host))
+                                      (str ?window-host "/admin/env")
                                       (str server-host "/admin/env"))
                    :format          (ajax/json-request-format)
                    :response-format (ajax/json-response-format {:keywords? true})
