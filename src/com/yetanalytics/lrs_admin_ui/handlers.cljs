@@ -15,7 +15,6 @@
             [com.yetanalytics.re-oidc                         :as re-oidc]
             [ajax.core                                        :as ajax]
             [cljs.spec.alpha                                  :refer [valid?]]
-            [clojure.string                                   :refer [split]]
             [goog.string                                      :refer [format]]
             goog.string.format
             [clojure.walk                                     :as w]
