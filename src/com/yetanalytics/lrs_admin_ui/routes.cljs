@@ -55,6 +55,8 @@
             :controllers [{:start
                            (fn [_]
                              (dispatch [:status/get-all-data]))}]}])
+    ;; TODO: Add `/reactions/new`, `/reactions/view`, and `/reactions/edit`
+    ;; routes for their respective pages.
     enable-reactions
     (conj ["/reactions"
            {:name        :reactions
