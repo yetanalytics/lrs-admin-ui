@@ -23,6 +23,23 @@
    (::db/proxy-path db)))
 
 (reg-sub
+ ::db/resource-base
+ (fn [db _]
+   (::db/resource-base db)))
+
+(reg-sub
+ :resources/image
+ :<- [::db/resource-base]
+ (fn [resource-base [_ image-name]]
+   (str resource-base "images/" image-name)))
+
+(reg-sub
+ :resources/icon
+ :<- [::db/resource-base]
+ (fn [resource-base [_ icon-name]]
+   (str resource-base "images/icons/" icon-name)))
+
+(reg-sub
  :db/language
  (fn [db _]
    (::db/language db)))

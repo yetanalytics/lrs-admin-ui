@@ -11,7 +11,8 @@
      [:div {:class "main-wrapper"}
       [:div {:class "logo-image"}
        [:i
-        [:img {:src "/images/logo.png", :alt "LRS Logo"}]]]
+        [:img {:src @(subscribe [:resources/image "logo.png"])
+               :alt "LRS Logo"}]]]
       [:h1 @(subscribe [:lang/get :login.title])]
       [:div {:class "form-wrapper"}
        [:form {:id "login-form"}

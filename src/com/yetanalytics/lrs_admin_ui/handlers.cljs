@@ -49,6 +49,7 @@
                        :batch-size 10
                        :back-stack []}
          ::db/server-host (or server-host "")
+         ::db/resource-base (if server-host "/" "/admin/")
          ::db/xapi-prefix "/xapi"
          ::db/proxy-path (stor/get-item "proxy-path")
          ::db/language lang/language

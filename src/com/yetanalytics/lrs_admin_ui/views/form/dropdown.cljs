@@ -1,5 +1,6 @@
 (ns com.yetanalytics.lrs-admin-ui.views.form.dropdown
-  (:require [com.yetanalytics.lrs-admin-ui.functions :as fns]))
+  (:require [re-frame.core :refer [subscribe]]
+            [com.yetanalytics.lrs-admin-ui.functions :as fns]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Helpers
@@ -105,7 +106,7 @@
                                (fns/ps-event e)))
               :tab-index   0
               :aria-label  "Select the text in the search bar."}
-       [:img {:src "/images/icons/icon-add.svg"}]
+       [:img {:src @(subscribe [:resources/icon "icon-add.svg"])}]
        "Add"])]])
 
 (defn combo-box-dropdown
@@ -138,8 +139,8 @@
           placeholder)]]
    [:span {:class "form-select-top-right"}
     [:img {:src (if @dropdown-open?
-                  "/images/icons/icon-expand-less.svg"
-                  "/images/icons/icon-expand-more.svg")}]]])
+                  @(subscribe [:resources/icon "icon-expand-less.svg"])
+                  @(subscribe [:resources/icon "icon-expand-more.svg"]))}]]])
 
 (defn multi-select-input-top
   "The top pane of a multiple-selection combo box."
@@ -164,7 +165,7 @@
                [:span {:class "form-multi-select-array-item"}
                 ;; TODO: Better solution to value-label discrepancy
                 [:p (or (get-label options val) val)
-                 [:img {:src "/images/icons/icon-close-black.svg"
+                 [:img {:src @(subscribe [:resources/icon "icon-close-black.svg"])
                         :on-click (fn [e]
                                     (fns/ps-event e)
                                     (value-update-fn val))}]]]))
@@ -173,5 +174,5 @@
       [:p placeholder])]
    [:div {:class "form-multi-select-top-right"}
     [:img {:src (if @dropdown-open?
-                  "/images/icons/icon-expand-less.svg"
-                  "/images/icons/icon-expand-more.svg")}]]])
+                  @(subscribe [:resources/icon "icon-expand-less.svg"])
+                  @(subscribe [:resources/icon "icon-expand-more.svg"]))}]]])
