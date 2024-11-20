@@ -18,7 +18,9 @@
    [:div {:class "header-wrapper"}
     [:div {:class "post-image"}
      [:i
-      [:img {:src "images/logo.png", :alt "logo", :class "logo-img"}]]]
+      [:img {:src   @(subscribe [:resources/image "logo.png"])
+             :alt   "logo"
+             :class "logo-img"}]]]
     [:div {:class "text-right"}
      [username]
      [:div {:class "header-actions-wrapper"}

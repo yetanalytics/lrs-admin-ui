@@ -1,5 +1,6 @@
 (ns com.yetanalytics.lrs-admin-ui.views.form
   (:require [reagent.core :as r]
+            [re-frame.core :refer [subscribe]]
             [com.yetanalytics.lrs-admin-ui.functions :as fns]
             [com.yetanalytics.lrs-admin-ui.views.form.dropdown
              :refer [make-key-down-fn
@@ -121,7 +122,7 @@
           :or {options     []
                select-fn   (fn [v] (println 'select v))
                label-left? false
-               icon-src    "images/icons/add.svg"
+               icon-src    @(subscribe [:resources/icon "add.svg"])
                class       ""}}]
       [:div.action-dropdown
        {:on-blur (fn [_]

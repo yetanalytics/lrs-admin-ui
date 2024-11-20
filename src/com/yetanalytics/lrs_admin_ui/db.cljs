@@ -80,6 +80,7 @@
 (s/def ::server-host string?)
 (s/def ::xapi-prefix string?) ;; default /xapi
 (s/def ::proxy-path (s/nilable string?)) ;; default nil
+(s/def ::resource-base string?)
 
 (s/def ::pref-lang keyword?)
 (s/def ::language map?)
@@ -190,6 +191,7 @@
                           ::browser
                           ::accounts
                           ::server-host
+                          ::resource-base
                           ::xapi-prefix
                           ::proxy-path
                           ::language
