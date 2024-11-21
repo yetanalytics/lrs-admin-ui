@@ -29,15 +29,17 @@
 
 (reg-sub
  :resources/image
+ :<- [::db/proxy-path]
  :<- [::db/resource-base]
- (fn [resource-base [_ image-name]]
-   (str resource-base "images/" image-name)))
+ (fn [[proxy-path resource-base] [_ image-name]]
+   (str proxy-path resource-base "images/" image-name)))
 
 (reg-sub
  :resources/icon
+ :<- [::db/proxy-path]
  :<- [::db/resource-base]
- (fn [resource-base [_ icon-name]]
-   (str resource-base "images/icons/" icon-name)))
+ (fn [[proxy-path resource-base] [_ icon-name]]
+   (str proxy-path resource-base "images/icons/" icon-name)))
 
 (reg-sub
  :db/language
