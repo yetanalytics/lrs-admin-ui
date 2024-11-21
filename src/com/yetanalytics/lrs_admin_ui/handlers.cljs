@@ -100,7 +100,8 @@
                        ?oidc             :oidc
                        ?oidc-local-admin :oidc-enable-local-admin
                        :as               env}]]
-   (let [routes (routes (select-keys env [:enable-admin-delete-actor
+   (let [routes (routes (select-keys env [:proxy-path
+                                          :enable-admin-delete-actor
                                           :enable-admin-status
                                           :enable-reactions]))]
      {:db (cond-> (assoc db

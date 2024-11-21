@@ -10,10 +10,11 @@
    [com.yetanalytics.lrs-admin-ui.views.status          :refer [status]]
    [com.yetanalytics.lrs-admin-ui.views.update-password :refer [update-password]]))
 
-(defn routes [{:keys [enable-admin-delete-actor
+(defn routes [{:keys [proxy-path
+                      enable-admin-delete-actor
                       enable-admin-status
                       enable-reactions]}]
-  (cond-> ["/admin/ui"
+  (cond-> [(str proxy-path "/admin/ui")
            [""
             {:name        :home
              :view        credentials
