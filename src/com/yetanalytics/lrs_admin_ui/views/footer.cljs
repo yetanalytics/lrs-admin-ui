@@ -1,5 +1,6 @@
 (ns com.yetanalytics.lrs-admin-ui.views.footer
   (:require [com.yetanalytics.lrs-admin-ui.functions :refer [ps-event]]
+            [com.yetanalytics.re-route :as re-route]
             [re-frame.core :refer [subscribe dispatch-sync]]
             [goog.string   :refer [format unescapeEntities]]
             goog.string.format))
@@ -19,22 +20,20 @@
   [:div {:class "mobile-footer"}
    [:div {:class "footer-menu-box"}
     (when (not= nil @(subscribe [:session/get-token]))
+      ;; TODO: All menu items, including LRS monitor, data mgmt, and reactions
       [:div {:class "row no-gutters"}
        [:div {:class "col-3 text-center footer-icon pointer"}
-        [:a {:href "#"
-             :on-click #(dispatch-sync [:session/set-page :credentials])}
+        [:a {:href @(subscribe [::re-route/href :credentials])}
          [:i
           [:img {:src @(subscribe [:resources/icon "icon-mobile-credentials.svg"]) :alt "" :width "16"}]]
          [:span {:class "font-condensed font-10 fg-primary"} @(subscribe [:lang/get :footer.nav.credentials])]]]
        [:div {:class "col-3 text-center footer-icon pointer"}
-        [:a {:href "#"
-             :on-click #(dispatch-sync [:session/set-page :accounts])}
+        [:a {:href @(subscribe [::re-route/href :accounts])}
          [:i
           [:img {:src @(subscribe [:resources/icon "icon-mobile-profle.svg"]) :alt "" :width "10"}]]
          [:span {:class "font-condensed font-10 fg-primary"} @(subscribe [:lang/get :footer.nav.accounts])]]]
        [:div {:class "col-3 text-center footer-icon pointer"}
-        [:a {:href "#"
-             :on-click #(dispatch-sync [:session/set-page :browser])}
+        [:a {:href @(subscribe [::re-route/href :browser])}
          [:i
           [:img {:src @(subscribe [:resources/icon "icon-mobile-search.svg"]) :alt "" :width "16"}]]
          [:span {:class "font-condensed font-10 fg-primary"} @(subscribe [:lang/get :footer.nav.browser])]]]

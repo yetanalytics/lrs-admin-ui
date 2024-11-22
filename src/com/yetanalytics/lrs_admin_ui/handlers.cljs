@@ -1,8 +1,10 @@
 (ns com.yetanalytics.lrs-admin-ui.handlers
   (:require [re-frame.core                                    :as re-frame]
             [reagent.core                                     :as r]
+            [com.yetanalytics.re-route                        :as re-route]
             [com.yetanalytics.lrs-admin-ui.db                 :as db]
             [com.yetanalytics.lrs-admin-ui.input              :as input]
+            [com.yetanalytics.lrs-admin-ui.routes             :refer [routes]]
             [day8.re-frame.http-fx]
             [com.yetanalytics.lrs-admin-ui.functions          :as fns]
             [com.yetanalytics.lrs-admin-ui.functions.download :as download]
@@ -29,8 +31,7 @@
  :db/init
  global-interceptors
  (fn [_  [_ server-host]]
-   {:db {::db/session {:page :credentials
-                       :token (stor/get-item "lrs-jwt")
+   {:db {::db/session {:token (stor/get-item "lrs-jwt")
                        :username (stor/get-item "username")}
          ::db/login {:username nil
                      :password nil}
@@ -87,35 +88,43 @@
  global-interceptors
  (fn [{:keys [db]} [_ {:keys             [url-prefix
                                           proxy-path
+                                          enable-admin-delete-actor
                                           enable-admin-status
                                           enable-reactions
                                           no-val?
                                           no-val-logout-url
-                                          enable-admin-delete-actor
                                           admin-language-code
                                           stmt-get-max
                                           custom-language]
                        ?oidc             :oidc
-                       ?oidc-local-admin :oidc-enable-local-admin}]]
-   {:db (cond-> (assoc db
-                       ::db/xapi-prefix url-prefix
-                       ::db/proxy-path proxy-path
-                       ::db/oidc-enable-local-admin (or ?oidc-local-admin false)
-                       ::db/enable-admin-status enable-admin-status
-                       ::db/enable-reactions enable-reactions
-                       ::db/enable-admin-delete-actor enable-admin-delete-actor
-                       ::db/stmt-get-max stmt-get-max
-                       ::db/pref-lang (keyword admin-language-code)
-                       ::db/language (merge-with merge
-                                                 lang/language
-                                                 custom-language))
-          (and no-val?
-               (not-empty no-val-logout-url))
-          (assoc ::db/no-val-logout-url no-val-logout-url))
-    :fx (cond-> []
-          ?oidc (conj [:dispatch [:oidc/init ?oidc]])
-          no-val? (conj [:dispatch [:session/proxy-token-init]]))
-    :session/store ["proxy-path" proxy-path]}))
+                       ?oidc-local-admin :oidc-enable-local-admin
+                       :as               env}]]
+   (let [routes (routes (select-keys env [:proxy-path
+                                          :enable-admin-delete-actor
+                                          :enable-admin-status
+                                          :enable-reactions]))]
+     {:db (cond-> (assoc db
+                         ::db/xapi-prefix url-prefix
+                         ::db/proxy-path proxy-path
+                         ::db/oidc-enable-local-admin (or ?oidc-local-admin false)
+                         ::db/enable-admin-status enable-admin-status
+                         ::db/enable-reactions enable-reactions
+                         ::db/enable-admin-delete-actor enable-admin-delete-actor
+                         ::db/stmt-get-max stmt-get-max
+                         ::db/pref-lang (keyword admin-language-code)
+                         ::db/language (merge-with merge
+                                                   lang/language
+                                                   custom-language))
+            (and no-val?
+                 (not-empty no-val-logout-url))
+            (assoc ::db/no-val-logout-url no-val-logout-url))
+      :fx (cond-> [[:dispatch [::re-route/init
+                               routes
+                               :not-found
+                               {:enabled? false}]]]
+            ?oidc   (conj [:dispatch [:oidc/init ?oidc]])
+            no-val? (conj [:dispatch [:session/proxy-token-init]]))
+      :session/store ["proxy-path" proxy-path]})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Login / Auth
@@ -231,21 +240,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; General
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defmulti page-fx
-  "Given a set-page event query vector, adds any effects of moving to that page.
-  Note that you can use overloads beyond just the page keyword in your methods."
-  (fn [[_ page]]
-    page))
-
-(defmethod page-fx :default [_] [])
-
-(re-frame/reg-event-fx
- :session/set-page
- global-interceptors
- (fn [{:keys [db]} [_ page :as qvec]]
-   {:db (assoc-in db [::db/session :page] page)
-    :fx (page-fx qvec)}))
 
 (re-frame/reg-event-fx
  :server-error
@@ -750,7 +744,7 @@
  global-interceptors
  (fn [_ _]
    {:fx [[:dispatch [:update-password/clear]]
-         [:dispatch [:session/set-page :credentials]]
+         [:dispatch [::re-route/navigate :credentials]]
          [:dispatch [:notification/notify false
                      "Password updated."]]]}))
 
@@ -889,23 +883,14 @@
     :fx [[:dispatch
           [:server-error error]]]}))
 
-(def status-dispatch-all
-  (into []
-        (for [status-query ["statement-count"
-                            "actor-count"
-                            "last-statement-stored"
-                            "timeline"
-                            "platform-frequency"]]
-          [:dispatch [:status/get-data [status-query]]])))
-
-(defmethod page-fx :status [_]
-  status-dispatch-all)
-
 (re-frame/reg-event-fx
  :status/get-all-data
- global-interceptors
- (fn [_ _]
-   {:fx status-dispatch-all}))
+ (fn [_]
+   {:fx [[:dispatch [:status/get-data ["statement-count"]]]
+         [:dispatch [:status/get-data ["actor-count"]]]
+         [:dispatch [:status/get-data ["last-statement-stored"]]]
+         [:dispatch [:status/get-data ["timeline"]]]
+         [:dispatch [:status/get-data ["platform-frequency"]]]]}))
 
 (defn- coerce-status-data
   "Convert string keys in status data to keyword where appropriate."
@@ -990,10 +975,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Reaction Management
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defmethod page-fx :reactions [_]
-  [[:dispatch [:reaction/back-to-list]]
-   [:dispatch [:reaction/load-reactions]]])
 
 (re-frame/reg-event-fx
  :reaction/load-reactions
