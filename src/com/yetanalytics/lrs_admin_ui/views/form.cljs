@@ -1,6 +1,5 @@
 (ns com.yetanalytics.lrs-admin-ui.views.form
   (:require [reagent.core :as r]
-            [re-frame.core :refer [subscribe]]
             [com.yetanalytics.lrs-admin-ui.functions :as fns]
             [com.yetanalytics.lrs-admin-ui.views.form.dropdown
              :as drop-form
