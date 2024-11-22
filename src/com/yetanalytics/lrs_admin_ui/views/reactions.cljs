@@ -291,6 +291,9 @@
    reaction-path
    type-key]
   [:div.clause-type-label
+   {:class (when (and (not (contains? #{:edit :new} mode)) ; FIXME: Refactor
+                      (not (contains? #{:and :or :not} type-key)))
+             "empty")}
    (if (contains? #{:edit :new} mode)
      [:<>
       [:select
@@ -557,7 +560,6 @@
 (defn- render-condition-name-errors
   [condition-name]
   (when (not (rse/keywordizable-string? condition-name))
-    
     [:ul.reaction-error-list
      [:li @(subscribe [:lang/get :reactions.errors.invalid-condition-name])]]))
 
@@ -586,7 +588,7 @@
 
 (defn- render-conditions
   [mode conditions]
-  (into [:div.reaction-conditions]
+  (into [:div.conditions]
         (map-indexed
          (fn [idx condition*]
            (let [condition-name (if (contains? #{:edit :new} mode)
@@ -626,29 +628,28 @@
   (let [open? (r/atom false)]
     (fn [_mode _identity-paths]
       [:<>
-       [:dt
-        {:on-click #(swap! open? not)
-         :class (str "paths-collapse" (when @open? " expanded"))}
-        @(subscribe [:lang/get :reactions.identity-paths])
-        [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.identity-path])}]]
-       [:dd
+       [:label {:for "reaction-identity-paths"}
+        [:span {:on-click #(swap! open? not)
+                :class (str "pane-collapse" (when @open? " expanded"))}
+         @(subscribe [:lang/get :reactions.identity-paths])
+         [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.identity-path])}]]]
+       [:div {:id "reaction-identity-paths"}
         (when @open?
           (let [edit? (contains? #{:edit :new} _mode)]
             [:<>
              (into
-              [:ul.identity-paths]
+              [:ul.identity-paths {:class (when (not edit?) "view")}]
               (map-indexed
                (fn [idx path]
                  (let [path-path [:ruleset :identityPaths idx]]
-                   [:<>
+                   [:li
                     [render-or-edit-path
                      _mode
                      path-path
                      path
                      :remove-fn
                      #(dispatch [:reaction/delete-identity-path idx])
-                     :open-next? true]
-                    (when (not edit?) [:br])]))
+                     :open-next? true]]))
                _identity-paths))
              (when edit?
                [:span.add-identity-path
@@ -665,11 +666,12 @@
   [conditions]
   (let [empty-err? (empty? conditions)
         dupe-err?  (not (rse/distinct-name-vector? conditions))]
-    [:ul.reaction-error-list
-     (when empty-err?
-       [:li @(subscribe [:lang/get :reactions.errors.one-condition])])
-     (when dupe-err?
-       [:li @(subscribe [:lang/get :reactions.errors.dupe-condition-names])])]))
+    (when (or empty-err? dupe-err?)
+      [:ul.reaction-error-list
+       (when empty-err?
+         [:li @(subscribe [:lang/get :reactions.errors.one-condition])])
+       (when dupe-err?
+         [:li @(subscribe [:lang/get :reactions.errors.dupe-condition-names])])])))
 
 (defn- ruleset-view
   [mode
@@ -679,6 +681,8 @@
   ;; Cannot use <dl> elements here since that would cause DOM nesting errors
   [:div.reaction-ruleset {:id "ruleset-view"}
    ;; TODO: Properly redo divs to remove extraneous nesting
+   [:hr]
+
    [:label {:for "reaction-ruleset-conditions"}
     @(subscribe [:lang/get :reactions.details.ruleset.conditions])
     [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.ruleset.conditions])}]]
@@ -689,12 +693,16 @@
     (when (contains? #{:edit :new} mode)
       [add-condition :to-add-desc ""])]
    
+   [:hr]
+
    [:label {:for "reaction-ruleset-templates"}
     @(subscribe [:lang/get :reactions.template.title])
     [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.template])}]]
    [:div {:id "reaction-ruleset-conditions"}
     [t/render-or-edit-template mode template]]
    
+   [:hr]
+
    [render-identity-paths
     mode identityPaths]])
 
@@ -819,41 +827,42 @@
       (when error?
         [:div.reaction-edit-invalid
          @(subscribe [:lang/get :reactions.errors.invalid])])
-      [:dl.reaction-view
-       [:div {:class "reaction-info-panel"}
+      
+      [:div.reaction-info-panel
+       ;; Put right-floating item first because CSS is weird
+       (when (contains? #{:focus :edit} mode)
+         [:dl.reaction-info-panel.right
+          [:dt @(subscribe [:lang/get :reactions.details.created])]
+          [:dd (or (iso8601->local-display created) "[New]")]
+          
+          [:dt @(subscribe [:lang/get :reactions.details.modified])]
+          [:dd (or (iso8601->local-display modified) "[New]")]
+          
+          [:dt @(subscribe [:lang/get :reactions.details.error])]
+          [:dd [render-error error]]])
+       
+       [:dl.reaction-info-panel.left
+        [:dt @(subscribe [:lang/get :reactions.details.title])
+         [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.reaction-title])}]]
+        [:dd
+         (case mode
+           :focus title
+           [edit-title title])]
+
         (when (contains? #{:focus :edit} mode)
           [:<>
-           [:dt @(subscribe [:lang/get :reactions.details.created])]
-           [:dd (or (iso8601->local-display created) "[New]")]
+           [:dt @(subscribe [:lang/get :reactions.details.id])
+            [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.reaction-id])}]]
+           [:dd id]])
 
-           [:dt @(subscribe [:lang/get :reactions.details.modified])]
-           [:dd (or (iso8601->local-display modified) "[New]")]
-
-           [:dt @(subscribe [:lang/get :reactions.details.error])]
-           [:dd [render-error error]]])]
-       [:dt @(subscribe [:lang/get :reactions.details.title])
-        [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.reaction-title])}]]
-       [:dd
-        (case mode
-          :focus title
-          [edit-title title])]
-
-       (when (contains? #{:focus :edit} mode)
-         [:<>
-          [:dt @(subscribe [:lang/get :reactions.details.id])
-           [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.reaction-id])}]]
-          [:dd id]])
-
-       [:dt @(subscribe [:lang/get :reactions.details.status])
-        [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.reaction-status])}]]
-       [:dd
-        (case mode
-          :focus (if active "Active" "Inactive")
-          [edit-status active])]
-       
-       [:label {:for "ruleset-view"}
-        @(subscribe [:lang/get :reactions.details.ruleset])]
-       [ruleset-view mode ruleset]]
+        [:dt @(subscribe [:lang/get :reactions.details.status])
+         [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.reaction-status])}]]
+        [:dd
+         (case mode
+           :focus (if active "Active" "Inactive")
+           [edit-status active])]]]
+      
+      [ruleset-view mode ruleset]
       [reaction-actions mode id error?]]]))
 
 (defn reactions
