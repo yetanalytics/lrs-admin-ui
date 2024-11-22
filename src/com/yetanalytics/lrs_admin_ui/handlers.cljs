@@ -23,16 +23,39 @@
             [com.yetanalytics.lrs-admin-ui.language           :as lang]
             [com.yetanalytics.lrs-reactions.path              :as rpath]))
 
-(def global-interceptors
-  [db/check-spec-interceptor])
+(def interaction-interceptor
+  "Update `::db/last-interaction-time` to the current time whenever a change is
+   made to the specified paths to the app-db. This is a heuristic that will
+   detect some, but not all, user interactions with the UI."
+  (re-frame/on-changes
+   (fn [& _] (.now js/Date))
+   [::db/last-interaction-time]
+   ;; Places in app-db to detect changes
+   [::db/session :page]
+   [::db/login]
+   [::db/credentials]
+   [::db/accounts]
+   [::db/new-account]
+   [::db/browser]
+   [::db/status]
+   [::db/reactions]
+   [::db/reaction-focus]
+   [::db/editing-reaction]
+   [::db/editing-reaction-template-json]))
+
+(re-frame/reg-global-interceptor
+ db/check-spec-interceptor)
+
+(re-frame/reg-global-interceptor
+ interaction-interceptor)
 
 (re-frame/reg-event-fx
  :db/init
- global-interceptors
  (fn [_  [_ server-host]]
-   {:db {::db/session {:page :credentials
-                       :token (stor/get-item "lrs-jwt")
-                       :username (stor/get-item "username")}
+   {:db {::db/session {:page     :credentials
+                       ;; Token and username will be set in `:db/verify-login`
+                       :token    nil
+                       :username nil}
          ::db/login {:username nil
                      :password nil}
          ::db/credentials []
@@ -52,6 +75,8 @@
          ::db/proxy-path (stor/get-item "proxy-path")
          ::db/language lang/language
          ::db/pref-lang :en-US
+         ::db/jwt-refresh-interval 3540
+         ::db/jwt-interaction-window 600
          ::db/stmt-get-max 10
          ::db/enable-admin-delete-actor false
          ::db/notifications []
@@ -60,12 +85,13 @@
          ::db/enable-admin-status false
          ::db/status {}
          ::db/enable-reactions false
-         ::db/reactions []}
-    :fx [[:dispatch [:db/get-env]]]}))
+         ::db/reactions []
+         ::db/last-interaction-time (.now js/Date)}
+    :fx [[:dispatch [:db/verify-login]]
+         [:dispatch [:db/get-env]]]}))
 
 (re-frame/reg-event-fx
  :db/get-env
- global-interceptors
  (fn [{{server-host ::db/server-host} :db} _]
    (let [path-parts (split js/window.location.pathname "/")]
      {:http-xhrio {:method          :get
@@ -83,149 +109,88 @@
 
 (re-frame/reg-event-fx
  :db/set-env
- global-interceptors
- (fn [{:keys [db]} [_ {:keys             [url-prefix
-                                          proxy-path
-                                          enable-admin-status
-                                          enable-reactions
-                                          no-val?
-                                          no-val-logout-url
-                                          enable-admin-delete-actor
-                                          admin-language-code
-                                          stmt-get-max
-                                          custom-language]
-                       ?oidc             :oidc
-                       ?oidc-local-admin :oidc-enable-local-admin}]]
-   {:db (cond-> (assoc db
-                       ::db/xapi-prefix url-prefix
-                       ::db/proxy-path proxy-path
-                       ::db/oidc-enable-local-admin (or ?oidc-local-admin false)
-                       ::db/enable-admin-status enable-admin-status
-                       ::db/enable-reactions enable-reactions
-                       ::db/enable-admin-delete-actor enable-admin-delete-actor
-                       ::db/stmt-get-max stmt-get-max
-                       ::db/pref-lang (keyword admin-language-code)
-                       ::db/language (merge-with merge
-                                                 lang/language
-                                                 custom-language))
-          (and no-val?
-               (not-empty no-val-logout-url))
-          (assoc ::db/no-val-logout-url no-val-logout-url))
-    :fx (cond-> []
-          ?oidc (conj [:dispatch [:oidc/init ?oidc]])
-          no-val? (conj [:dispatch [:session/proxy-token-init]]))
-    :session/store ["proxy-path" proxy-path]}))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Login / Auth
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ (fn [{:keys [db]} [_ {:keys        [jwt-refresh-interval
+                                     jwt-interaction-window
+                                     url-prefix
+                                     proxy-path
+                                     enable-admin-status
+                                     enable-reactions
+                                     no-val?
+                                     no-val-logout-url
+                                     enable-admin-delete-actor
+                                     admin-language-code
+                                     stmt-get-max
+                                     custom-language]
+                       ?oidc        :oidc
+                       ?oidc-enable :oidc-enable-local-admin}]]
+   (let [jwt-refresh-interval*    (* 1000 jwt-refresh-interval)
+         jwt-interaction-window*  (* 1000 jwt-interaction-window)
+         oidc-enable-local-admin? (or ?oidc-enable false)
+         admin-lang-keyword       (keyword admin-language-code)
+         language-map             (merge-with merge
+                                              lang/language
+                                              custom-language)]
+     ;; TODO: Put env vars in their own map
+     {:db (cond-> (assoc db
+                         ::db/jwt-refresh-interval jwt-refresh-interval*
+                         ::db/jwt-interaction-window jwt-interaction-window*
+                         ::db/xapi-prefix url-prefix
+                         ::db/proxy-path proxy-path
+                         ::db/oidc-enable-local-admin oidc-enable-local-admin?
+                         ::db/enable-admin-status enable-admin-status
+                         ::db/enable-reactions enable-reactions
+                         ::db/enable-admin-delete-actor enable-admin-delete-actor
+                         ::db/stmt-get-max stmt-get-max
+                         ::db/pref-lang admin-lang-keyword
+                         ::db/language language-map)
+            (and no-val?
+                 (not-empty no-val-logout-url))
+            (assoc ::db/no-val-logout-url no-val-logout-url))
+      :fx (cond-> []
+            ?oidc (conj [:dispatch [:oidc/init ?oidc]])
+            no-val? (conj [:dispatch [:session/proxy-token-init]]))
+      :session/store ["proxy-path" proxy-path]})))
 
 (re-frame/reg-event-fx
- :session/proxy-token-init
- global-interceptors
- (fn [_ _]
-   ;; In this mode the token will be overwritten, so just store something and
-   ;; move on. For testing the feature, this placeholder token has "username",
-   ;; "perms" array containing "ADMIN" perm, and "domain" as the issuer
-   (let [placeholder-token "eyJhbGciOiJIUzI1NiJ9.eyJkb21haW4iOiJodHRwczovL3Vuc2VjdXJlLnlldGFuYWx5dGljcy5jb20vcmVhbG0iLCJwZXJtcyI6WyJBRE1JTiJdLCJ1c2VybmFtZSI6IkNMSUZGLkNBU0VZLjEyMzQ1Njc4OTAifQ.2gRn_tDFBfJx2RE0pgvPM4wH__RnHf1E9kjsNlkLrnQ"]
-     {:fx [[:dispatch [:session/set-token placeholder-token]]]})))
+ :db/verify-login
+ (fn [{{server-host ::db/server-host
+        proxy-path  ::db/proxy-path} :db} _]
+   ;; Token should be empty for OIDC auth
+   ;; If there are, then we get an error, which is appropriate for such an
+   ;; incongrous mix of authentication procedures.
+   (let [curr-token (stor/get-item "lrs-jwt")
+         curr-uname (stor/get-item "username")]
+     (println "Current token:" curr-token)
+     (if (some? curr-token)
+       {:http-xhrio
+        {:method          :get
+         :uri             (httpfn/serv-uri
+                           server-host
+                           "/admin/verify"
+                           proxy-path)
+         :response-format (ajax/json-response-format {:keywords? true})
+         :on-success      [:db/verify-login-success curr-token curr-uname]
+         :on-failure      [:db/verify-login-error]
+         :interceptors    [(httpfn/add-jwt-interceptor* curr-token)]}}
+       ;; No JWT in local storage, no-op
+       {}))))
 
 (re-frame/reg-event-db
- :login/set-username
- global-interceptors
- (fn [db [_ username]]
-   (assoc-in db [::db/login :username] username)))
-
-(re-frame/reg-event-db
- :login/set-password
- global-interceptors
- (fn [db [_ password]]
-   (assoc-in db [::db/login :password] password)))
+ :db/verify-login-success
+ (fn [db [_ curr-token curr-uname _]]
+   (-> db
+       (assoc-in [::db/session :token] curr-token)
+       (assoc-in [::db/session :username] curr-uname))))
 
 (re-frame/reg-event-fx
- :session/authenticate
- global-interceptors
- (fn [{{server-host ::db/server-host
-        proxy-path  ::db/proxy-path
-        :as db} :db} _]
-   {:http-xhrio {:method          :post
-                 :uri             (httpfn/serv-uri
-                                   server-host
-                                   "/admin/account/login"
-                                   proxy-path)
-                 :format          (ajax/json-request-format)
-                 :response-format (ajax/json-response-format {:keywords? true})
-                 :params          (::db/login db)
-                 :on-success      [:login/success-handler]
-                 :on-failure      [:login/error-handler]}}))
-
-(re-frame/reg-event-fx
- :login/success-handler
- global-interceptors
- (fn [_ [_ {:keys [json-web-token]}]]
-   {:fx [[:dispatch [:session/set-token json-web-token]]
-         [:dispatch [:login/set-password nil]]
-         [:dispatch [:login/set-username nil]]]}))
-
-(re-frame/reg-event-fx
- :session/set-token
- global-interceptors
- (fn [{:keys [db]} [_ token
-                    & {:keys [store?]
-                       :or {store? true}}]]
-   (cond-> {:db (assoc-in db [::db/session :token] token)
-            :fx [[:dispatch [:session/get-me]]]}
-     store? (assoc :session/store ["lrs-jwt" token]))))
-
-(re-frame/reg-event-fx
- :session/get-me
- global-interceptors
- (fn [{{server-host ::db/server-host
-        proxy-path  ::db/proxy-path :as db} :db} _]
-   (when (not (get db ::db/oidc-auth))
-     {:http-xhrio {:method          :get
-                   :uri             (httpfn/serv-uri
-                                     server-host
-                                     "/admin/me"
-                                     proxy-path)
-                   :response-format (ajax/json-response-format {:keywords? true})
-                   :on-success      [:session/me-success-handler]
-                   :on-failure      [:login/error-handler]
-                   :interceptors    [httpfn/add-jwt-interceptor]}})))
-
-(re-frame/reg-event-fx
- :session/me-success-handler
- global-interceptors
- (fn [_ [_ {:keys [username]}]]
-   {:fx [[:dispatch [:session/set-username username]]]}))
-
-(re-frame/reg-event-fx
- :login/error-handler
- global-interceptors
+ :db/verify-login-error
  (fn [_ [_ {:keys [status] :as error}]]
-   ;; For auth, if its badly formed or not authorized give a specific error,
-   ;; otherwise default to typical server error notice handling
-   (if (or (= status 401) (= status 400))
+   (if (= 401 status)
      {:fx [[:dispatch [:notification/notify true
-                       "Please enter a valid username and password!"]]]}
+                       "Current login has expired"]]
+           [:dispatch [:session/clear-token]]
+           [:dispatch [:session/clear-username]]]}
      {:fx [[:dispatch [:server-error error]]]})))
-
-(re-frame/reg-event-fx
- :session/set-username
- global-interceptors
- (fn [{:keys [db]} [_ username
-                    & {:keys [store?]
-                       :or {store? true}}]]
-   (cond-> {:db (assoc-in db [::db/session :username]
-                          username)}
-     store? (assoc :session/store ["username" username]))))
-
-(re-frame/reg-fx
- :session/store
- (fn [[key value]]
-   (if value
-     (stor/set-item! key value)
-     (stor/remove-item! key))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; General
@@ -241,7 +206,6 @@
 
 (re-frame/reg-event-fx
  :session/set-page
- global-interceptors
  (fn [{:keys [db]} [_ page :as qvec]]
    {:db (assoc-in db [::db/session :page] page)
     :fx (page-fx qvec)}))
@@ -249,37 +213,310 @@
 (re-frame/reg-event-fx
  :server-error
  (fn [_ [_ {:keys [response status]}]]
-   ;;extract the error and present it in a notification. If 401 or 0, log out.
-   (let [err (get response "error"
-                  ;; If no error is provided, pass status
-                  (format "Unknown Error, status: %s" status))
-         message (cond (= status 0)
-                       "Could not connect to LRS!"
-                       (and err (< (count err) 100))
-                       (str "Error from server: " err)
-                       :else
-                       "An unexpected error has occured!")]
+   (let [unk-msg (format "Unknown Error, status: %s" status)
+         err-msg (get response "error" unk-msg)
+         message (cond
+                   (= 0 status)
+                   "Could not connect to LRS!"
+                   (= 401 status)
+                   "Unauthorized action, please log in!"
+                   (and err-msg (< (count err-msg) 100))
+                   (str "Error from server: " err-msg)
+                   :else
+                   "An unexpected error has occured!")]
      {:fx (cond-> [[:dispatch [:notification/notify true message]]]
             (some #(= status %) [0 401])
-            (merge [:dispatch [:session/set-token nil]]))})))
+            (merge [:dispatch [:session/clear-token]]))})))
 
-(re-frame/reg-event-fx
- :session/logout
- (fn [{:keys [db]} _]
-   (let [{?no-val-logout-url ::db/no-val-logout-url} db]
-     {:fx [[:dispatch [:session/set-token nil]]
-           [:dispatch [:session/set-username nil]]
-           ;; For OIDC logouts, which contain a redirect, notification is
-           ;; triggered by logout success
-           (cond
-             (oidc/logged-in? db) [:dispatch [::re-oidc/logout]]
-             ?no-val-logout-url [:session/no-val-logout-redirect
-                                 {:logout-url ?no-val-logout-url}]
-             :else
-             [:dispatch [:notification/notify false "You have logged out."]])]})))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Login / Auth
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Localstore values: JWT and Username ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (re-frame/reg-fx
- :session/no-val-logout-redirect
+ :session/store
+ (fn [[key value]]
+   (if value
+     (stor/set-item! key value)
+     (stor/remove-item! key))))
+
+(re-frame/reg-event-fx
+ :session/set-token
+ (fn [{:keys [db]} [_ token & {:keys [store?]
+                               :or   {store? true}}]]
+   (cond-> {:db (assoc-in db [::db/session :token] token)
+            :fx [[:dispatch [:session/get-me]]]}
+     store? (assoc :session/store ["lrs-jwt" token]))))
+
+(re-frame/reg-event-fx
+ :session/clear-token
+ (fn [{:keys [db]} [_ & {:keys [store?]
+                         :or   {store? true}}]]
+   (cond-> {:db (assoc-in db [::db/session :token] nil)}
+     store? (assoc :session/store ["lrs-jwt" nil]))))
+
+(re-frame/reg-event-fx
+ :session/set-username
+ (fn [{:keys [db]} [_ username & {:keys [store?]
+                                  :or   {store? true}}]]
+   (cond-> {:db (assoc-in db [::db/session :username] username)}
+     store? (assoc :session/store ["username" username]))))
+
+(re-frame/reg-event-fx
+ :session/clear-username
+ (fn [{:keys [db]} [_ & {:keys [store?]
+                         :or   {store? true}}]]
+   (cond-> {:db (assoc-in db [::db/session :username] nil)}
+     store? (assoc :session/store ["username" nil]))))
+
+;; /admin/me call - gets username
+
+(re-frame/reg-event-fx
+ :session/get-me
+ (fn [{{server-host ::db/server-host
+        proxy-path  ::db/proxy-path
+        ?oidc-auth  ::db/oidc-auth} :db} _]
+   (when-not ?oidc-auth
+     {:http-xhrio
+      {:method          :get
+       :uri             (httpfn/serv-uri
+                         server-host
+                         "/admin/me"
+                         proxy-path)
+       :response-format (ajax/json-response-format {:keywords? true})
+       :on-success      [:session/me-success-handler]
+       :on-failure      [:login/error-handler]
+       :interceptors    [httpfn/add-jwt-interceptor]}})))
+
+(re-frame/reg-event-fx
+ :session/me-success-handler
+ (fn [_ [_ {:keys [username]}]]
+   {:fx [[:dispatch [:session/set-username username]]]}))
+
+(re-frame/reg-event-fx
+ :login/error-handler
+ (fn [_ [_ {:keys [status] :as error}]]
+   ;; For auth, if its badly formed or not authorized give a specific error,
+   ;; otherwise default to typical server error notice handling
+   (if (or (= status 401) (= status 400))
+     {:fx [[:dispatch [:notification/notify true
+                       "Please enter a valid username and password!"]]]}
+     {:fx [[:dispatch [:server-error error]]]})))
+
+;; Regular JWT Login ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Username + Password Buffer
+
+(re-frame/reg-event-db
+ :login/set-username
+ (fn [db [_ username]]
+   (assoc-in db [::db/login :username] username)))
+
+(re-frame/reg-event-db
+ :login/set-password
+ (fn [db [_ password]]
+   (assoc-in db [::db/login :password] password)))
+
+;; Login
+
+(re-frame/reg-event-fx
+ :session/authenticate
+ (fn [{{server-host ::db/server-host
+        proxy-path  ::db/proxy-path
+        :as         db} :db} _]
+   {:http-xhrio
+    {:method          :post
+     :uri             (httpfn/serv-uri
+                       server-host
+                       "/admin/account/login"
+                       proxy-path)
+     :format          (ajax/json-request-format)
+     :response-format (ajax/json-response-format {:keywords? true})
+     :params          (::db/login db)
+     :on-success      [:login/success-handler]
+     :on-failure      [:login/error-handler]}}))
+
+(re-frame/reg-event-fx
+ :login/success-handler
+ (fn [{:keys [db]} [_ {:keys [json-web-token]}]]
+   (let [jwt-refresh-interval (::db/jwt-refresh-interval db)]
+     {:fx [[:dispatch [:session/set-token json-web-token]]
+           [:dispatch [:login/set-password nil]]
+           [:dispatch [:login/set-username nil]]
+           [:dispatch-later {:ms       jwt-refresh-interval
+                             :dispatch [:login/try-renew]}]]})))
+
+;; Renewal
+
+(re-frame/reg-event-fx
+ :login/try-renew
+ (fn [{:keys [db]}]
+   (let [{int-window    ::db/jwt-interaction-window
+          last-int-time ::db/last-interaction-time} db
+         current-token (get-in db [::db/session :token])
+         current-time  (.now js/Date)]
+     (cond
+       (nil? current-token) ; logged out or non-JWT login
+       {}
+       (< (- current-time int-window) last-int-time current-time)
+       {:fx [[:dispatch [:login/renew]]]}
+       :else
+       {:fx [[:dispatch [:logout/logout]]]}))))
+
+(re-frame/reg-event-fx
+ :login/renew
+ (fn [{:keys [db]}]
+   (let [{server-host ::db/server-host
+          proxy-path  ::db/proxy-path} db]
+     {:http-xhrio
+      {:method          :get
+       :uri             (httpfn/serv-uri
+                         server-host
+                         "/admin/account/renew"
+                         proxy-path)
+       :format          (ajax/json-request-format)
+       :response-format (ajax/json-response-format {:keywords? true})
+       :on-success      [:login/renew-success]
+       :on-failure      [:login/renew-error]
+       :interceptors    [httpfn/add-jwt-interceptor]}})))
+
+(re-frame/reg-event-fx
+ :login/renew-success
+ (fn [{:keys [db]} [_ {:keys [json-web-token]}]]
+   (let [jwt-refresh-interval (::db/jwt-refresh-interval db)]
+     {:fx [[:dispatch [:session/set-token json-web-token]]
+           [:dispatch-later {:ms jwt-refresh-interval
+                             :dispatch [:login/try-renew]}]]})))
+
+(def ^:private renew-error-msg
+  "Can no longer renew login. Congratulations on being SQL LRS's biggest fan!")
+
+(re-frame/reg-event-fx
+ :login/renew-error
+ (fn [_ [_ {:keys [status] :as error}]]
+   (if (= 401 status)
+     {:fx [[:dispatch [:notification/notify true renew-error-msg]]
+           [:dispatch [:logout/logout]]]}
+     {:fx [[:dispatch [:server-error error]]]})))
+
+;; Proxy JWT Login ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(def placeholder-token
+  "Sample token used for testing no-val JWT mode. This token has this body:
+   ```
+   {
+     \"domain\": \"https://unsecure.yetanalytics.com/realm\",
+     \"perms\": [\"ADMIN\"],
+     \"username\": \"CLIFF.CASEY.1234567890\"
+   }
+   ```
+   which correspond to the following values in lrsql config:
+   ```
+   {
+     \"jwtNoVal\": true,
+     \"jwtNoValUname\": \"username\",
+     \"jwtNoValIssuer\": \"domain\",
+     \"jwtNoValRoleKey\": \"perms\",
+     \"jwtNoValRole\": \"ADMIN\"
+   }
+   ```
+   "
+  "eyJhbGciOiJIUzI1NiJ9.eyJkb21haW4iOiJodHRwczovL3Vuc2VjdXJlLnlldGFuYWx5dGljcy5jb20vcmVhbG0iLCJwZXJtcyI6WyJBRE1JTiJdLCJ1c2VybmFtZSI6IkNMSUZGLkNBU0VZLjEyMzQ1Njc4OTAifQ.2gRn_tDFBfJx2RE0pgvPM4wH__RnHf1E9kjsNlkLrnQ")
+
+(re-frame/reg-event-fx
+ :session/proxy-token-init
+ (fn [_ _]
+   ;; In this mode the token will be overwritten, so just store something and
+   ;; move on.
+   {:fx [[:dispatch [:session/set-token placeholder-token]]]}))
+
+;; OIDC Login ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(re-frame/reg-event-fx
+ :oidc/init
+ (fn [{:keys [db]} [_ remote-config]]
+   (let [?search (not-empty js/window.location.search)]
+     {:db (assoc db ::db/oidc-auth true)
+      :dispatch-n
+      (cond-> [[::re-oidc/init (oidc/init-config remote-config)]]
+        ?search (conj [::re-oidc/login-callback
+                       oidc/static-config
+                       ?search]))})))
+
+(re-frame/reg-fx
+ :oidc/clear-search-fx
+ (fn [_]
+   (oidc/push-state js/window.location.pathname)))
+
+(re-frame/reg-event-fx
+ :oidc/login-success
+ (fn [_ _]
+   {:fx [[:oidc/clear-search-fx {}]]}))
+
+(re-frame/reg-event-fx
+ :oidc/user-loaded
+ (fn [{:keys [db]} _]
+   (if-let [{:keys [access-token]
+             {:strs [sub]} :profile} (::re-oidc/user db)]
+     {:fx [[:dispatch [:session/set-token access-token
+                       :store? false]]
+           [:dispatch [:session/set-username sub
+                       :store? false]]
+           [:dispatch [:login/set-password nil]]
+           [:dispatch [:login/set-username nil]]]}
+     {})))
+
+(re-frame/reg-event-fx
+ :oidc/user-unloaded
+ (fn [_ _]
+   {:fx [[:dispatch [:session/clear-token]]
+         [:dispatch [:session/clear-username]]]}))
+
+;; Logout ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(re-frame/reg-event-fx
+ :logout/logout
+ (fn [{:keys [db]} _]
+   (let [{server-host        ::db/server-host
+          proxy-path         ::db/proxy-path
+          ?no-val-logout-url ::db/no-val-logout-url} db]
+     (cond
+       ;; OIDC login
+       (oidc/logged-in? db)
+       {:fx [[:dispatch [:session/clear-token]]
+             [:dispatch [:session/clear-username]]
+             [:dispatch [::re-oidc/logout]]]}
+       ;; Proxy JWT login
+       ?no-val-logout-url
+       {:fx [[:dispatch [:session/clear-token]]
+             [:dispatch [:session/clear-username]]
+             [:logout/no-val-logout-redirect
+              {:logout-url ?no-val-logout-url}]]}
+       ;; Regular JWT login
+       :else
+       {:http-xhrio
+        {:method          :post
+         :uri             (httpfn/serv-uri
+                           server-host
+                           "/admin/account/logout"
+                           proxy-path)
+         :params          {}
+         :format          (ajax/json-request-format)
+         :response-format (ajax/json-response-format {:keywords? true})
+         :on-success      [:logout/success-handler]
+         :on-failure      [:server-error]
+         :interceptors    [httpfn/add-jwt-interceptor]}}))))
+
+(re-frame/reg-event-fx
+ :logout/success-handler
+ (fn [_ _]
+   {:fx [[:dispatch [:session/clear-token]]
+         [:dispatch [:session/clear-username]]
+         [:dispatch [:notification/notify false "You have logged out."]]]}))
+
+(re-frame/reg-fx
+ :logout/no-val-logout-redirect
  (fn [{:keys [logout-url]}]
    (set! (.-location js/window) logout-url)))
 
@@ -358,8 +595,25 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (re-frame/reg-event-fx
+ :browser/try-load-xapi
+ (fn [{{server-host ::db/server-host
+        proxy-path  ::db/proxy-path
+        ?oidc-auth  ::db/oidc-auth} :db} [_ opts]]
+   (if-not ?oidc-auth
+     {:http-xhrio
+      {:method          :get
+       :uri             (httpfn/serv-uri
+                         server-host
+                         "/admin/verify"
+                         proxy-path)
+       :response-format (ajax/json-response-format {:keywords? true})
+       :on-success      [:browser/load-xapi opts]
+       :on-failure      [:server-error]
+       :interceptors    [httpfn/add-jwt-interceptor]}}
+     {:fx [[:dispatch [:browser/load-xapi opts]]]})))
+
+(re-frame/reg-event-fx
  :browser/load-xapi
- global-interceptors
  (fn [{{server-host ::db/server-host
         proxy-path  ::db/proxy-path
         xapi-prefix ::db/xapi-prefix} :db} [_ {:keys [path params]}]]
@@ -380,7 +634,6 @@
 
 (re-frame/reg-event-db
  :browser/load-stmts-success
- global-interceptors
  (fn [db [_ {:strs [statements more]}]]
    (update-in db [::db/browser] assoc
               :content   statements
@@ -388,7 +641,6 @@
 
 (re-frame/reg-event-fx
  :browser/more
- global-interceptors
  (fn [{:keys [db]} _]
    ;; Convert more link into params and request new data.
    (let [more-params
@@ -396,21 +648,19 @@
          address (get-in db [::db/browser :address])]
      ;; Push current address into stack
      {:db (update-in db [::db/browser :back-stack] conj address)
-      :dispatch [:browser/load-xapi {:params more-params}]})))
+      :dispatch [:browser/try-load-xapi {:params more-params}]})))
 
 (re-frame/reg-event-fx
  :browser/back
- global-interceptors
  (fn [{:keys [db]} _]
    ;; Pop most recent from stack
    (let [back-stack (get-in db [::db/browser :back-stack])
          back-params (httpfn/extract-params (peek back-stack))]
      {:db (update-in db [::db/browser :back-stack] pop)
-      :dispatch [:browser/load-xapi {:params back-params}]})))
+      :dispatch [:browser/try-load-xapi {:params back-params}]})))
 
 (re-frame/reg-event-fx
  :browser/add-filter
- global-interceptors
  (fn [{:keys [db]} [_ param-key param-value]]
    (let [address (get-in db [::db/browser :address])
          params (-> (httpfn/extract-params address)
@@ -418,19 +668,17 @@
                     (assoc param-key param-value))]
      ;; Clear back-stack
      {:db (assoc-in db [::db/browser :back-stack] [])
-      :dispatch [:browser/load-xapi {:params params}]})))
+      :dispatch [:browser/try-load-xapi {:params params}]})))
 
 (re-frame/reg-event-fx
  :browser/clear-filters
- global-interceptors
  (fn [{:keys [db]} _]
    {;; Clear back-stack and reset query
     :db (assoc-in db [::db/browser :back-stack] [])
-    :dispatch [:browser/load-xapi]}))
+    :dispatch [:browser/try-load-xapi]}))
 
 (re-frame/reg-event-fx
  :browser/update-credential
- global-interceptors
  (fn [{:keys [db]} [_ key]]
    (let [credential (first (filter #(= key (:api-key %))
                                    (::db/credentials db)))]
@@ -440,20 +688,18 @@
                        :credential credential
                        :back-stack []
                        :batch-size 10)
-        :dispatch [:browser/load-xapi]}))))
+        :dispatch [:browser/try-load-xapi]}))))
 
 (re-frame/reg-event-fx
  :browser/refresh
- global-interceptors
  (fn [{:keys [db]} _]
    (when (get-in db [::db/browser :credential])
      ;; Clear backstack
      {:db (assoc-in db [::db/browser :back-stack] [])
-      :dispatch [:browser/load-xapi]})))
+      :dispatch [:browser/try-load-xapi]})))
 
 (re-frame/reg-event-fx
  :browser/update-batch-size
- global-interceptors
  (fn [{:keys [db]} [_ batch-size]]
    ;; Clear from and limit
    (let [address (get-in db [::db/browser :address])
@@ -463,7 +709,7 @@
      {:db (update-in db [::db/browser] assoc
                      :batch-size batch-size
                      :back-stack [])
-      :dispatch [:browser/load-xapi {:params params}]})))
+      :dispatch [:browser/try-load-xapi {:params params}]})))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -472,13 +718,11 @@
 
 (re-frame/reg-event-db
  :credentials/set-credentials
- global-interceptors
  (fn [db [_ credentials]]
    (assoc db ::db/credentials credentials)))
 
 (re-frame/reg-event-fx
  :credentials/load-credentials
- global-interceptors
  (fn [{{server-host ::db/server-host
         proxy-path  ::db/proxy-path} :db} _]
    {:http-xhrio {:method          :get
@@ -493,13 +737,11 @@
 
 (re-frame/reg-event-db
  :credentials/update-credential
- global-interceptors
  (fn [db [_ idx credential]]
    (assoc-in db [::db/credentials idx] credential)))
 
 (re-frame/reg-event-fx
  :credentials/save-credential
- global-interceptors
  (fn [{{server-host ::db/server-host
         proxy-path  ::db/proxy-path} :db} [_ credential]]
    {:http-xhrio {:method          :put
@@ -517,7 +759,6 @@
 
 (re-frame/reg-event-fx
  :credentials/save-success
- global-interceptors
  (fn [_ [_ {:keys [api-key]}]]
    {:fx [[:dispatch [:credentials/load-credentials]]
          [:dispatch [:notification/notify false
@@ -526,7 +767,6 @@
 
 (re-frame/reg-event-fx
  :credentials/create-credential
- global-interceptors
  (fn [{{server-host ::db/server-host
         proxy-path  ::db/proxy-path} :db} [_ credential]]
    {:http-xhrio {:method          :post
@@ -543,7 +783,6 @@
 
 (re-frame/reg-event-fx
  :credentials/create-success
- global-interceptors
  (fn [_ [_ {:keys [api-key]}]]
    {:fx [[:dispatch [:credentials/load-credentials]]
          [:dispatch [:notification/notify false
@@ -552,7 +791,6 @@
 
 (re-frame/reg-event-fx
  :credentials/delete-credential
- global-interceptors
  (fn [{{server-host ::db/server-host
         proxy-path  ::db/proxy-path} :db} [_ credential]]
    {:http-xhrio {:method          :delete
@@ -569,7 +807,6 @@
 
 (re-frame/reg-event-fx
  :credentials/delete-success
- global-interceptors
  (fn [_ [_ {:keys [api-key]}]]
    {:fx [[:dispatch [:credentials/load-credentials]]
          [:dispatch [:notification/notify false
@@ -584,7 +821,6 @@
 
 (re-frame/reg-event-fx
  :accounts/load-accounts
- global-interceptors
  (fn [{{server-host ::db/server-host
         proxy-path  ::db/proxy-path} :db} _]
    {:http-xhrio {:method          :get
@@ -599,7 +835,6 @@
 
 (re-frame/reg-event-fx
  :accounts/delete-account
- global-interceptors
  (fn [{{server-host ::db/server-host
         proxy-path  ::db/proxy-path} :db} [_ {:keys [account-id username]}]]
    {:http-xhrio {:method          :delete
@@ -616,7 +851,6 @@
 
 (re-frame/reg-event-fx
  :accounts/delete-success
- global-interceptors
  (fn [_ [_ username _]]
    {:fx [[:dispatch [:accounts/load-accounts]]
          [:dispatch [:notification/notify false
@@ -624,13 +858,11 @@
 
 (re-frame/reg-event-db
  :accounts/set-accounts
- global-interceptors
  (fn [db [_ accounts]]
    (assoc db ::db/accounts accounts)))
 
 (re-frame/reg-event-fx
  :accounts/create-account
- global-interceptors
  (fn [{{server-host ::db/server-host
         proxy-path  ::db/proxy-path
         :as db} :db} _]
@@ -653,13 +885,11 @@
 
 (re-frame/reg-event-db
  :new-account/set-new-account
- global-interceptors
  (fn [db [_ new-account]]
    (assoc db ::db/new-account new-account)))
 
 (re-frame/reg-event-fx
  :accounts/create-success
- global-interceptors
  (fn [_ [_ username _]]
    {:fx [[:dispatch [:accounts/load-accounts]]
          [:dispatch [:new-account/set-new-account
@@ -670,7 +900,6 @@
 
 (re-frame/reg-event-fx
  :accounts/create-error
- global-interceptors
  (fn [_ [_ {:keys [status] :as error}]]
    ;; For account creation, if its malformed give a specific error,
    ;; otherwise default to typical server error notice handling
@@ -681,50 +910,42 @@
 
 (re-frame/reg-event-db
  :new-account/set-username
- global-interceptors
  (fn [db [_ username]]
    (assoc-in db [::db/new-account :username] username)))
 
 (re-frame/reg-event-db
  :new-account/set-password
- global-interceptors
  (fn [db [_ password]]
    (assoc-in db [::db/new-account :password] password)))
 
 (re-frame/reg-event-fx
  :new-account/generate-password
- global-interceptors
  (fn [_ _]
    {:dispatch [:new-account/set-password (pass/pass-gen 12)]}))
 
 (re-frame/reg-event-db
  :update-password/set-old-password
- global-interceptors
  (fn [db [_ password]]
    (assoc-in db [::db/update-password :old-password] password)))
 
 (re-frame/reg-event-db
  :update-password/set-new-password
- global-interceptors
  (fn [db [_ password]]
    (assoc-in db [::db/update-password :new-password] password)))
 
 (re-frame/reg-event-db
  :update-password/clear
- global-interceptors
  (fn [db _]
    (assoc db ::db/update-password {:old-password nil
                                    :new-password nil})))
 
 (re-frame/reg-event-fx
  :update-password/generate-password
- global-interceptors
  (fn [_ _]
    {:dispatch [:update-password/set-new-password (pass/pass-gen 12)]}))
 
 (re-frame/reg-event-fx
  :update-password/update-password!
- global-interceptors
  (fn [{{server-host ::db/server-host
         proxy-path  ::db/proxy-path
         :as db} :db} _]
@@ -746,7 +967,6 @@
 
 (re-frame/reg-event-fx
  :update-password/update-success
- global-interceptors
  (fn [_ _]
    {:fx [[:dispatch [:update-password/clear]]
          [:dispatch [:session/set-page :credentials]]
@@ -755,7 +975,6 @@
 
 (re-frame/reg-event-fx
  :update-password/update-error
- global-interceptors
  (fn [_ _]
    {:fx [[:dispatch [:notification/notify true
                      "Password update failed. Please try again."]]]}))
@@ -786,58 +1005,12 @@
  :delete-actor/delete-success
  (fn [_ [_ actor-ifi]]
    {:fx [[:dispatch [:notification/notify false (str "Successfully deleted " actor-ifi)]]
-         [:dispatch [:browser/load-xapi]]]}))
+         [:dispatch [:browser/try-load-xapi]]]}))
+
 (re-frame/reg-event-fx
  :delete-actor/server-error
  (fn [_ [_ actor-ifi _err]]
    {:fx [[:dispatch  [:notification/notify true  (str "Error when attempting to delete actor " actor-ifi)]]]}))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; OIDC Support
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(re-frame/reg-event-fx
- :oidc/init
- (fn [{:keys [db]} [_ remote-config]]
-   (let [?search (not-empty js/window.location.search)]
-     {:db (assoc db ::db/oidc-auth true)
-      :dispatch-n
-      (cond-> [[::re-oidc/init (oidc/init-config remote-config)]]
-        ?search (conj [::re-oidc/login-callback
-                       oidc/static-config
-                       ?search]))})))
-
-(re-frame/reg-fx
- :oidc/clear-search-fx
- (fn [_]
-   (oidc/push-state js/window.location.pathname)))
-
-(re-frame/reg-event-fx
- :oidc/login-success
- global-interceptors
- (fn [_ _]
-   {:fx [[:oidc/clear-search-fx {}]]}))
-
-(re-frame/reg-event-fx
- :oidc/user-loaded
- global-interceptors
- (fn [{:keys [db]} _]
-   (if-let [{:keys [access-token]
-             {:strs [sub]} :profile} (::re-oidc/user db)]
-     {:fx [[:dispatch [:session/set-token access-token
-                       :store? false]]
-           [:dispatch [:session/set-username sub
-                       :store? false]]
-           [:dispatch [:login/set-password nil]]
-           [:dispatch [:login/set-username nil]]]}
-     {})))
-
-(re-frame/reg-event-fx
- :oidc/user-unloaded
- global-interceptors
- (fn [_ _]
-   {:fx [[:dispatch [:session/set-token nil]]
-         [:dispatch [:session/set-username nil]]]}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Status Dashboard
@@ -845,7 +1018,6 @@
 
 (re-frame/reg-event-fx
  :status/get-data
- global-interceptors
  (fn [{{server-host      ::db/server-host
         proxy-path       ::db/proxy-path
         {:keys [params]} ::db/status
@@ -878,7 +1050,6 @@
 
 (re-frame/reg-event-fx
  :status/server-error
- global-interceptors
  (fn [{:keys [db]} [_ include error]]
    {:db (reduce
          (fn [db' k]
@@ -902,7 +1073,6 @@
 
 (re-frame/reg-event-fx
  :status/get-all-data
- global-interceptors
  (fn [_ _]
    {:fx status-dispatch-all}))
 
@@ -921,7 +1091,6 @@
 
 (re-frame/reg-event-fx
  :status/set-data
- global-interceptors
  (fn [{:keys [db]} [_ include status-data]]
    {:db (reduce
          (fn [db' k]
@@ -941,14 +1110,12 @@
 
 (re-frame/reg-event-fx
  :status/set-timeline-unit
- global-interceptors
  (fn [{:keys [db]} [_ unit]]
    {:db (assoc-in db [::db/status :params :timeline-unit] unit)
     :fx [timeline-control-fx]}))
 
 (re-frame/reg-event-fx
  :status/set-timeline-since
- global-interceptors
  (fn [{{{{:keys [timeline-until]
           :or   {timeline-until (t/timeline-until-default)}}
          :params} ::db/status
@@ -968,7 +1135,6 @@
 
 (re-frame/reg-event-fx
  :status/set-timeline-until
- global-interceptors
  (fn [{{{{:keys [timeline-since]
           :or   {timeline-since (t/timeline-since-default)}}
          :params} ::db/status
@@ -996,7 +1162,6 @@
 
 (re-frame/reg-event-fx
  :reaction/load-reactions
- global-interceptors
  (fn [{{server-host ::db/server-host
         proxy-path  ::db/proxy-path} :db} _]
    {:http-xhrio {:method          :get
@@ -1011,7 +1176,6 @@
 
 (re-frame/reg-event-db
  :reaction/set-reactions
- global-interceptors
  (fn [db [_ {:keys [reactions]}]]
    (assoc db
           ::db/reactions
@@ -1019,13 +1183,11 @@
 
 (re-frame/reg-event-db
  :reaction/set-focus
- global-interceptors
  (fn [db [_ reaction-id]]
    (assoc db ::db/reaction-focus reaction-id)))
 
 (re-frame/reg-event-db
  :reaction/unset-focus
- global-interceptors
  (fn [db _]
    (dissoc db ::db/reaction-focus)))
 
@@ -1050,14 +1212,12 @@
 ;; TODO: Currently unimplemented
 #_(re-frame/reg-event-fx
  :reaction/download-all
- global-interceptors
  (fn [{:keys [db]}]
    (let [reactions (rfns/focus->download-form (::db/reactions db))]
      {:download-edn [reactions "reactions"]})))
 
 (re-frame/reg-event-fx
  :reaction/download
- global-interceptors
  (fn [{:keys [db]} [_ reaction-id]]
    (if-let [reaction (some-> (find-reaction db reaction-id)
                              rfns/focus->download-form)]
@@ -1067,13 +1227,11 @@
 
 (re-frame/reg-event-fx
  :reaction/upload
- global-interceptors
  (fn [{:keys [db]}]
    {:db db}))
 
 (re-frame/reg-event-fx
  :reaction/edit
- global-interceptors
  (fn [{:keys [db]} [_ reaction-id]]
    (if-let [reaction (some-> (find-reaction db reaction-id)
                              rfns/focus->edit-form)]
@@ -1087,7 +1245,6 @@
 
 (re-frame/reg-event-fx
  :reaction/new
- global-interceptors
  (fn [{:keys [db]} _]
    (let [reaction {:title  (format "reaction_%s"
                                    (fns/rand-alpha-str 8))
@@ -1112,7 +1269,6 @@
 
 (re-frame/reg-event-fx
  :reaction/upload-edit
- global-interceptors
  (fn [{:keys [db]} [_ upload-data]]
    (if-some [edn-data (try
                           (js->clj (js/JSON.parse upload-data)
@@ -1132,7 +1288,6 @@
 
 (re-frame/reg-event-fx
  :reaction/revert-edit
- global-interceptors
  (fn [{:keys [db]} _]
    (when-let [reaction-id (get-in db [::db/editing-reaction :id])]
      (when-let [reaction (some-> (find-reaction db reaction-id)
@@ -1145,7 +1300,6 @@
 
 (re-frame/reg-event-fx
  :reaction/server-error
- global-interceptors
  (fn [_ [_ {:keys [response status]}]]
    (if (= 400 status)
      {:fx [[:dispatch
@@ -1156,7 +1310,6 @@
 
 (re-frame/reg-event-fx
  :reaction/save-edit
- global-interceptors
  (fn [{{server-host       ::db/server-host
         proxy-path        ::db/proxy-path
         ?editing-reaction ::db/editing-reaction} :db} _]
@@ -1187,7 +1340,6 @@
 
 (re-frame/reg-event-fx
  :reaction/save-edit-success
- global-interceptors
  (fn [{:keys [db]} [_ {:keys [reactionId]}]]
    {:db (-> db
             cancel-edit
@@ -1198,7 +1350,6 @@
 
 (re-frame/reg-event-fx
  :reaction/delete-confirm
- global-interceptors
  (fn [{:keys [db]} [_ reaction-id]]
    (let [{:keys [title]} (find-reaction db reaction-id)]
      {:fx [[:dispatch
@@ -1212,7 +1363,6 @@
 
 (re-frame/reg-event-fx
  :reaction/delete
- global-interceptors
  (fn [{{server-host ::db/server-host
         proxy-path  ::db/proxy-path} :db} [_ reaction-id]]
    {:http-xhrio {:method          :delete
@@ -1229,7 +1379,6 @@
 
 (re-frame/reg-event-fx
  :reaction/delete-success
- global-interceptors
  (fn [_ _]
    {:fx [[:dispatch [:reaction/load-reactions]]
          [:dispatch [:reaction/back-to-list]]
@@ -1238,13 +1387,11 @@
 
 (re-frame/reg-event-db
  :reaction/cancel-edit
- global-interceptors
  (fn [db _]
    (cancel-edit db)))
 
 (re-frame/reg-event-fx
  :reaction/back-to-list
- global-interceptors
  (fn [_ _]
    ;; TODO: Whatever new needs to clear
    {:fx [[:dispatch [:reaction/unset-focus]]
@@ -1252,13 +1399,11 @@
 
 (re-frame/reg-event-db
  :reaction/edit-title
- global-interceptors
  (fn [db [_ title]]
    (assoc-in db [::db/editing-reaction :title] title)))
 
 (re-frame/reg-event-db
  :reaction/edit-status
- global-interceptors
  (fn [db [_ select-result]]
    (assoc-in db [::db/editing-reaction :active]
              (case select-result
@@ -1272,7 +1417,6 @@
 
 (re-frame/reg-event-db
  :reaction/delete-identity-path
- global-interceptors
  (fn [db [_ idx]]
    (update-in db
               [::db/editing-reaction :ruleset :identityPaths]
@@ -1281,7 +1425,6 @@
 
 (re-frame/reg-event-db
  :reaction/add-identity-path
- global-interceptors
  (fn [db _]
    (update-in db
               [::db/editing-reaction :ruleset :identityPaths]
@@ -1322,7 +1465,6 @@
 
 (re-frame/reg-event-db
  :reaction/add-path-segment
- global-interceptors
  (fn [db [_ path-path]]
    (let [full-path (into [::db/editing-reaction]
                          path-path)
@@ -1340,7 +1482,6 @@
 
 (re-frame/reg-event-db
  :reaction/del-path-segment
- global-interceptors
  (fn [db [_ path-path]]
    (let [full-path (into [::db/editing-reaction]
                          path-path)
@@ -1355,7 +1496,6 @@
 
 (re-frame/reg-event-fx
  :reaction/change-path-segment
- global-interceptors
  (fn [{:keys [db]} [_ path-path new-seg-val open-next?]]
    (let [full-path           (into [::db/editing-reaction]
                                    path-path)
@@ -1377,7 +1517,6 @@
 
 (re-frame/reg-event-db
  :reaction/set-op
- global-interceptors
  (fn [db [_ op-path new-op]]
    (let [full-path (into [::db/editing-reaction]
                          op-path)]
@@ -1385,7 +1524,6 @@
 
 (re-frame/reg-event-db
  :reaction/set-val-type
- global-interceptors
  (fn [db [_ val-path new-type]]
    (let [full-path (into [::db/editing-reaction]
                          val-path)]
@@ -1394,7 +1532,6 @@
 
 (re-frame/reg-event-db
  :reaction/set-val
- global-interceptors
  (fn [db [_ val-path new-val]]
    (let [full-path (into [::db/editing-reaction]
                          val-path)]
@@ -1402,7 +1539,6 @@
 
 (re-frame/reg-event-db
  :reaction/set-ref-condition
- global-interceptors
  (fn [db [_ condition-path new-condition]]
    (let [full-path (into [::db/editing-reaction]
                          condition-path)]
@@ -1410,7 +1546,6 @@
 
 (re-frame/reg-event-db
  :reaction/set-val-or-ref
- global-interceptors
  (fn [db [_ clause-path set-to]]
    (let [full-path (into [::db/editing-reaction]
                          clause-path)
@@ -1442,7 +1577,6 @@
 
 (re-frame/reg-event-db
  :reaction/set-clause-type
- global-interceptors
  (fn [db [_ clause-path clause-type]] ;; #{"and" "or" "not" "logic"}
    (let [full-path (into [::db/editing-reaction]
                          clause-path)
@@ -1464,7 +1598,6 @@
 
 (re-frame/reg-event-db
  :reaction/set-condition-name
- global-interceptors
  (fn [db [_ cond-path new-name]]
    (let [full-path (into [::db/editing-reaction]
                          cond-path)]
@@ -1472,7 +1605,6 @@
 
 (re-frame/reg-event-db
  :reaction/delete-clause
- global-interceptors
  (fn [db [_ clause-path]]
    (let [full-path (into [::db/editing-reaction]
                          clause-path)
@@ -1490,7 +1622,6 @@
 
 (re-frame/reg-event-db
  :reaction/add-condition
- global-interceptors
  (fn [db [_ ?condition-key]]
    (let [cond-name (or ?condition-key
                        (format "condition_%s"
@@ -1506,7 +1637,6 @@
 
 (re-frame/reg-event-db
  :reaction/delete-condition
- global-interceptors
  (fn [db [_ condition-idx]]
    (update-in
     db
@@ -1516,7 +1646,6 @@
 
 (re-frame/reg-event-db
  :reaction/add-clause
- global-interceptors
  (fn [db [_ parent-path clause-type]] ;; :and, :or, :not, :logic
    (let [pkey (last parent-path) ;; :and, :or, :not, <condition name>
          full-path (into [::db/editing-reaction]
@@ -1537,7 +1666,6 @@
 
 (re-frame/reg-event-db
  :reaction/update-template
- global-interceptors
  (fn [db [_ new-value]]
    (-> db
        (dissoc ::db/editing-reaction-template-errors)
@@ -1545,19 +1673,16 @@
 
 (re-frame/reg-event-db
  :reaction/set-template-errors
- global-interceptors
  (fn [db [_ errors]]
    (assoc db ::db/editing-reaction-template-errors errors)))
 
 (re-frame/reg-event-db
  :reaction/clear-template-errors
- global-interceptors
  (fn [db _]
    (dissoc db ::db/editing-reaction-template-errors)))
 
 (re-frame/reg-event-fx
  :reaction/set-template-json
- global-interceptors
  (fn [{:keys [db]} [_ json]]
    (let [xapi-errors (rfns/validate-template-xapi json)]
      (cond-> {:db (assoc db ::db/editing-reaction-template-json json)}
@@ -1566,7 +1691,6 @@
 
 (re-frame/reg-event-db
  :reaction/clear-template-json
- global-interceptors
  (fn [db _]
    (dissoc db ::db/editing-reaction-template-json)))
 
@@ -1576,13 +1700,11 @@
 
 (re-frame/reg-event-db
  :dialog/set-ref
- global-interceptors
  (fn [db [_ dialog-ref]]
    (assoc db ::db/dialog-ref dialog-ref)))
 
 (re-frame/reg-event-db
  :dialog/clear-data
- global-interceptors
  (fn [db _]
    (dissoc db ::db/dialog-data)))
 
@@ -1604,7 +1726,6 @@
 
 (re-frame/reg-event-fx
  :dialog/present
- global-interceptors
  (fn [{:keys [db]} [_ dialog-data]]
    (when-let [dialog-ref (::db/dialog-ref db)]
      {:db          (assoc db ::db/dialog-data dialog-data)
@@ -1612,7 +1733,6 @@
 
 (re-frame/reg-event-fx
  :dialog/cancel
- global-interceptors
  (fn [{:keys [db]} _]
    (let [dialog-ref (::db/dialog-ref db)]
      {:dialog/close {:dialog-ref dialog-ref}})))
