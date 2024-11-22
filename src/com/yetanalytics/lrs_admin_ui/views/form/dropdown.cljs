@@ -1,22 +1,34 @@
 (ns com.yetanalytics.lrs-admin-ui.views.form.dropdown
-  (:require [re-frame.core :refer [subscribe]]
+  (:require [reagent.core :as r]
+            [re-frame.core :refer [subscribe]]
             [com.yetanalytics.lrs-admin-ui.functions :as fns]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Helpers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn make-key-down-fn*
+  [{:keys [dropdown-open?]}]
+  (fn [e]
+    (case (fns/get-event-key e)
+      :space (when-not @dropdown-open?
+               (reset! dropdown-open? true)
+               (fns/ps-event e))
+      nil)))
+
 (defn make-key-down-fn
   "Return an event callback function to use for `:on-key-down`."
-  [{:keys [options dropdown-focus dropdown-open? value-update-fn space-select?]}]
-  (let [opts-count     (count options)
+  [{:keys [options dropdown-focus dropdown-open? on-enter space-select?]}]
+  (let [options        (vec options) ; ensure options is a vector
+        opts-count     (count options)
         opts-dec-count (dec opts-count)
-        on-enter       (fn [_]
-                         (when (not-empty options)
+        on-enter       (if (not-empty options)
+                         (fn [_]
                            (-> options
                                (get @dropdown-focus)
                                :value
-                               value-update-fn)))
+                               on-enter))
+                         (fn [_] nil))
         on-up          (fn [e]
                          (when (<= 0 (dec @dropdown-focus))
                            (swap! dropdown-focus dec))
@@ -48,7 +60,7 @@
         :end       (on-pg-down e)
         nil))))
 
-(defn- get-label
+(defn get-label
   "Takes an options coll and a value and returns the label text"
   [opts val]
   (->> opts
@@ -57,14 +69,63 @@
        :label))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Top Component
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn select-input-top
+  "The top pane of a (singleton) select input (including regular combo boxes)."
+  [{:keys [id disabled label placeholder dropdown-open?]}]
+  [:div {:id       (str id "-select-input")
+         :name     (str id "-select-input")
+         :class    (cond
+                     disabled        "form-select-top disabled"
+                     @dropdown-open? "form-select-top opened"
+                     :else           "form-select-top")
+         :on-click #(when-not disabled (swap! dropdown-open? not))}
+   [:span {:class "form-select-top-left"}
+    [:p (or label placeholder)]]
+   [:span {:class "form-select-top-right"}
+    [:img {:src (if @dropdown-open?
+                  @(subscribe [:resources/icon "icon-expand-less.svg"])
+                  @(subscribe [:resources/icon "icon-expand-more.svg"]))}]]])
+
+(defn action-select-top
+  "The top pane of a select input with a custom dropdown icon."
+  [{:keys [label label-left? icon-name dropdown-open?]}]
+  [:div.action-dropdown-icon
+   [:a {:href "#"
+        :on-click (fn [e]
+                    (fns/ps-event e)
+                    (reset! dropdown-open? true))}
+    (when (and label label-left?)
+      [:span.action-dropdown-label (str label " ")])
+    [:img {:src @(subscribe [:resources/icon icon-name])}]
+    (when (and label (not label-left?))
+      [:span.action-dropdown-label (str " " label)])]])
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Dropdown Component
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn dropdown-items
+(defn- add-button
+  [{:keys [dropdown-value on-enter]}]
+  [:span {:class       "side-button"
+          :on-click    (fn [_]
+                         (on-enter @dropdown-value))
+          :on-key-down (fn [e]
+                         (when (= :enter (fns/get-event-key e))
+                           (on-enter @dropdown-value)
+                           (fns/ps-event e)))
+          :tab-index   0
+          :aria-label  "Select the text in the search bar."}
+   [:img {:src @(subscribe [:resources/icon "icon-add.svg"])}]
+   "Add"])
+
+(defn items-dropdown
   "The list of items in a dropdown."
-  [{:keys [id name options dropdown-focus value-update-fn]}]
+  [{:keys [id options dropdown-focus on-enter]}]
   (into [:ul {:id       (str id "-dropdown-items")
-              :name     (str name "-dropdown-items")
+              :name     (str id "-dropdown-items")
               :class    "form-select-dropdown-items"}]
         (map-indexed
          (fn [idx {:keys [value label]}]
@@ -73,7 +134,7 @@
                                   "form-select-dropdown-item selected"
                                   "form-select-dropdown-item")
                  :on-mouse-over #(reset! dropdown-focus idx)
-                 :on-click      #(value-update-fn value)
+                 :on-click      #(on-enter value)
                  :aria-label    (str "Select the value " label)}
             [:p label]])
          options)))
@@ -81,33 +142,24 @@
 (defn- combo-box-search
   "The top combo box search bar."
   [{:keys
-    [id name dropdown-value value-update-fn search-update-fn custom-text?]}]
-  [:div
-   [:div {:class "form-select-dropdown-search-label"}
-    (if custom-text? [:p "Search or Add:"] [:p "Search:"])]
-   [:div {:class "form-select-dropdown-search-box"}
-    [:input {:on-change (fn [x]
-                          (reset! dropdown-value (fns/ps-event-val x))
-                          (search-update-fn @dropdown-value))
-             :type      "text"
-             :value     @dropdown-value
-             :id        (str id "-dropdown-search")
-             :name      (str name "-dropdown-search")
-             :class     (if custom-text?
-                          "form-text-input-with-side-button"
-                          "form-text-input")}]
-    (when custom-text?
-      [:span {:class       "side-button"
-              :on-click    (fn [_]
-                             (value-update-fn @dropdown-value))
-              :on-key-down (fn [e]
-                             (when (= :enter (fns/get-event-key e))
-                               (value-update-fn @dropdown-value)
-                               (fns/ps-event e)))
-              :tab-index   0
-              :aria-label  "Select the text in the search bar."}
-       [:img {:src @(subscribe [:resources/icon "icon-add.svg"])}]
-       "Add"])]])
+    [id dropdown-value on-enter on-search]}]
+  (let [value-ref (r/atom @dropdown-value)]
+    (fn [_]
+      [:div
+       [:div {:class "form-select-dropdown-search-label"}
+        [:p @(subscribe [:lang/get :form.search-or-add])]]
+       [:div {:class "form-select-dropdown-search-box"}
+        [:input {:on-change (fn [x]
+                              (let [v (fns/ps-event-val x)]
+                                (reset! value-ref v)
+                                (on-search v)))
+                 :type      "text"
+                 :value     @value-ref
+                 :id        (str id "-dropdown-search")
+                 :name      (str id "-dropdown-search")
+                 :class     "form-text-input-with-side-button"}]
+        [add-button {:dropdown-value value-ref
+                     :on-enter       on-enter}]]])))
 
 (defn combo-box-dropdown
   "A dropdown specific for combo boxes, including the search bar."
@@ -116,63 +168,21 @@
          :name  (str name "-dropdown")
          :class "form-select-dropdown"}
    [combo-box-search opts]
-   [dropdown-items opts]])
+   [items-dropdown opts]])
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Top Component
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn select-input-top
-  "The top pane of a (singleton) select input (including regular combo boxes)."
-  [{:keys [id name disabled placeholder options current-value dropdown-open?]}]
-  [:div {:id       (str id "-select-input")
-         :name     (str name "-select-input")
-         :class    (cond
-                     disabled        "form-select-top disabled"
-                     @dropdown-open? "form-select-top opened"
-                     :else           "form-select-top")
-         :on-click #(when-not disabled (swap! dropdown-open? not))}
-   [:span {:class "form-select-top-left"}
-    [:p (if-some [value @current-value]
-            ;; TODO: Better solution to value-label discrepancy
-          (or (get-label options value) value)
-          placeholder)]]
-   [:span {:class "form-select-top-right"}
-    [:img {:src (if @dropdown-open?
-                  @(subscribe [:resources/icon "icon-expand-less.svg"])
-                  @(subscribe [:resources/icon "icon-expand-more.svg"]))}]]])
-
-(defn multi-select-input-top
-  "The top pane of a multiple-selection combo box."
-  [{:keys [id name disabled options current-value dropdown-open?
-           value-update-fn placeholder]}]
-  [:div {:id    (str id "-multi-select-input")
-         :name  (str name "-multi-select-input")
-         :class (if @dropdown-open?
-                  "form-multi-select-top opened"
-                  "form-multi-select-top")
-         ; We need two ps-event calls to stop propagation of onClick
-         ;; event from the div to the delete button
-         :on-click (fn [e]
-                     (when-not disabled
-                       (swap! dropdown-open? not)
-                       (fns/ps-event e)))}
-   [:div {:class "form-multi-select-top-left"}
-    (if-some [values (not-empty @current-value)]
-      (reduce
-       (fn [acc val]
-         (conj acc
-               [:span {:class "form-multi-select-array-item"}
-                ;; TODO: Better solution to value-label discrepancy
-                [:p (or (get-label options val) val)
-                 [:img {:src @(subscribe [:resources/icon "icon-close-black.svg"])
-                        :on-click (fn [e]
-                                    (fns/ps-event e)
-                                    (value-update-fn val))}]]]))
-       [:span]
-       values)
-      [:p placeholder])]
-   [:div {:class "form-multi-select-top-right"}
-    [:img {:src (if @dropdown-open?
-                  @(subscribe [:resources/icon "icon-expand-less.svg"])
-                  @(subscribe [:resources/icon "icon-expand-more.svg"]))}]]])
+(defn numeric-dropdown
+  [{:keys [min dropdown-value on-enter]}]
+  (let [value-ref (r/atom @dropdown-value)]
+    (fn [_]
+      [:div {:class "form-select-dropdown"}
+       [:div {:class "form-select-dropdown-search-label"}
+        [:p @(subscribe [:lang/get :form.add])]]
+       [:div {:class "form-select-dropdown-search-box"}
+        [:input {:on-change (fn [x]
+                              (reset! value-ref (fns/ps-event-val x)))
+                 :type      "number"
+                 :min       min
+                 :value     @value-ref
+                 :class     "form-text-input-with-side-button"}]
+        [add-button {:dropdown-value value-ref
+                     :on-enter       on-enter}]]])))
