@@ -112,8 +112,7 @@
    :reactions.details.title {:en-US "Title"}
    :reactions.details.id {:en-US "ID"}
    :reactions.details.status {:en-US "Status"}
-   :reactions.details.ruleset {:en-US "Ruleset"}
-   :reactions.details.ruleset.conditions {:en-US "Conditions"}
+   :reactions.details.ruleset.conditions {:en-US "Ruleset Conditions"}
    :reactions.details.conditions.delete-button {:en-US "Delete %s "}
    :reactions.details.conditions.add-clause {:en-US "Add %sclause to %s"}
    :reactions.details.conditions.add-condition {:en-US "Add New Condition "}
@@ -125,7 +124,7 @@
    :reactions.details.conditions.value {:en-US "Value"}
    :reactions.details.conditions.reference {:en-US "Reference"}
 
-   :reactions.identity-paths {:en-US "Identity Paths (Advanced)"}
+   :reactions.identity-paths {:en-US "Ruleset Identity Paths (Advanced)"}
    :reactions.identity-paths.add {:en-US "Add New Identity Path "}
    :reactions.buttons.edit {:en-US "EDIT"}
    :reactions.buttons.save {:en-US "SAVE"}
@@ -135,7 +134,7 @@
    :reactions.buttons.download {:en-US "DOWNLOAD"}
    :reactions.buttons.upload {:en-US "UPLOAD"}
 
-   :reactions.template.title {:en-US "Template"}
+   :reactions.template.title {:en-US "Ruleset Template"}
    :reactions.template.template-json {:en-US "Template JSON"}
    :reactions.template.dynamic {:en-US "Dynamic Variables"}
    :reactions.template.dynamic.instruction1 {:en-US "Reactions templates can be made dynamic by the use of injectable variables. These variables must come from a statement matching one of the conditions above."}
@@ -150,6 +149,8 @@
    :reactions.errors.like-string {:en-US "The 'like' op only supports string values."}
    :reactions.errors.invalid {:en-US "Reaction is invalid see below."}
    :reactions.errors.one-condition {:en-US "Ruleset must specify at least one condition."}
+   :reactions.errors.dupe-condition-names {:en-US "Ruleset cannot have duplicate condition names."}
+   :reactions.errors.invalid-condition-name {:en-US "Condition name must not include spaces or `/` characters, or start with `@` symbols."}
    :reactions.errors.one-clause {:en-US "Condition must have at least one clause."}
 
    ;;Account Management
@@ -163,7 +164,7 @@
    :account-mgmt.update-password.password.new {:en-US "New Password"}
    :account-mgmt.update-password.password.copy {:en-US "Copy"}
    :account-mgmt.update-password.password.generate {:en-US "Generate Password"}
-   
+
 
    ;;Tooltips
    :tooltip.reactions.title {:en-US "Reactions is a new functionality for SQL LRS that allows for the generation of custom xAPI statements triggered by other statements posted to the LRS. An administrator can configure rulesets that match one or more incoming xAPI statement(s), based on conditions, and generate a custom statement which is added to the LRS. -- This can be used for statement transformation (e.g. integration with systems expecting a certain statement format the provider does not make) and statement aggregation (e.g. generate summary statements or assertions about groups of statements)."}
@@ -191,4 +192,8 @@
    :notification.credentials.secret-copied {:en-US "Copied Secret Key!"}
    :notification.accounts.password-copied {:en-US "Copied New Password!"}
    :notification.reactions.copied-template-var {:en-US "Copied Template Variable to Clipboard!"}
-   :notification.account-mgmt.copied-password {:en-US "Copied New Password!"}})
+   :notification.account-mgmt.copied-password {:en-US "Copied New Password!"}
+
+   ;;Form Components
+   :form.search-or-add {:en-US "Search or Add"}
+   :form.add {:en-US "Add"}})

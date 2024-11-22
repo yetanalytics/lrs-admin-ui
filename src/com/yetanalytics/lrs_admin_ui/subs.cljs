@@ -4,7 +4,7 @@
             [com.yetanalytics.lrs-admin-ui.functions.time :as t]
             [com.yetanalytics.lrs-admin-ui.input :as i]
             [com.yetanalytics.lrs-admin-ui.functions.reaction :as rfns]
-            [com.yetanalytics.lrs-admin-ui.spec.reaction :as rs]
+            [com.yetanalytics.lrs-admin-ui.spec.reaction-edit]
             [clojure.spec.alpha :as s :include-macros true]))
 
 (reg-sub
@@ -431,7 +431,7 @@
    (some
     (fn [{:keys [id] :as reaction}]
       (when (= focus-id id)
-        reaction))
+        (rfns/db->focus-form reaction)))
     reaction-list)))
 
 (reg-sub
@@ -447,19 +447,19 @@
        {:keys [id] :as editing}]]
    (and (some? editing)
         (or (nil? id)
-            (not= (rfns/strip-condition-indices editing)
+            (not= editing
                   (some
                    (fn [{r-id :id
                          :as  reaction}]
                      (when (= r-id id)
-                       reaction))
+                       (rfns/focus->edit-form reaction)))
                    reaction-list))))))
 
 (reg-sub
  :reaction/edit-condition-names
  :<- [:reaction/editing]
  (fn [{{:keys [conditions]} :ruleset} _]
-   (map name (keys conditions))))
+   (map :name conditions)))
 
 (reg-sub
  :reaction/edit-template-json
@@ -496,9 +496,8 @@
  (fn [editing _]
    (when editing
      (some-> (s/explain-data
-              ::rs/new-reaction
-              (rfns/strip-condition-indices
-               editing))
+              :validation/reaction
+              editing)
              :cljs.spec.alpha/problems))))
 
 (reg-sub
@@ -515,7 +514,7 @@
  :reaction/edit-spec-errors-in
  :<- [:reaction/edit-spec-errors-map]
  (fn [emap [_ in-path]]
-   (get emap (rfns/fix-ruleset-in-path in-path))))
+   (get emap in-path)))
 
 ;; Dialog
 

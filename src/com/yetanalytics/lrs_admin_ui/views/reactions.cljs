@@ -10,6 +10,7 @@
             [com.yetanalytics.lrs-admin-ui.views.form :as form]
             [com.yetanalytics.lrs-admin-ui.views.reactions.path :as p]
             [com.yetanalytics.lrs-admin-ui.views.reactions.template :as t]
+            [com.yetanalytics.lrs-admin-ui.spec.reaction-edit :as rse]
             [goog.string :as gstr]
             [goog.string.format]))
 
@@ -290,6 +291,9 @@
    reaction-path
    type-key]
   [:div.clause-type-label
+   {:class (when (and (not (contains? #{:edit :new} mode)) ; FIXME: Refactor
+                      (not (contains? #{:and :or :not} type-key)))
+             "empty")}
    (if (contains? #{:edit :new} mode)
      [:<>
       [:select
@@ -553,18 +557,25 @@
     ;; if it is top-level & empty, do not render
     sort-idx nil))
 
+(defn- render-condition-name-errors
+  [condition-name]
+  (when (not (rse/keywordizable-string? condition-name))
+    [:ul.reaction-error-list
+     [:li @(subscribe [:lang/get :reactions.errors.invalid-condition-name])]]))
+
 (defn- render-or-edit-condition-name
-  [mode condition-name]
+  [mode condition-path condition-name]
   [:div.condition-name
    (if (contains? #{:edit :new} mode)
      [:input
       {:type  "text"
        :class "round"
-       :value condition-name
+       :value (name condition-name)
        :on-change
        (fn [e]
          (dispatch [:reaction/set-condition-name
-                    condition-name (keyword (fns/ps-event-val e))]))}]
+                    (conj condition-path :name)
+                    (fns/ps-event-val e)]))}]
      condition-name)
    [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.condition-title])}]])
 
@@ -577,65 +588,68 @@
 
 (defn- render-conditions
   [mode conditions]
-  (into [:div.reaction-conditions]
-        (for [[condition-name condition]
-              (sort-by
-               (comp :sort-idx val)
-               conditions)
-              :let [condition-path [:ruleset :conditions condition-name]]]
-          [:div.condition
-           [render-or-edit-condition-name
-            mode condition-name]
-           (when (contains? #{:edit :new} mode)
-             [render-condition-errors condition])
-           [:div.condition-body
-            ;; condition can be nil during edit
-            (when condition
-              [render-clause
-               mode
-               condition-path
-               condition
-               1])]
-           (when (contains? #{:edit :new} mode)
-             [delete-icon
-              :to-delete-desc "Condition"
-              :on-click
-              (fn []
-                (dispatch [:reaction/delete-condition condition-name]))])
-           (when (and (contains? #{:edit :new} mode)
-                      ;; when empty
-                      (-> condition keys (= [:sort-idx])))
-             [add-clause
-              condition-path])])))
+  (into [:div.conditions]
+        (map-indexed
+         (fn [idx condition*]
+           (let [condition-name (if (contains? #{:edit :new} mode)
+                                  (get condition* :name)
+                                  (first condition*))
+                 condition      (if (contains? #{:edit :new} mode)
+                                  condition*
+                                  (second condition*))
+                 condition-path [:ruleset :conditions idx]]
+             [:div.condition
+              (when (contains? #{:edit :new} mode)
+                [render-condition-name-errors condition-name])
+              [render-or-edit-condition-name
+               mode condition-path condition-name]
+              (when (contains? #{:edit :new} mode)
+                [render-condition-errors condition])
+              [:div.condition-body
+               (when condition ; condition can be nil during edit
+                 [render-clause
+                  mode
+                  condition-path
+                  condition])]
+              (when (contains? #{:edit :new} mode)
+                [delete-icon
+                 :to-delete-desc "Condition"
+                 :on-click
+                 (fn []
+                   (dispatch [:reaction/delete-condition idx]))])
+              (when (and (contains? #{:edit :new} mode)
+                         (= condition {:name condition-name})) ; when empty
+                [add-clause
+                 condition-path])]))
+         conditions)))
 
 (defn- render-identity-paths
   [_mode _identity-paths]
   (let [open? (r/atom false)]
     (fn [_mode _identity-paths]
       [:<>
-       [:dt
-        {:on-click #(swap! open? not)
-         :class (str "paths-collapse" (when @open? " expanded"))}
-        @(subscribe [:lang/get :reactions.identity-paths])
-        [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.identity-path])}]]
-       [:dd
+       [:label {:for "reaction-identity-paths"}
+        [:span {:on-click #(swap! open? not)
+                :class (str "pane-collapse" (when @open? " expanded"))}
+         @(subscribe [:lang/get :reactions.identity-paths])
+         [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.identity-path])}]]]
+       [:div {:id "reaction-identity-paths"}
         (when @open?
           (let [edit? (contains? #{:edit :new} _mode)]
             [:<>
              (into
-              [:ul.identity-paths]
+              [:ul.identity-paths {:class (when (not edit?) "view")}]
               (map-indexed
                (fn [idx path]
                  (let [path-path [:ruleset :identityPaths idx]]
-                   [:<>
+                   [:li
                     [render-or-edit-path
                      _mode
                      path-path
                      path
                      :remove-fn
                      #(dispatch [:reaction/delete-identity-path idx])
-                     :open-next? true]
-                    (when (not edit?) [:br])]))
+                     :open-next? true]]))
                _identity-paths))
              (when edit?
                [:span.add-identity-path
@@ -650,27 +664,45 @@
   "Render out top-level conditions errors, currently there is only one, an empty
   conditions map."
   [conditions]
-  (when (empty? conditions)
-    [:ul.reaction-error-list
-     [:li @(subscribe [:lang/get :reactions.errors.one-condition])]]))
+  (let [empty-err? (empty? conditions)
+        dupe-err?  (not (rse/distinct-name-vector? conditions))]
+    (when (or empty-err? dupe-err?)
+      [:ul.reaction-error-list
+       (when empty-err?
+         [:li @(subscribe [:lang/get :reactions.errors.one-condition])])
+       (when dupe-err?
+         [:li @(subscribe [:lang/get :reactions.errors.dupe-condition-names])])])))
 
 (defn- ruleset-view
   [mode
    {:keys [identityPaths
            conditions
            template]}]
-  [:dl.reaction-ruleset
-   [:dt @(subscribe [:lang/get :reactions.details.ruleset.conditions])
+  ;; Cannot use <dl> elements here since that would cause DOM nesting errors
+  [:div.reaction-ruleset {:id "ruleset-view"}
+   ;; TODO: Properly redo divs to remove extraneous nesting
+   [:hr]
+
+   [:label {:for "reaction-ruleset-conditions"}
+    @(subscribe [:lang/get :reactions.details.ruleset.conditions])
     [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.ruleset.conditions])}]]
-   [:dd
+   [:div {:id "reaction-ruleset-conditions"}
     (when (contains? #{:edit :new} mode)
       [render-conditions-errors conditions])
     [render-conditions mode conditions]
     (when (contains? #{:edit :new} mode)
       [add-condition :to-add-desc ""])]
-   [:dt @(subscribe [:lang/get :reactions.template.title])
+   
+   [:hr]
+
+   [:label {:for "reaction-ruleset-templates"}
+    @(subscribe [:lang/get :reactions.template.title])
     [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.template])}]]
-   [:dd [t/render-or-edit-template mode template]]
+   [:div {:id "reaction-ruleset-conditions"}
+    [t/render-or-edit-template mode template]]
+   
+   [:hr]
+
    [render-identity-paths
     mode identityPaths]])
 
@@ -795,40 +827,42 @@
       (when error?
         [:div.reaction-edit-invalid
          @(subscribe [:lang/get :reactions.errors.invalid])])
-      [:dl.reaction-view
-       [:div {:class "reaction-info-panel"}
+      
+      [:div.reaction-info-panel
+       ;; Put right-floating item first because CSS is weird
+       (when (contains? #{:focus :edit} mode)
+         [:dl.reaction-info-panel.right
+          [:dt @(subscribe [:lang/get :reactions.details.created])]
+          [:dd (or (iso8601->local-display created) "[New]")]
+          
+          [:dt @(subscribe [:lang/get :reactions.details.modified])]
+          [:dd (or (iso8601->local-display modified) "[New]")]
+          
+          [:dt @(subscribe [:lang/get :reactions.details.error])]
+          [:dd [render-error error]]])
+       
+       [:dl.reaction-info-panel.left
+        [:dt @(subscribe [:lang/get :reactions.details.title])
+         [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.reaction-title])}]]
+        [:dd
+         (case mode
+           :focus title
+           [edit-title title])]
+
         (when (contains? #{:focus :edit} mode)
           [:<>
-           [:dt @(subscribe [:lang/get :reactions.details.created])]
-           [:dd (or (iso8601->local-display created) "[New]")]
-       
-           [:dt @(subscribe [:lang/get :reactions.details.modified])]
-           [:dd (or (iso8601->local-display modified) "[New]")]
-       
-           [:dt @(subscribe [:lang/get :reactions.details.error])]
-           [:dd [render-error error]]])]
-       [:dt @(subscribe [:lang/get :reactions.details.title])
-        [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.reaction-title])}]]
-       [:dd
-        (case mode
-          :focus title
-          [edit-title title])]
+           [:dt @(subscribe [:lang/get :reactions.details.id])
+            [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.reaction-id])}]]
+           [:dd id]])
 
-       (when (contains? #{:focus :edit} mode)
-         [:<>
-          [:dt @(subscribe [:lang/get :reactions.details.id])
-           [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.reaction-id])}]]
-          [:dd id]])
-
-       [:dt @(subscribe [:lang/get :reactions.details.status])
-        [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.reaction-status])}]]
-       [:dd
-        (case mode
-          :focus (if active "Active" "Inactive")
-          [edit-status active])]
-
-       [:dt @(subscribe [:lang/get :reactions.details.ruleset])]
-       [:dd [ruleset-view mode ruleset]]]
+        [:dt @(subscribe [:lang/get :reactions.details.status])
+         [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.reaction-status])}]]
+        [:dd
+         (case mode
+           :focus (if active "Active" "Inactive")
+           [edit-status active])]]]
+      
+      [ruleset-view mode ruleset]
       [reaction-actions mode id error?]]]))
 
 (defn reactions

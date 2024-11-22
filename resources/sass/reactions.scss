@@ -3,26 +3,27 @@
 *********************************************/
 
 $dl-nesting-depth: 1em;
+$ruleset-padding: 1rem;
 $condition-padding: 1em;
+$border-color: #ddd;
 
-dl.reaction-view > dd {
-  padding-left: $dl-nesting-depth;
+/* Reaction Table */
+
+tr.reaction-row {
+  @extend .pointer;
 }
 
-dl.reaction-ruleset > dd {
-  padding-left: $dl-nesting-depth;
+tr.reaction-row:hover, main:not(.page-list-manager) table tbody tr:nth-child(even).reaction-row:hover {
+  background-color: #888;
 }
 
-dl.reaction-ruleset > dt {
-  padding-bottom: 8px;
-}
+/* Errors */
 
-span.add-identity-path {
-  padding: 0.5em;
-}
+$error-color: pink;
+$error-padding: 0.2em;
 
 dl.reaction-error {
-  background-color: pink;
+  background-color: $error-color;
   padding: 0.5em;
   display: grid;
   gap: 1em;
@@ -36,34 +37,49 @@ dl.reaction-error {
   }
 }
 
-ul.identity-paths {
-  padding-left: 0;
+ul.reaction-error-list {
+  background-color: $error-color;
+  margin-top: 5px;
+  padding-top: $error-padding;
+  padding-bottom: $error-padding;
 }
 
-dt.paths-collapse {
-  @extend .pointer;
+div.reaction-edit-invalid {
+  background-color: $error-color;
+  margin-bottom: $ruleset-padding;
+  padding-left: 1em;
+  padding-top: $error-padding;
+  padding-bottom: $error-padding;
 }
 
-dt.paths-collapse:after {
-  background: url('../images/icons/icon-expand-more.svg') no-repeat center center;
-  content: '';
-  display: inline-block;
-  vertical-align: top;
-  width: 20px;
-  height: 20px;
-  background-size: contain;
-  text-align: left;
-  margin: 4px 8px 0 0;
+/* Info Panel */
+
+dl.reaction-info-panel.right {
+  float: right;
+  padding-right: 20%;
 }
 
-dt.paths-collapse.expanded:after {
-  background-image: url('../images/icons/icon-expand-less.svg');
+/* Ruleset */
+
+div.reaction-ruleset > label {
+  font-size: larger;
+  padding-bottom: 8px;
 }
 
-div.reaction-conditions {
+div.reaction-ruleset > hr {
+  width: 100%;
+  margin-top: $ruleset-padding;
+  margin-bottom: $ruleset-padding;
+}
+
+/* Ruleset Conditions */
+
+div.conditions {
   > div.condition {
-    border-top: 1px dashed black;
     background-color: #eee;
+  }
+  > div.condition:not(:first-child) {
+    border-top: 1px dashed black;
   }
 }
 
@@ -76,7 +92,7 @@ div.condition {
 }
 
 div.clause {
-  //border: 1px solid black;
+  // border: 1px solid black;
   padding: $condition-padding;
   position: relative;
 }
@@ -90,7 +106,11 @@ div.clause.odd {
 }
 
 div.clause-type-label {
-  padding-bottom:10px;
+  padding-bottom: $condition-padding;
+}
+
+div.clause-type-label.empty {
+  padding-bottom: 0;
 }
 
 div.boolean {
@@ -125,6 +145,7 @@ div.add-icon {
       max-height: 1.4em;
     }
   }
+  padding-top: $condition-padding;
 }
 
 div.add-clause {
@@ -167,6 +188,14 @@ dl.ref {
     margin-bottom: 0;
   }
 }
+
+div.val {
+  > select {
+    margin-right: 4px;
+  }
+}
+
+/* Paths */
 
 $path-input-border: 2px solid #137BCE;;
 $path-input-border-radius: 4px;
@@ -213,36 +242,62 @@ div.path-input {
 }
 
 div.path-input.invalid {
-  background-color: pink;
+  background-color: $error-color;
 }
 
-ul.reaction-error-list {
-  background-color: pink;
-  margin-top: 5px;
+ul.identity-paths {
+  padding-left: 0;
+  list-style-type: none;
+  > li {
+    padding-bottom: 8px;
+  }
 }
 
-div.reaction-edit-invalid {
-  background-color: pink;
+ul.identity-paths.view {
+  padding: $ruleset-padding;
+  border: 1px solid $border-color;
 }
 
-tr.reaction-row {
+/* Dropdown Panes (for dynamic variables + identity paths) */
+
+span.pane-collapse {
   @extend .pointer;
 }
 
-tr.reaction-row:hover, main:not(.page-list-manager) table tbody tr:nth-child(even).reaction-row:hover {
-  background-color: #888;
+span.pane-collapse:after {
+  background: url('../images/icons/icon-expand-more.svg') no-repeat center center;
+  content: '';
+  display: inline-block;
+  vertical-align: top;
+  width: 20px;
+  height: 20px;
+  background-size: contain;
+  text-align: left;
+  margin: 4px 8px 0 0;
 }
 
-.reaction-info-panel {
-  float: right;
-  padding-right: 20%;
+span.pane-collapse.expanded:after {
+  background-image: url('../images/icons/icon-expand-less.svg');
 }
 
+/* Dynamic Variables */
 
-div.var-gen-wrapper {
-  padding: 15px;
-  background-color: #eee;
+div.dynamic-variables {
+  margin-bottom: $condition-padding;
+  > div.inner {
+    padding: 15px;
+    background-color: #eee;
+  }
 }
+
+/* Template */
+
+pre.template {
+  padding: $ruleset-padding;
+  border: 1px solid $border-color;
+}
+
+/* Button Hovering */
 
 a:hover {
   color: #11375C;
