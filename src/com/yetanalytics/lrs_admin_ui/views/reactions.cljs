@@ -563,20 +563,23 @@
     [:ul.reaction-error-list
      [:li @(subscribe [:lang/get :reactions.errors.invalid-condition-name])]]))
 
-(defn- render-or-edit-condition-name
-  [mode condition-path condition-name]
+(defn- condition-name-focus
+  [condition-name]
   [:div.condition-name
-   (if (contains? #{:edit :new} mode)
-     [:input
-      {:type  "text"
-       :class "round"
-       :value (name condition-name)
-       :on-change
-       (fn [e]
-         (dispatch [:reaction/set-condition-name
-                    (conj condition-path :name)
-                    (fns/ps-event-val e)]))}]
-     condition-name)
+   condition-name
+   [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.condition-title])}]])
+
+(defn- condition-name-edit
+  [condition-path condition-name]
+  [:div.condition-name
+   [:input
+    {:type      "text"
+     :class     "round"
+     :value     (name condition-name)
+     :on-change (fn [e]
+                  (dispatch [:reaction/set-condition-name
+                             (conj condition-path :name)
+                             (fns/ps-event-val e)]))}]
    [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.condition-title])}]])
 
 (defn- render-condition-errors
@@ -595,8 +598,7 @@
                  condition      (second condition*)
                  condition-path [:ruleset :conditions idx]]
              [:div.condition
-              [render-or-edit-condition-name
-               :focus condition-path condition-name]
+              [condition-name-focus condition-name]
               [:div.condition-body
                [render-clause
                 :focus
@@ -614,8 +616,7 @@
                  condition-path [:ruleset :conditions idx]]
              [:div.condition
               [render-condition-name-errors condition-name]
-              [render-or-edit-condition-name
-               :edit condition-path condition-name]
+              [condition-name-edit condition-path condition-name]
               [render-condition-errors condition]
               [:div.condition-body
                (when condition ; condition can be nil during edit
@@ -642,8 +643,7 @@
                  condition-path [:ruleset :conditions idx]]
              [:div.condition
               [render-condition-name-errors condition-name]
-              [render-or-edit-condition-name
-               :new condition-path condition-name]
+              [condition-name-edit condition-path condition-name]
               [render-condition-errors condition]
               [:div.condition-body
                (when condition ; condition can be nil during edit
