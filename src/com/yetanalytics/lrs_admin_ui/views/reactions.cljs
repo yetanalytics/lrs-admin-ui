@@ -718,7 +718,7 @@
                 [add-clause condition-path])]))
          conditions)))
 
-(defn- identity-paths-focus
+(defn- identity-paths-focus*
   [identity-paths]
   (into
    [:ul.identity-paths {:class "view"}]
@@ -726,7 +726,7 @@
           [:li [path-focus path]])
         identity-paths)))
 
-(defn- identity-paths-edit
+(defn- identity-paths-edit*
   [identity-paths]
   [:<>
    (into
@@ -753,7 +753,7 @@
 (defn- identity-paths-view
   [_ _]
   (let [open? (r/atom false)]
-    (fn [identity-paths identity-paths-view*]
+    (fn [identity-paths-view* identity-paths]
       [:<>
        [:label {:for "reaction-identity-paths"}
         [:span {:on-click #(swap! open? not)
@@ -763,6 +763,14 @@
        [:div {:id "reaction-identity-paths"}
         (when @open?
           [identity-paths-view* identity-paths])]])))
+
+(defn- identity-paths-focus
+  [identity-paths]
+  [identity-paths-view identity-paths-focus* identity-paths])
+
+(defn- identity-paths-edit
+  [identity-paths]
+  [identity-paths-view identity-paths-edit* identity-paths])
 
 (defn- render-conditions-errors
   "Render out top-level conditions errors, currently there is only one, an empty
@@ -792,12 +800,12 @@
     @(subscribe [:lang/get :reactions.template.title])
     [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.template])}]]
    [:div {:id "reaction-ruleset-templates"}
-    [t/render-or-edit-template :focus template]]
+    [t/template-focus template]]
    [:hr]
-   [identity-paths-view identityPaths identity-paths-focus]])
+   [identity-paths-focus identityPaths]])
 
 (defn- ruleset-edit
-  [{:keys [identityPaths conditions template]}]
+  [{:keys [identityPaths conditions]}]
   [:div.reaction-ruleset {:id "ruleset-view"}
    ;; TODO: Properly redo divs to remove extraneous nesting
    [:hr]
@@ -813,12 +821,12 @@
     @(subscribe [:lang/get :reactions.template.title])
     [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.template])}]]
    [:div {:id "reaction-ruleset-templates"}
-    [t/render-or-edit-template :edit template]]
+    [t/template-edit]]
    [:hr]
-   [identity-paths-view identityPaths identity-paths-edit]])
+   [identity-paths-edit identityPaths]])
 
 (defn- ruleset-new
-  [{:keys [identityPaths conditions template]}]
+  [{:keys [identityPaths conditions]}]
   [:div.reaction-ruleset {:id "ruleset-view"}
    ;; TODO: Properly redo divs to remove extraneous nesting
    [:hr]
@@ -834,9 +842,9 @@
     @(subscribe [:lang/get :reactions.template.title])
     [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.template])}]]
    [:div {:id "reaction-ruleset-templates"}
-    [t/render-or-edit-template :new template]]
+    [t/template-edit]]
    [:hr]
-   [identity-paths-view identityPaths identity-paths-edit]])
+   [identity-paths-edit identityPaths]])
 
 (defn- render-error
   [?error]

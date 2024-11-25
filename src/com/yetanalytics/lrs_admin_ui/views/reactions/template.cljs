@@ -86,7 +86,12 @@
                     [:a {:class "icon-copy"
                          :on-click #(fns/ps-event %)}]]])])])])])))
 
-(defn edit-template
+(defn template-focus
+  [template]
+  [:pre.template
+   (.stringify js/JSON (clj->js template) nil 2)])
+
+(defn template-edit
   []
   [:<>
    [dynamic-variables]
@@ -98,10 +103,3 @@
      :save     #(dispatch [:reaction/update-template %])
      :error    #(dispatch [:reaction/set-template-errors %])}
     :keywordize-keys? false]])
-
-(defn render-or-edit-template
-  [mode template]
-  (if (contains? #{:edit :new} mode)
-    [edit-template]
-    [:pre.template
-     (.stringify js/JSON (clj->js template) nil 2)]))
