@@ -714,37 +714,6 @@
    [conditions-edit* conditions]
    [add-condition :to-add-desc ""]])
 
-(defn- conditions-new*
-  [conditions]
-  (into [:div.conditions]
-        (map-indexed
-         (fn [idx condition*]
-           (let [condition-name (get condition* :name)
-                 condition      condition*
-                 condition-path [:ruleset :conditions idx]]
-             [:div.condition
-              [render-condition-name-errors condition-name]
-              [condition-name-edit condition-path condition-name]
-              [render-condition-errors condition]
-              [:div.condition-body
-               (when condition ; condition can be nil during edit
-                 [clause-edit condition-path condition])]
-              [delete-icon
-               :to-delete-desc "Condition"
-               :on-click
-               (fn []
-                 (dispatch [:reaction/delete-condition idx]))]
-              (when (= condition {:name condition-name}) ; when empty
-                [add-clause condition-path])]))
-         conditions)))
-
-(defn- conditions-new
-  [conditions]
-  [:<>
-   [render-conditions-errors conditions]
-   [conditions-new* conditions]
-   [add-condition :to-add-desc ""]])
-
 (defn- identity-paths-focus*
   [identity-paths]
   (into
@@ -835,14 +804,6 @@
    identity-paths-edit
    ruleset])
 
-(defn- reaction-ruleset-new
-  [ruleset]
-  [reaction-ruleset-view
-   conditions-new
-   t/template-edit
-   identity-paths-edit
-   ruleset])
-
 (defn- render-error
   [?error]
   (if ?error
@@ -928,7 +889,7 @@
      [save-button])
    [revert-button]])
 
-(defn- reaction-new-actions
+(defn- reaction-actions-new
   [error?]
   [:div {:class "api-keys-table-actions"}
    [back-button]
@@ -1064,11 +1025,11 @@
      [:h2 {:class "content-title"}
       @(subscribe [:lang/get :reactions.new.title])]
      [:div {:class "tenant-wrapper"}
-      [reaction-new-actions error?]
+      [reaction-actions-new error?]
       (when error? [reaction-edit-invalid])
       [reaction-info-panel-new reaction]
-      [reaction-ruleset-new ruleset]
-      [reaction-new-actions error?]]]))
+      [reaction-ruleset-edit ruleset]
+      [reaction-actions-new error?]]]))
 
 (defn reactions
   []
