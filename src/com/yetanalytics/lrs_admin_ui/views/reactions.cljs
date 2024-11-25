@@ -670,7 +670,51 @@
                [clause-focus condition-path condition]]]))
          conditions)))
 
+(defn- render-conditions-errors
+  "Render out top-level conditions errors, currently there is only one, an empty
+  conditions map."
+  [conditions]
+  (let [empty-err? (empty? conditions)
+        dupe-err?  (not (rse/distinct-name-vector? conditions))]
+    (when (or empty-err? dupe-err?)
+      [:ul.reaction-error-list
+       (when empty-err?
+         [:li @(subscribe [:lang/get :reactions.errors.one-condition])])
+       (when dupe-err?
+         [:li @(subscribe [:lang/get :reactions.errors.dupe-condition-names])])])))
+
+(defn- conditions-edit*
+  [conditions]
+  (into [:div.conditions]
+        (map-indexed
+         (fn [idx condition*]
+           (let [condition-name (get condition* :name)
+                 condition      condition*
+                 condition-path [:ruleset :conditions idx]]
+             [:div.condition
+              [render-condition-name-errors condition-name]
+              [condition-name-edit condition-path condition-name]
+              [render-condition-errors condition]
+              [:div.condition-body
+               (when condition ; condition can be nil during edit
+                 [clause-edit condition-path condition])]
+              [delete-icon
+               :to-delete-desc "Condition"
+               :on-click
+               (fn []
+                 (dispatch [:reaction/delete-condition idx]))]
+              (when (= condition {:name condition-name}) ; when empty
+                [add-clause condition-path])]))
+         conditions)))
+
 (defn- conditions-edit
+  [conditions]
+  [:<>
+   [render-conditions-errors conditions]
+   [conditions-edit* conditions]
+   [add-condition :to-add-desc ""]])
+
+(defn- conditions-new*
   [conditions]
   (into [:div.conditions]
         (map-indexed
@@ -696,27 +740,10 @@
 
 (defn- conditions-new
   [conditions]
-  (into [:div.conditions]
-        (map-indexed
-         (fn [idx condition*]
-           (let [condition-name (get condition* :name)
-                 condition      condition*
-                 condition-path [:ruleset :conditions idx]]
-             [:div.condition
-              [render-condition-name-errors condition-name]
-              [condition-name-edit condition-path condition-name]
-              [render-condition-errors condition]
-              [:div.condition-body
-               (when condition ; condition can be nil during edit
-                 [clause-edit condition-path condition])]
-              [delete-icon
-               :to-delete-desc "Condition"
-               :on-click
-               (fn []
-                 (dispatch [:reaction/delete-condition idx]))]
-              (when (= condition {:name condition-name}) ; when empty
-                [add-clause condition-path])]))
-         conditions)))
+  [:<>
+   [render-conditions-errors conditions]
+   [conditions-new* conditions]
+   [add-condition :to-add-desc ""]])
 
 (defn- identity-paths-focus*
   [identity-paths]
@@ -772,79 +799,49 @@
   [identity-paths]
   [identity-paths-view identity-paths-edit* identity-paths])
 
-(defn- render-conditions-errors
-  "Render out top-level conditions errors, currently there is only one, an empty
-  conditions map."
-  [conditions]
-  (let [empty-err? (empty? conditions)
-        dupe-err?  (not (rse/distinct-name-vector? conditions))]
-    (when (or empty-err? dupe-err?)
-      [:ul.reaction-error-list
-       (when empty-err?
-         [:li @(subscribe [:lang/get :reactions.errors.one-condition])])
-       (when dupe-err?
-         [:li @(subscribe [:lang/get :reactions.errors.dupe-condition-names])])])))
+(defn- reaction-ruleset-view
+  [conditions-view template-view identity-paths-view
+   {:keys [conditions template identityPaths]}]
+  [:div.reaction-ruleset {:id "ruleset-view"}
+   ;; TODO: Properly redo divs to remove extraneous nesting
+   [:hr]
+   [:label {:for "reaction-ruleset-conditions"}
+    @(subscribe [:lang/get :reactions.details.ruleset.conditions])
+    [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.ruleset.conditions])}]]
+   [:div {:id "reaction-ruleset-conditions"}
+    [conditions-view conditions]]
+   [:hr]
+   [:label {:for "reaction-ruleset-templates"}
+    @(subscribe [:lang/get :reactions.template.title])
+    [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.template])}]]
+   [:div {:id "reaction-ruleset-templates"}
+    [template-view template]]
+   [:hr]
+   [identity-paths-view identityPaths]])
 
 (defn- reaction-ruleset-focus
-  [{:keys [identityPaths conditions template]}]
-  [:div.reaction-ruleset {:id "ruleset-view"}
-   ;; TODO: Properly redo divs to remove extraneous nesting
-   [:hr]
-   [:label {:for "reaction-ruleset-conditions"}
-    @(subscribe [:lang/get :reactions.details.ruleset.conditions])
-    [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.ruleset.conditions])}]]
-   [:div {:id "reaction-ruleset-conditions"}
-    [conditions-focus conditions]]
-   [:hr]
-   [:label {:for "reaction-ruleset-templates"}
-    @(subscribe [:lang/get :reactions.template.title])
-    [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.template])}]]
-   [:div {:id "reaction-ruleset-templates"}
-    [t/template-focus template]]
-   [:hr]
-   [identity-paths-focus identityPaths]])
+  [ruleset]
+  [reaction-ruleset-view
+   conditions-focus
+   t/template-focus
+   identity-paths-focus
+   ruleset])
 
 (defn- reaction-ruleset-edit
-  [{:keys [identityPaths conditions]}]
-  [:div.reaction-ruleset {:id "ruleset-view"}
-   ;; TODO: Properly redo divs to remove extraneous nesting
-   [:hr]
-   [:label {:for "reaction-ruleset-conditions"}
-    @(subscribe [:lang/get :reactions.details.ruleset.conditions])
-    [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.ruleset.conditions])}]]
-   [:div {:id "reaction-ruleset-conditions"}
-    [render-conditions-errors conditions]
-    [conditions-edit conditions]
-    [add-condition :to-add-desc ""]]
-   [:hr]
-   [:label {:for "reaction-ruleset-templates"}
-    @(subscribe [:lang/get :reactions.template.title])
-    [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.template])}]]
-   [:div {:id "reaction-ruleset-templates"}
-    [t/template-edit]]
-   [:hr]
-   [identity-paths-edit identityPaths]])
+  [ruleset]
+  [reaction-ruleset-view
+   conditions-edit
+   t/template-edit
+   identity-paths-edit
+   ruleset])
 
 (defn- reaction-ruleset-new
-  [{:keys [identityPaths conditions]}]
-  [:div.reaction-ruleset {:id "ruleset-view"}
-   ;; TODO: Properly redo divs to remove extraneous nesting
-   [:hr]
-   [:label {:for "reaction-ruleset-conditions"}
-    @(subscribe [:lang/get :reactions.details.ruleset.conditions])
-    [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.ruleset.conditions])}]]
-   [:div {:id "reaction-ruleset-conditions"}
-    [render-conditions-errors conditions]
-    [conditions-new conditions]
-    [add-condition :to-add-desc ""]]
-   [:hr]
-   [:label {:for "reaction-ruleset-templates"}
-    @(subscribe [:lang/get :reactions.template.title])
-    [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.template])}]]
-   [:div {:id "reaction-ruleset-templates"}
-    [t/template-edit]]
-   [:hr]
-   [identity-paths-edit identityPaths]])
+  [ruleset]
+  [reaction-ruleset-view
+   conditions-new
+   t/template-edit
+   identity-paths-edit
+   ruleset])
 
 (defn- render-error
   [?error]
