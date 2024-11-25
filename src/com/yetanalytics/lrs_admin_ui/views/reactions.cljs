@@ -800,74 +800,123 @@
     {:value "inactive"}
     "Inactive"]])
 
-(defn- reaction-view
-  [mode]
-  (let [{:keys [id
-                title
-                active
-                created
-                modified
-                error
-                ruleset]} @(subscribe
-                            (case mode
-                              :focus [:reaction/focus]
-                              [:reaction/editing]))
-        error?  (and (contains? #{:edit :new} mode)
-                     (or
-                      (some? @(subscribe [:reaction/edit-spec-errors]))
-                      (seq @(subscribe [:reaction/edit-template-errors]))))]
+(defn- reaction-info-panel-right [{:keys [created modified error]}]
+  [:dl.reaction-info-panel.right
+   [:dt @(subscribe [:lang/get :reactions.details.created])]
+   [:dd (or (iso8601->local-display created) "[New]")]
+  
+   [:dt @(subscribe [:lang/get :reactions.details.modified])]
+   [:dd (or (iso8601->local-display modified) "[New]")]
+  
+   [:dt @(subscribe [:lang/get :reactions.details.error])]
+   [:dd [render-error error]]])
+
+(defn- reaction-info-title-dt []
+  [:dt @(subscribe [:lang/get :reactions.details.title])
+   [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.reaction-title])}]])
+
+(defn- reaction-info-id-dt []
+  [:dt @(subscribe [:lang/get :reactions.details.id])
+   [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.reaction-id])}]])
+
+(defn- reaction-info-status-dt []
+  [:dt @(subscribe [:lang/get :reactions.details.status])
+   [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.reaction-status])}]])
+
+(defn- reaction-info-panel-focus [{:keys [id title active] :as reaction}]
+  [:div.reaction-info-panel
+   [reaction-info-panel-right reaction]
+   [:dl.reaction-info-panel.left
+    [reaction-info-title-dt]
+    [:dd title]
+    
+    [reaction-info-id-dt]
+    [:dd id]
+    
+    [reaction-info-status-dt]
+    [:dd (if active "Active" "Inactive")]]])
+
+(defn- reaction-info-panel-edit [{:keys [id title active] :as reaction}]
+  [:div.reaction-info-panel
+   [reaction-info-panel-right reaction]
+   [:dl.reaction-info-panel.left
+    [reaction-info-title-dt]
+    [:dd [edit-title title]]
+    
+    [reaction-info-id-dt]
+    [:dd id]
+    
+    [reaction-info-status-dt]
+    [:dd [edit-status active]]]])
+
+(defn- reaction-info-panel-new [{:keys [title active] :as reaction}]
+  [:div.reaction-info-panel
+   [reaction-info-panel-right reaction]
+   [:dl.reaction-info-panel.left
+    [reaction-info-title-dt]
+    [:dd [edit-title title]]
+    
+    [reaction-info-status-dt]
+    [:dd [edit-status active]]]])
+
+(defn- reaction-edit-invalid
+  []
+  [:div.reaction-edit-invalid
+   @(subscribe [:lang/get :reactions.errors.invalid])])
+
+(defn- reaction-focus []
+  (let [{:keys [id ruleset]
+         :as reaction} @(subscribe [:reaction/focus])]
     [:div {:class "left-content-wrapper"}
      [:h2 {:class "content-title"}
-      (case mode
-        :focus @(subscribe [:lang/get :reactions.focus.title])
-        :edit  @(subscribe [:lang/get :reactions.edit.title])
-        :new   @(subscribe [:lang/get :reactions.new.title]))]
+      @(subscribe [:lang/get :reactions.focus.title])]
      [:div {:class "tenant-wrapper"}
-      [reaction-actions mode id error?]
-      (when error?
-        [:div.reaction-edit-invalid
-         @(subscribe [:lang/get :reactions.errors.invalid])])
-      
-      [:div.reaction-info-panel
-       ;; Put right-floating item first because CSS is weird
-       (when (contains? #{:focus :edit} mode)
-         [:dl.reaction-info-panel.right
-          [:dt @(subscribe [:lang/get :reactions.details.created])]
-          [:dd (or (iso8601->local-display created) "[New]")]
-          
-          [:dt @(subscribe [:lang/get :reactions.details.modified])]
-          [:dd (or (iso8601->local-display modified) "[New]")]
-          
-          [:dt @(subscribe [:lang/get :reactions.details.error])]
-          [:dd [render-error error]]])
-       
-       [:dl.reaction-info-panel.left
-        [:dt @(subscribe [:lang/get :reactions.details.title])
-         [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.reaction-title])}]]
-        [:dd
-         (case mode
-           :focus title
-           [edit-title title])]
+      [reaction-actions :focus id nil]
+      [reaction-info-panel-focus reaction]  
+      [ruleset-view :focus ruleset]
+      [reaction-actions :focus id nil]]]))
 
-        (when (contains? #{:focus :edit} mode)
-          [:<>
-           [:dt @(subscribe [:lang/get :reactions.details.id])
-            [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.reaction-id])}]]
-           [:dd id]])
+(defn- reaction-edit []
+  (let [{:keys [id ruleset]
+         :as reaction} @(subscribe [:reaction/editing])
+        error?  (or
+                 (some? @(subscribe [:reaction/edit-spec-errors]))
+                 (seq @(subscribe [:reaction/edit-template-errors])))]
+    [:div {:class "left-content-wrapper"}
+     [:h2 {:class "content-title"}
+      @(subscribe [:lang/get :reactions.edit.title])]
+     [:div {:class "tenant-wrapper"}
+      [reaction-actions :edit id error?]
+      (when error? [reaction-edit-invalid])
+      [reaction-info-panel-edit reaction]
+      [ruleset-view :edit ruleset]
+      [reaction-actions :edit id error?]]]))
 
-        [:dt @(subscribe [:lang/get :reactions.details.status])
-         [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.reaction-status])}]]
-        [:dd
-         (case mode
-           :focus (if active "Active" "Inactive")
-           [edit-status active])]]]
-      
-      [ruleset-view mode ruleset]
-      [reaction-actions mode id error?]]]))
+(defn- reaction-new []
+  (let [{:keys [id ruleset]
+         :as reaction} @(subscribe [:reaction/editing])
+        error?  (or
+                 (some? @(subscribe [:reaction/edit-spec-errors]))
+                 (seq @(subscribe [:reaction/edit-template-errors])))]
+    [:div {:class "left-content-wrapper"}
+     [:h2 {:class "content-title"}
+      @(subscribe [:lang/get :reactions.new.title])]
+     [:div {:class "tenant-wrapper"}
+      [reaction-actions :new id error?]
+      (when error? [reaction-edit-invalid])
+      [reaction-info-panel-new reaction]
+      [ruleset-view :new ruleset]
+      [reaction-actions :new id error?]]]))
 
 (defn reactions
   []
   (let [mode @(subscribe [:reaction/mode])]
-    (if (= :list mode)
+    (case mode
+      :list
       [reactions-list]
-      [reaction-view mode])))
+      :focus
+      [reaction-focus]
+      :edit
+      [reaction-edit]
+      :new
+      [reaction-new])))
