@@ -286,38 +286,37 @@
         :logic @(subscribe [:lang/get :tooltip.reactions.clause-type.logic])}
        key))
 
-(defn- clause-label
-  [mode
-   reaction-path
-   type-key]
+(defn- clause-label-focus
+  [type-key]
   [:div.clause-type-label
-   {:class (when (and (not (contains? #{:edit :new} mode)) ; FIXME: Refactor
-                      (not (contains? #{:and :or :not} type-key)))
+   {:class (when-not (contains? #{:and :or :not} type-key)
              "empty")}
-   (if (contains? #{:edit :new} mode)
-     [:<>
-      [:select
-       {:value (name type-key)
-        :class "round short"
-        :on-change
-        (fn [e]
-          (dispatch [:reaction/set-clause-type
-                     reaction-path
-                     (fns/ps-event-val e)]))}
-       [:option
-        {:value "logic"}
-        "Statement Criteria"]
-       [:option
-        {:value "and"}
-        "Boolean AND"]
-       [:option
-        {:value "or"}
-        "Boolean OR"]
-       [:option
-        {:value "not"}
-        "Boolean NOT"]]
-      [tooltip-info {:value (clause-type-tooltips type-key)}]] 
-     (case type-key :and "AND" :or "OR" :not "NOT" ""))])
+   (case type-key :and "AND" :or "OR" :not "NOT" "")])
+
+(defn- clause-label-edit
+  [reaction-path type-key]
+  [:div.clause-type-label
+   [:select
+    {:value (name type-key)
+     :class "round short"
+     :on-change
+     (fn [e]
+       (dispatch [:reaction/set-clause-type
+                  reaction-path
+                  (fns/ps-event-val e)]))}
+    [:option
+     {:value "logic"}
+     "Statement Criteria"]
+    [:option
+     {:value "and"}
+     "Boolean AND"]
+    [:option
+     {:value "or"}
+     "Boolean OR"]
+    [:option
+     {:value "not"}
+     "Boolean NOT"]]
+   [tooltip-info {:value (clause-type-tooltips type-key)}]])
 
 (defn- delete-icon
   [& {:keys [on-click to-delete-desc]
@@ -370,89 +369,126 @@
                                parent-path
                                v]))}]])
 
-(declare render-clause)
+(declare clause-focus)
+(declare clause-edit)
 
 (defn clause-nest-class
   [reaction-path]
   (let [ops (filter keyword? (subvec reaction-path 3))]
     (if (even? (count ops)) "even" "odd")))
 
-(defn- render-and
-  [mode reaction-path and-clauses]
+(defn- and-clauses-focus
+  [reaction-path and-clauses]
   [:div.clause.boolean.and
    {:class (clause-nest-class reaction-path)}
-   [clause-label mode reaction-path :and]
+   [clause-label-focus :and]
    (when (empty? and-clauses)
      [:ul.reaction-error-list
       [:li @(subscribe [:lang/get :reactions.details.conditions.and-instructions])]])
    (into [:div.boolean-body]
          (map-indexed
           (fn [idx clause]
-            [render-clause
-             mode
+            [clause-focus
+             (into reaction-path [:and idx])
+             clause])
+          and-clauses))])
+
+(defn- and-clauses-edit
+  [reaction-path and-clauses]
+  [:div.clause.boolean.and
+   {:class (clause-nest-class reaction-path)}
+   [clause-label-edit reaction-path :and]
+   (when (empty? and-clauses)
+     [:ul.reaction-error-list
+      [:li @(subscribe [:lang/get :reactions.details.conditions.and-instructions])]])
+   (into [:div.boolean-body]
+         (map-indexed
+          (fn [idx clause]
+            [clause-edit
              (into reaction-path [:and idx])
              clause])
           and-clauses))
-   (when (contains? #{:edit :new} mode)
-     [:<>
-      [add-clause
-       (conj reaction-path :and)]
-      [delete-icon
-       :to-delete-desc "'Boolean AND' clause"
-       :on-click
-       (fn []
-         (dispatch
-          [:reaction/delete-clause reaction-path]))]])])
+   [add-clause
+    (conj reaction-path :and)]
+   [delete-icon
+    :to-delete-desc "'Boolean AND' clause"
+    :on-click
+    (fn []
+      (dispatch
+       [:reaction/delete-clause reaction-path]))]])
 
-(defn- render-or
-  [mode reaction-path or-clauses]
+(defn- or-clauses-focus
+  [reaction-path or-clauses]
   [:div.clause.boolean.or
    {:class (clause-nest-class reaction-path)}
-   [clause-label mode reaction-path :or]
+   [clause-label-focus :or]
    (when (empty? or-clauses)
      [:ul.reaction-error-list
       [:li @(subscribe [:lang/get :reactions.details.conditions.or-instructions])]])
    (into [:div.boolean-body]
          (map-indexed
           (fn [idx clause]
-            [render-clause
-             mode
+            [clause-focus
+             (into reaction-path [:or idx])
+             clause])
+          or-clauses))])
+
+(defn- or-clauses-edit
+  [reaction-path or-clauses]
+  [:div.clause.boolean.or
+   {:class (clause-nest-class reaction-path)}
+   [clause-label-edit reaction-path :or]
+   (when (empty? or-clauses)
+     [:ul.reaction-error-list
+      [:li @(subscribe [:lang/get :reactions.details.conditions.or-instructions])]])
+   (into [:div.boolean-body]
+         (map-indexed
+          (fn [idx clause]
+            [clause-edit
              (into reaction-path [:or idx])
              clause])
           or-clauses))
-   (when (contains? #{:edit :new} mode)
-     [:<>
-      [add-clause
-       (conj reaction-path :or)]
-      [delete-icon
-       :to-delete-desc "'Boolean OR' clause"
-       :on-click
-       (fn []
-         (dispatch
-          [:reaction/delete-clause reaction-path]))]])])
+   [add-clause
+    (conj reaction-path :or)]
+   [delete-icon
+    :to-delete-desc "'Boolean OR' clause"
+    :on-click
+    (fn []
+      (dispatch
+       [:reaction/delete-clause reaction-path]))]])
 
-(defn- render-not
-  [mode reaction-path not-clause]
+(defn- not-clause-focus
+  [reaction-path not-clause]
   [:div.clause.boolean.not
    {:class (clause-nest-class reaction-path)}
-   [clause-label mode reaction-path :not]
+   [clause-label-focus :not]
    (when (nil? not-clause)
      [:ul.reaction-error-list
       [:li @(subscribe [:lang/get :reactions.details.conditions.not-instructions])]])
    [:div.boolean-body
     (when not-clause
-      [render-clause mode (conj reaction-path :not) not-clause])]
-   (when (and (contains? #{:edit :new} mode)
-              (nil? not-clause))
+      [clause-focus (conj reaction-path :not) not-clause])]])
+
+(defn- not-clause-edit
+  [reaction-path not-clause]
+  [:div.clause.boolean.not
+   {:class (clause-nest-class reaction-path)}
+   [clause-label-edit reaction-path :not]
+   (when (nil? not-clause)
+     [:ul.reaction-error-list
+      [:li @(subscribe [:lang/get :reactions.details.conditions.not-instructions])]])
+   [:div.boolean-body
+    (when not-clause
+      [clause-edit (conj reaction-path :not) not-clause])]
+   (when (nil? not-clause)
      [add-clause
       (conj reaction-path :not)])
-   (when (contains? #{:edit :new} mode)
-     [delete-icon
-      :to-delete-desc "'Boolean NOT' clause"
-      :on-click
-      (fn []
-        (dispatch
-         [:reaction/delete-clause reaction-path]))])])
+   [delete-icon
+    :to-delete-desc "'Boolean NOT' clause"
+    :on-click
+    (fn []
+      (dispatch
+       [:reaction/delete-clause reaction-path]))]])
 
 (defn- render-logic-errors
   [clause-path]
@@ -471,71 +507,100 @@
         (conj [:li
                @(subscribe [:lang/get :reactions.errors.like-string])])))))
 
-(defn- render-logic
-  [mode reaction-path clause]
+(defn- logic-clause-focus
+  [reaction-path clause]
   (let [{:keys [path op val ref]} clause]
-          [:div.clause.op
-           {:class (clause-nest-class reaction-path)}
-           [clause-label mode reaction-path :logic]
-           (when (contains? #{:edit :new} mode)
-             [render-logic-errors
-              reaction-path])
-           (cond-> [:dl.op-list
-                    [:dt @(subscribe [:lang/get :reactions.details.conditions.statement-path])
-                     [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.statement-path])}]]
-                    [:dd
-                     [render-or-edit-path
-                      mode
-                      (conj reaction-path :path)
-                      path
-                      :open-next? true]]
-                    [:dt @(subscribe [:lang/get :reactions.details.conditions.operation])
-                     [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.operation])}]]
-                    [:dd [render-or-edit-op
-                          mode
-                          (conj reaction-path :op)
-                          op]]
-                    [:dt
-                     (if (contains? #{:edit :new} mode)
-                       [:select
-                        {:value (if ref "ref" "val")
-                         :class "round short"
-                         :on-change
-                         (fn [e]
-                           (dispatch [:reaction/set-val-or-ref
-                                      reaction-path
-                                      (fns/ps-event-val e)]))}
-                        [:option
-                         {:value "ref"}
-                         @(subscribe [:lang/get :reactions.details.conditions.reference])]
-                        [:option
-                         {:value "val"}
-                         @(subscribe [:lang/get :reactions.details.conditions.value])]]
-                       (if ref
-                         @(subscribe [:lang/get :reactions.details.conditions.reference])
-                         @(subscribe [:lang/get :reactions.details.conditions.value])))
-                     [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.comparator])}]]]
-             (not ref) (conj [:dd [render-or-edit-val
-                                   mode
-                                   (conj reaction-path :val)
-                                   path
-                                   val]])
-             ref (conj [:dd
-                        [render-ref
-                         mode
-                         (conj reaction-path :ref)
-                         ref]]))
-           (when (contains? #{:edit :new} mode)
-             [delete-icon
-              :to-delete-desc "Statement Criteria"
-              :on-click
-              (fn []
-                (dispatch
-                 [:reaction/delete-clause reaction-path]))])]))
+    [:div.clause.op
+     {:class (clause-nest-class reaction-path)}
+     [clause-label-focus :logic]
+     (cond-> [:dl.op-list
+              [:dt @(subscribe [:lang/get :reactions.details.conditions.statement-path])
+               [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.statement-path])}]]
+              [:dd
+               [render-or-edit-path
+                :focus
+                (conj reaction-path :path)
+                path
+                :open-next? true]]
+              [:dt @(subscribe [:lang/get :reactions.details.conditions.operation])
+               [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.operation])}]]
+              [:dd [render-or-edit-op
+                    :focus
+                    (conj reaction-path :op)
+                    op]]
+              [:dt
+               (if ref
+                 @(subscribe [:lang/get :reactions.details.conditions.reference])
+                 @(subscribe [:lang/get :reactions.details.conditions.value]))
+               [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.comparator])}]]]
+       (not ref) (conj [:dd [render-or-edit-val
+                             :focus
+                             (conj reaction-path :val)
+                             path
+                             val]])
+       ref (conj [:dd
+                  [render-ref
+                   :focus
+                   (conj reaction-path :ref)
+                   ref]]))]))
 
-(defn- render-clause
-  [mode
-   reaction-path
+(defn- logic-clause-edit
+  [reaction-path clause]
+  (let [{:keys [path op val ref]} clause]
+    [:div.clause.op
+     {:class (clause-nest-class reaction-path)}
+     [clause-label-edit reaction-path :logic]
+     [render-logic-errors reaction-path]
+     (cond-> [:dl.op-list
+              [:dt @(subscribe [:lang/get :reactions.details.conditions.statement-path])
+               [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.statement-path])}]]
+              [:dd
+               [render-or-edit-path
+                :edit
+                (conj reaction-path :path)
+                path
+                :open-next? true]]
+              [:dt @(subscribe [:lang/get :reactions.details.conditions.operation])
+               [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.operation])}]]
+              [:dd [render-or-edit-op
+                    :edit
+                    (conj reaction-path :op)
+                    op]]
+              [:dt
+               [:select
+                {:value (if ref "ref" "val")
+                 :class "round short"
+                 :on-change
+                 (fn [e]
+                   (dispatch [:reaction/set-val-or-ref
+                              reaction-path
+                              (fns/ps-event-val e)]))}
+                [:option
+                 {:value "ref"}
+                 @(subscribe [:lang/get :reactions.details.conditions.reference])]
+                [:option
+                 {:value "val"}
+                 @(subscribe [:lang/get :reactions.details.conditions.value])]]
+               [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.comparator])}]]]
+       (not ref) (conj [:dd [render-or-edit-val
+                             :edit
+                             (conj reaction-path :val)
+                             path
+                             val]])
+       ref (conj [:dd
+                  [render-ref
+                   :edit
+                   (conj reaction-path :ref)
+                   ref]]))
+     [delete-icon
+      :to-delete-desc "Statement Criteria"
+      :on-click
+      (fn []
+        (dispatch
+         [:reaction/delete-clause reaction-path]))]]))
+
+(defn- clause-focus
+  [reaction-path
    {and-clauses :and
     or-clauses  :or
     not-clause  :not
@@ -543,17 +608,32 @@
     :as clause}]
   (cond
     and-clauses
-    [render-and
-     mode reaction-path and-clauses]
+    [and-clauses-focus reaction-path and-clauses]
     or-clauses
-    [render-or
-     mode reaction-path or-clauses]
+    [or-clauses-focus reaction-path or-clauses]
     (find clause :not)
-    [render-not
-     mode reaction-path not-clause]
+    [not-clause-focus reaction-path not-clause]
     op
-    [render-logic
-     mode reaction-path clause]
+    [logic-clause-focus reaction-path clause]
+    ;; if it is top-level & empty, do not render
+    sort-idx nil))
+
+(defn- clause-edit
+  [reaction-path
+   {and-clauses :and
+    or-clauses  :or
+    not-clause  :not
+    :keys [op sort-idx]
+    :as clause}]
+  (cond
+    and-clauses
+    [and-clauses-edit reaction-path and-clauses]
+    or-clauses
+    [or-clauses-edit reaction-path or-clauses]
+    (find clause :not)
+    [not-clause-edit reaction-path not-clause]
+    op
+    [logic-clause-edit reaction-path clause]
     ;; if it is top-level & empty, do not render
     sort-idx nil))
 
@@ -600,10 +680,7 @@
              [:div.condition
               [condition-name-focus condition-name]
               [:div.condition-body
-               [render-clause
-                :focus
-                condition-path
-                condition]]]))
+               [clause-focus condition-path condition]]]))
          conditions)))
 
 (defn- conditions-edit
@@ -620,10 +697,7 @@
               [render-condition-errors condition]
               [:div.condition-body
                (when condition ; condition can be nil during edit
-                 [render-clause
-                  :edit
-                  condition-path
-                  condition])]
+                 [clause-edit condition-path condition])]
               [delete-icon
                :to-delete-desc "Condition"
                :on-click
@@ -647,10 +721,7 @@
               [render-condition-errors condition]
               [:div.condition-body
                (when condition ; condition can be nil during edit
-                 [render-clause
-                  :new
-                  condition-path
-                  condition])]
+                 [clause-edit condition-path condition])]
               [delete-icon
                :to-delete-desc "Condition"
                :on-click
