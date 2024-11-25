@@ -718,44 +718,51 @@
                 [add-clause condition-path])]))
          conditions)))
 
-(defn- render-identity-paths
-  [_mode _identity-paths]
+(defn- identity-paths-focus
+  [identity-paths]
+  (into
+   [:ul.identity-paths {:class "view"}]
+   (map (fn [path]
+          [:li [path-focus path]])
+        identity-paths)))
+
+(defn- identity-paths-edit
+  [identity-paths]
+  [:<>
+   (into
+    [:ul.identity-paths]
+    (map-indexed
+     (fn [idx path]
+       (let [path-path [:ruleset :identityPaths idx]]
+         [:li
+          [path-edit
+           path-path
+           path
+           :remove-fn
+           #(dispatch [:reaction/delete-identity-path idx])
+           :open-next? true]]))
+     identity-paths))
+   [:span.add-identity-path
+    [:a {:href "#"
+         :on-click (fn [e]
+                     (fns/ps-event e)
+                     (dispatch [:reaction/add-identity-path]))}
+     @(subscribe [:lang/get :reactions.identity-paths.add])
+     [:img {:src @(subscribe [:resources/icon "add.svg"])}]]]])
+
+(defn- identity-paths-view
+  [_ _]
   (let [open? (r/atom false)]
-    (fn [_mode _identity-paths]
+    (fn [identity-paths identity-paths-view*]
       [:<>
        [:label {:for "reaction-identity-paths"}
         [:span {:on-click #(swap! open? not)
-                :class (str "pane-collapse" (when @open? " expanded"))}
+                :class    (str "pane-collapse" (when @open? " expanded"))}
          @(subscribe [:lang/get :reactions.identity-paths])
          [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.identity-path])}]]]
        [:div {:id "reaction-identity-paths"}
         (when @open?
-          (let [edit? (contains? #{:edit :new} _mode)]
-            [:<>
-             (into
-              [:ul.identity-paths {:class (when (not edit?) "view")}]
-              (map-indexed
-               (fn [idx path]
-                 (let [path-path [:ruleset :identityPaths idx]]
-                   [:li
-                    (if (#{:edit :new} _mode)
-                      [path-edit
-                       path-path
-                       path
-                       :remove-fn
-                       #(dispatch [:reaction/delete-identity-path idx])
-                       :open-next? true]
-                      [path-focus
-                       path])]))
-               _identity-paths))
-             (when edit?
-               [:span.add-identity-path
-                [:a {:href "#"
-                     :on-click (fn [e]
-                                 (fns/ps-event e)
-                                 (dispatch [:reaction/add-identity-path]))}
-                 @(subscribe [:lang/get :reactions.identity-paths.add])
-                 [:img {:src @(subscribe [:resources/icon "add.svg"])}]]])]))]])))
+          [identity-paths-view* identity-paths])]])))
 
 (defn- render-conditions-errors
   "Render out top-level conditions errors, currently there is only one, an empty
@@ -787,7 +794,7 @@
    [:div {:id "reaction-ruleset-templates"}
     [t/render-or-edit-template :focus template]]
    [:hr]
-   [render-identity-paths :focus identityPaths]])
+   [identity-paths-view identityPaths identity-paths-focus]])
 
 (defn- ruleset-edit
   [{:keys [identityPaths conditions template]}]
@@ -808,7 +815,7 @@
    [:div {:id "reaction-ruleset-templates"}
     [t/render-or-edit-template :edit template]]
    [:hr]
-   [render-identity-paths :edit identityPaths]])
+   [identity-paths-view identityPaths identity-paths-edit]])
 
 (defn- ruleset-new
   [{:keys [identityPaths conditions template]}]
@@ -829,7 +836,7 @@
    [:div {:id "reaction-ruleset-templates"}
     [t/render-or-edit-template :new template]]
    [:hr]
-   [render-identity-paths :new identityPaths]])
+   [identity-paths-view identityPaths identity-paths-edit]])
 
 (defn- render-error
   [?error]
