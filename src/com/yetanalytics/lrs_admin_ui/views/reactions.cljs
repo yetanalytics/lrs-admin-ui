@@ -97,9 +97,57 @@
     [reactions-table]
     [reactions-list-buttons]]])
 
-(defn- render-path
+(defn- path-focus
   [path]
   [:code (rfns/path->string path)])
+
+(defn- path-edit
+  [path-path path & {:keys [remove-fn
+                            validate?
+                            open-next?]
+                     :or   {validate?  true
+                            open-next? false}}]
+  [p/path-input path
+   :add-fn (fn []
+             (dispatch [:reaction/add-path-segment
+                        path-path]))
+   :del-fn (fn []
+             (dispatch [:reaction/del-path-segment
+                        path-path]))
+   :change-fn (fn [seg-val]
+                (dispatch [:reaction/change-path-segment
+                           path-path
+                           seg-val
+                           open-next?]))
+   :remove-fn remove-fn
+   :validate? validate?])
+
+(def ops {"eq"       "Equal"
+          "gt"       "Greater Than"
+          "lt"       "Less Than"
+          "gte"      "Greater Than or Equal"
+          "lte"      "Less Than or Equal"
+          "noteq"    "Not Equal"
+          "like"     "Like (String Matching)"
+          "contains" "Contains (Array Element)"})
+
+(defn- op-focus
+  [op]
+  [:code (get ops op)])
+
+(defn- op-edit
+  [op-path op]
+  (into [:select
+         {:value     op
+          :class     "round"
+          :on-change (fn [e]
+                       (dispatch
+                        [:reaction/set-op
+                         op-path
+                         (fns/ps-event-val e)]))}
+         (for [[k v] ops]
+           ^{:key (gstr/format "condition-op-%s-%s" op-path k)}
+           [:option {:value k} v])]))
 
 (defn- val-type
   [val]
@@ -112,54 +160,6 @@
     "boolean"
     (nil? val)
     "null"))
-
-(defn- render-or-edit-path
-  [mode path-path path & {:keys [remove-fn
-                                 validate?
-                                 open-next?]
-                          :or {validate? true
-                               open-next?  false}}]
-  (if (contains? #{:edit :new} mode)
-    [p/path-input path
-     :add-fn (fn []
-               (dispatch [:reaction/add-path-segment
-                          path-path]))
-     :del-fn (fn []
-               (dispatch [:reaction/del-path-segment
-                          path-path]))
-     :change-fn (fn [seg-val]
-                  (dispatch [:reaction/change-path-segment
-                             path-path
-                             seg-val
-                             open-next?]))
-     :remove-fn remove-fn
-     :validate? validate?]
-    [render-path path]))
-
-(def ops {"eq"       "Equal"
-          "gt"       "Greater Than"
-          "lt"       "Less Than"
-          "gte"      "Greater Than or Equal"
-          "lte"      "Less Than or Equal"
-          "noteq"    "Not Equal"
-          "like"     "Like (String Matching)"
-          "contains" "Contains (Array Element)"})
-
-(defn- render-or-edit-op
-  [mode op-path op]
-  (if (contains? #{:edit :new} mode)
-    (into [:select
-           {:value op
-            :class "round"
-            :on-change (fn [e]
-                         (dispatch
-                          [:reaction/set-op
-                           op-path
-                           (fns/ps-event-val e)]))}
-           (for [[k v] ops]
-             ^{:key (gstr/format "condition-op-%s-%s" op-path k)}
-             [:option {:value k} v])])
-    [:code (get ops op)]))
 
 (defn- select-val-type
   [val-path path val]
@@ -235,49 +235,56 @@
                       val-path
                       (fns/ps-event-val e)]))}])))
 
-(defn- render-or-edit-val
-  [mode val-path path val]
+(defn- val-focus
+  [val]
   [:div.val
-   (if (contains? #{:edit :new} mode)
-     [:<>
-      [select-val-type val-path path val]
-      [val-input val-path path val]]
-     [:<>
-      [:span (str (val-type val) ": ")]
-      [:code (if (nil? val) "null" (str val))]])])
+   [:span (str (val-type val) ": ")]
+   [:code (if (nil? val) "null" (str val))]])
 
-(defn- render-or-edit-ref-condition
-  [mode ref-condition-path condition]
-  (if (contains? #{:edit :new} mode)
-    (into [:select
-           {:value condition
-            :class "round"
-            :on-change
-            (fn [e]
-              (dispatch [:reaction/set-ref-condition
-                         ref-condition-path
-                         (fns/ps-event-val e)]))}]
-          (for [condition-name @(subscribe [:reaction/edit-condition-names])]
-            [:option
-             {:value condition-name}
-             condition-name]))
-    [:span condition]))
+(defn- val-edit
+  [val-path path val]
+  [:div.val
+   [select-val-type val-path path val]
+   [val-input val-path path val]])
 
-(defn- render-ref
-  [mode ref-path {:keys [condition path]}]
+(defn- ref-condition-focus
+  [condition]
+  [:span condition])
+
+(defn- ref-condition-edit
+  [ref-condition-path condition]
+  (into [:select
+         {:value condition
+          :class "round"
+          :on-change
+          (fn [e]
+            (dispatch [:reaction/set-ref-condition
+                       ref-condition-path
+                       (fns/ps-event-val e)]))}]
+        (for [condition-name @(subscribe [:reaction/edit-condition-names])]
+          [:option
+           {:value condition-name}
+           condition-name])))
+
+(defn- ref-focus
+  [{:keys [condition path]}]
   [:dl.ref
    [:dt "Condition"]
-   [:dd
-    [render-or-edit-ref-condition
-     mode
-     (conj ref-path :condition)
-     condition]]
+   [:dd [ref-condition-focus condition]]
    [:dt "Path"]
-   [:dd
-    [render-or-edit-path
-     mode
-     (conj ref-path :path)
-     path]]])
+   [:dd [path-focus path]]])
+
+(defn- ref-edit
+  [ref-path {:keys [condition path]}]
+  [:dl.ref
+   [:dt "Condition"]
+   [:dd [ref-condition-edit
+         (conj ref-path :condition)
+         condition]]
+   [:dt "Path"]
+   [:dd [path-edit
+         (conj ref-path :path)
+         path]]])
 
 (defn clause-type-tooltips [key]
   (get {:and   @(subscribe [:lang/get :tooltip.reactions.clause-type.and])
@@ -513,36 +520,21 @@
     [:div.clause.op
      {:class (clause-nest-class reaction-path)}
      [clause-label-focus :logic]
-     (cond-> [:dl.op-list
-              [:dt @(subscribe [:lang/get :reactions.details.conditions.statement-path])
-               [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.statement-path])}]]
-              [:dd
-               [render-or-edit-path
-                :focus
-                (conj reaction-path :path)
-                path
-                :open-next? true]]
-              [:dt @(subscribe [:lang/get :reactions.details.conditions.operation])
-               [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.operation])}]]
-              [:dd [render-or-edit-op
-                    :focus
-                    (conj reaction-path :op)
-                    op]]
-              [:dt
-               (if ref
-                 @(subscribe [:lang/get :reactions.details.conditions.reference])
-                 @(subscribe [:lang/get :reactions.details.conditions.value]))
-               [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.comparator])}]]]
-       (not ref) (conj [:dd [render-or-edit-val
-                             :focus
-                             (conj reaction-path :val)
-                             path
-                             val]])
-       ref (conj [:dd
-                  [render-ref
-                   :focus
-                   (conj reaction-path :ref)
-                   ref]]))]))
+     [:dl.op-list
+      [:dt @(subscribe [:lang/get :reactions.details.conditions.statement-path])
+       [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.statement-path])}]]
+      [:dd [path-focus path]]
+      [:dt @(subscribe [:lang/get :reactions.details.conditions.operation])
+       [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.operation])}]]
+      [:dd [op-focus op]]
+      [:dt
+       (if ref
+         @(subscribe [:lang/get :reactions.details.conditions.reference])
+         @(subscribe [:lang/get :reactions.details.conditions.value]))
+       [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.comparator])}]]
+      (if ref
+        [:dd [ref-focus ref]]
+        [:dd [val-focus val]])]]))
 
 (defn- logic-clause-edit
   [reaction-path clause]
@@ -551,47 +543,42 @@
      {:class (clause-nest-class reaction-path)}
      [clause-label-edit reaction-path :logic]
      [render-logic-errors reaction-path]
-     (cond-> [:dl.op-list
-              [:dt @(subscribe [:lang/get :reactions.details.conditions.statement-path])
-               [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.statement-path])}]]
-              [:dd
-               [render-or-edit-path
-                :edit
-                (conj reaction-path :path)
-                path
-                :open-next? true]]
-              [:dt @(subscribe [:lang/get :reactions.details.conditions.operation])
-               [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.operation])}]]
-              [:dd [render-or-edit-op
-                    :edit
-                    (conj reaction-path :op)
-                    op]]
-              [:dt
-               [:select
-                {:value (if ref "ref" "val")
-                 :class "round short"
-                 :on-change
-                 (fn [e]
-                   (dispatch [:reaction/set-val-or-ref
-                              reaction-path
-                              (fns/ps-event-val e)]))}
-                [:option
-                 {:value "ref"}
-                 @(subscribe [:lang/get :reactions.details.conditions.reference])]
-                [:option
-                 {:value "val"}
-                 @(subscribe [:lang/get :reactions.details.conditions.value])]]
-               [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.comparator])}]]]
-       (not ref) (conj [:dd [render-or-edit-val
-                             :edit
-                             (conj reaction-path :val)
-                             path
-                             val]])
-       ref (conj [:dd
-                  [render-ref
-                   :edit
-                   (conj reaction-path :ref)
-                   ref]]))
+     [:dl.op-list
+      [:dt @(subscribe [:lang/get :reactions.details.conditions.statement-path])
+       [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.statement-path])}]]
+      [:dd
+       [path-edit
+        (conj reaction-path :path)
+        path
+        :open-next? true]]
+      [:dt @(subscribe [:lang/get :reactions.details.conditions.operation])
+       [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.operation])}]]
+      [:dd [op-edit
+            (conj reaction-path :op)
+            op]]
+      [:dt
+       [:select
+        {:value     (if ref "ref" "val")
+         :class     "round short"
+         :on-change (fn [e]
+                      (dispatch [:reaction/set-val-or-ref
+                                 reaction-path
+                                 (fns/ps-event-val e)]))}
+        [:option
+         {:value "ref"}
+         @(subscribe [:lang/get :reactions.details.conditions.reference])]
+        [:option
+         {:value "val"}
+         @(subscribe [:lang/get :reactions.details.conditions.value])]]
+       [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.comparator])}]]
+      (if ref
+        [:dd [ref-edit
+              (conj reaction-path :ref)
+              ref]]
+        [:dd [val-edit
+              (conj reaction-path :val)
+              path
+              val]])]
      [delete-icon
       :to-delete-desc "Statement Criteria"
       :on-click
@@ -751,13 +738,15 @@
                (fn [idx path]
                  (let [path-path [:ruleset :identityPaths idx]]
                    [:li
-                    [render-or-edit-path
-                     _mode
-                     path-path
-                     path
-                     :remove-fn
-                     #(dispatch [:reaction/delete-identity-path idx])
-                     :open-next? true]]))
+                    (if (#{:edit :new} _mode)
+                      [path-edit
+                       path-path
+                       path
+                       :remove-fn
+                       #(dispatch [:reaction/delete-identity-path idx])
+                       :open-next? true]
+                      [path-focus
+                       path])]))
                _identity-paths))
              (when edit?
                [:span.add-identity-path
