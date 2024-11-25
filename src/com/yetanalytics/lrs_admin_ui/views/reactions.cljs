@@ -497,7 +497,7 @@
       (dispatch
        [:reaction/delete-clause reaction-path]))]])
 
-(defn- render-logic-errors
+(defn- logic-errors
   [clause-path]
   (when-let [problems @(subscribe [:reaction/edit-spec-errors-in
                                    clause-path])]
@@ -542,7 +542,7 @@
     [:div.clause.op
      {:class (clause-nest-class reaction-path)}
      [clause-label-edit reaction-path :logic]
-     [render-logic-errors reaction-path]
+     [logic-errors reaction-path]
      [:dl.op-list
       [:dt @(subscribe [:lang/get :reactions.details.conditions.statement-path])
        [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.statement-path])}]]
@@ -624,7 +624,7 @@
     ;; if it is top-level & empty, do not render
     sort-idx nil))
 
-(defn- render-condition-name-errors
+(defn- condition-name-errors
   [condition-name]
   (when (not (rse/keywordizable-string? condition-name))
     [:ul.reaction-error-list
@@ -649,7 +649,7 @@
                              (fns/ps-event-val e)]))}]
    [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.condition-title])}]])
 
-(defn- render-condition-errors
+(defn- condition-errors
   "Render individual condition errors."
   [condition]
   (when (empty? (select-keys condition [:and :or :not :path]))
@@ -670,7 +670,7 @@
                [clause-focus condition-path condition]]]))
          conditions)))
 
-(defn- render-conditions-errors
+(defn- conditions-errors
   "Render out top-level conditions errors, currently there is only one, an empty
   conditions map."
   [conditions]
@@ -692,9 +692,9 @@
                  condition      condition*
                  condition-path [:ruleset :conditions idx]]
              [:div.condition
-              [render-condition-name-errors condition-name]
+              [condition-name-errors condition-name]
               [condition-name-edit condition-path condition-name]
-              [render-condition-errors condition]
+              [condition-errors condition]
               [:div.condition-body
                (when condition ; condition can be nil during edit
                  [clause-edit condition-path condition])]
@@ -710,7 +710,7 @@
 (defn- conditions-edit
   [conditions]
   [:<>
-   [render-conditions-errors conditions]
+   [conditions-errors conditions]
    [conditions-edit* conditions]
    [add-condition :to-add-desc ""]])
 
@@ -804,7 +804,7 @@
    identity-paths-edit
    ruleset])
 
-(defn- render-error
+(defn- reaction-error
   [?error]
   (if ?error
     [:dl.reaction-error
@@ -937,7 +937,7 @@
    [:dd (or (iso8601->local-display modified) "[New]")]
   
    [:dt @(subscribe [:lang/get :reactions.details.error])]
-   [:dd [render-error error]]])
+   [:dd [reaction-error error]]])
 
 (defn- reaction-info-title-dt []
   [:dt @(subscribe [:lang/get :reactions.details.title])
