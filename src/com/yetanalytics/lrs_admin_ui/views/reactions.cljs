@@ -14,6 +14,10 @@
             [goog.string :as gstr]
             [goog.string.format]))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Reaction List
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defn- short-error
   [{:keys [type message]}]
   (str (case type
@@ -97,6 +101,40 @@
     [reactions-table]
     [reactions-list-buttons]]])
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Reaction Ruleset Buttons
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn- delete-icon
+  [& {:keys [on-click to-delete-desc]
+      :or   {on-click       (fn [] (println 'delete))
+             to-delete-desc ""}}]
+  [:div.delete-icon
+   [:a {:href "#"
+        :on-click (fn [e]
+                    (fns/ps-event e)
+                    (on-click))}
+    (gstr/format
+     @(subscribe [:lang/get :reactions.details.conditions.delete-button])
+     to-delete-desc)
+    [:img {:src @(subscribe [:resources/icon "icon-delete-brand.svg"])}]]])
+
+(defn- add-condition
+  []
+  [:div.add-icon
+   [:a {:href "#"
+        :on-click (fn [e]
+                    (fns/ps-event e)
+                    (dispatch [:reaction/add-condition]))}
+    @(subscribe [:lang/get :reactions.details.conditions.add-condition])
+    [:img {:src @(subscribe [:resources/icon "add.svg"])}]]])
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Reaction Ruleset Clause Components
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Paths
+
 (defn- path-focus
   [path]
   [:code (rfns/path->string path)])
@@ -121,6 +159,8 @@
                            open-next?]))
    :remove-fn remove-fn
    :validate? validate?])
+
+;; Operations
 
 (def ops {"eq"       "Equal"
           "gt"       "Greater Than"
@@ -148,6 +188,8 @@
          (for [[k v] ops]
            ^{:key (gstr/format "condition-op-%s-%s" op-path k)}
            [:option {:value k} v])]))
+
+;; Values
 
 (defn- val-type
   [val]
@@ -247,6 +289,8 @@
    [select-val-type val-path path val]
    [val-input val-path path val]])
 
+;; Ref Conditions
+
 (defn- ref-condition-focus
   [condition]
   [:span condition])
@@ -265,6 +309,8 @@
           [:option
            {:value condition-name}
            condition-name])))
+
+;; Refs
 
 (defn- ref-focus
   [{:keys [condition path]}]
@@ -286,12 +332,18 @@
          (conj ref-path :path)
          path]]])
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Reaction Ruleset Clauses
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defn clause-type-tooltips [key]
   (get {:and   @(subscribe [:lang/get :tooltip.reactions.clause-type.and])
         :or    @(subscribe [:lang/get :tooltip.reactions.clause-type.or])
         :not   @(subscribe [:lang/get :tooltip.reactions.clause-type.not])
         :logic @(subscribe [:lang/get :tooltip.reactions.clause-type.logic])}
        key))
+
+;; Label
 
 (defn- clause-label-focus
   [type-key]
@@ -325,29 +377,7 @@
      "Boolean NOT"]]
    [tooltip-info {:value (clause-type-tooltips type-key)}]])
 
-(defn- delete-icon
-  [& {:keys [on-click to-delete-desc]
-      :or   {on-click       (fn [] (println 'delete))
-             to-delete-desc ""}}]
-  [:div.delete-icon
-   [:a {:href "#"
-        :on-click (fn [e]
-                    (fns/ps-event e)
-                    (on-click))}
-    (gstr/format 
-     @(subscribe [:lang/get :reactions.details.conditions.delete-button]) 
-     to-delete-desc)
-    [:img {:src @(subscribe [:resources/icon "icon-delete-brand.svg"])}]]])
-
-(defn- add-condition
-  []
-  [:div.add-icon
-   [:a {:href "#"
-        :on-click (fn [e]
-                    (fns/ps-event e)
-                    (dispatch [:reaction/add-condition]))}
-    @(subscribe [:lang/get :reactions.details.conditions.add-condition])
-    [:img {:src @(subscribe [:resources/icon "add.svg"])}]]])
+;; Add Clause
 
 (defn- add-clause
   [parent-path]
@@ -376,6 +406,8 @@
                                parent-path
                                v]))}]])
 
+;; Start Clauses
+
 (declare clause-focus)
 (declare clause-edit)
 
@@ -383,6 +415,8 @@
   [reaction-path]
   (let [ops (filter keyword? (subvec reaction-path 3))]
     (if (even? (count ops)) "even" "odd")))
+
+;; AND Clause
 
 (defn- and-clauses-focus
   [reaction-path and-clauses]
@@ -424,6 +458,8 @@
       (dispatch
        [:reaction/delete-clause reaction-path]))]])
 
+;; OR Clause
+
 (defn- or-clauses-focus
   [reaction-path or-clauses]
   [:div.clause.boolean.or
@@ -464,6 +500,8 @@
       (dispatch
        [:reaction/delete-clause reaction-path]))]])
 
+;; NOT Clause
+
 (defn- not-clause-focus
   [reaction-path not-clause]
   [:div.clause.boolean.not
@@ -496,6 +534,8 @@
     (fn []
       (dispatch
        [:reaction/delete-clause reaction-path]))]])
+
+;; Statement Criteria Clause
 
 (defn- logic-errors
   [clause-path]
@@ -586,6 +626,8 @@
         (dispatch
          [:reaction/delete-clause reaction-path]))]]))
 
+;; Clauses
+
 (defn- clause-focus
   [reaction-path
    {and-clauses :and
@@ -624,6 +666,10 @@
     ;; if it is top-level & empty, do not render
     sort-idx nil))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Reaction Ruleset Conditions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defn- condition-name-errors
   [condition-name]
   (when (not (rse/keywordizable-string? condition-name))
@@ -656,6 +702,19 @@
     [:ul.reaction-error-list
      [:li @(subscribe [:lang/get :reactions.errors.one-clause])]]))
 
+(defn- conditions-errors
+  "Render out top-level conditions errors, currently there is only one, an empty
+  conditions map."
+  [conditions]
+  (let [empty-err? (empty? conditions)
+        dupe-err?  (not (rse/distinct-name-vector? conditions))]
+    (when (or empty-err? dupe-err?)
+      [:ul.reaction-error-list
+       (when empty-err?
+         [:li @(subscribe [:lang/get :reactions.errors.one-condition])])
+       (when dupe-err?
+         [:li @(subscribe [:lang/get :reactions.errors.dupe-condition-names])])])))
+
 (defn- conditions-focus
   [conditions]
   (into [:div.conditions]
@@ -669,19 +728,6 @@
               [:div.condition-body
                [clause-focus condition-path condition]]]))
          conditions)))
-
-(defn- conditions-errors
-  "Render out top-level conditions errors, currently there is only one, an empty
-  conditions map."
-  [conditions]
-  (let [empty-err? (empty? conditions)
-        dupe-err?  (not (rse/distinct-name-vector? conditions))]
-    (when (or empty-err? dupe-err?)
-      [:ul.reaction-error-list
-       (when empty-err?
-         [:li @(subscribe [:lang/get :reactions.errors.one-condition])])
-       (when dupe-err?
-         [:li @(subscribe [:lang/get :reactions.errors.dupe-condition-names])])])))
 
 (defn- conditions-edit*
   [conditions]
@@ -713,6 +759,10 @@
    [conditions-errors conditions]
    [conditions-edit* conditions]
    [add-condition :to-add-desc ""]])
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Reaction Identity Paths
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn- identity-paths-focus*
   [identity-paths]
@@ -767,6 +817,10 @@
 (defn- identity-paths-edit
   [identity-paths]
   [identity-paths-view identity-paths-edit* identity-paths])
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Reaction Ruleset
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn- reaction-ruleset-view
   [conditions-view template-view identity-paths-view
@@ -898,7 +952,7 @@
      [create-button])])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Reaction View
+;; Reaction Info Panel
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn- edit-title
@@ -981,6 +1035,10 @@
     [:dd [edit-title title]]
     [reaction-info-status-dt]
     [:dd [edit-status active]]]])
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Reaction View
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn- reaction-edit-invalid
   []
