@@ -785,7 +785,7 @@
        (when dupe-err?
          [:li @(subscribe [:lang/get :reactions.errors.dupe-condition-names])])])))
 
-(defn- ruleset-focus
+(defn- reaction-ruleset-focus
   [{:keys [identityPaths conditions template]}]
   [:div.reaction-ruleset {:id "ruleset-view"}
    ;; TODO: Properly redo divs to remove extraneous nesting
@@ -804,7 +804,7 @@
    [:hr]
    [identity-paths-focus identityPaths]])
 
-(defn- ruleset-edit
+(defn- reaction-ruleset-edit
   [{:keys [identityPaths conditions]}]
   [:div.reaction-ruleset {:id "ruleset-view"}
    ;; TODO: Properly redo divs to remove extraneous nesting
@@ -825,7 +825,7 @@
    [:hr]
    [identity-paths-edit identityPaths]])
 
-(defn- ruleset-new
+(defn- reaction-ruleset-new
   [{:keys [identityPaths conditions]}]
   [:div.reaction-ruleset {:id "ruleset-view"}
    ;; TODO: Properly redo divs to remove extraneous nesting
@@ -916,14 +916,14 @@
 
                             (dispatch [:reaction/upload-edit data]))))}]])
 
-(defn- reaction-focus-actions
+(defn- reaction-actions-focus
   [id]
   [:div {:class "api-keys-table-actions"}
    [back-button]
    [edit-button id]
    [download-button id]])
 
-(defn- reaction-edit-actions
+(defn- reaction-actions-edit
   [error?]
   [:div {:class "api-keys-table-actions"}
    [back-button]
@@ -999,10 +999,8 @@
    [:dl.reaction-info-panel.left
     [reaction-info-title-dt]
     [:dd title]
-    
     [reaction-info-id-dt]
     [:dd id]
-    
     [reaction-info-status-dt]
     [:dd (if active "Active" "Inactive")]]])
 
@@ -1012,10 +1010,8 @@
    [:dl.reaction-info-panel.left
     [reaction-info-title-dt]
     [:dd [edit-title title]]
-    
     [reaction-info-id-dt]
     [:dd id]
-    
     [reaction-info-status-dt]
     [:dd [edit-status active]]]])
 
@@ -1025,7 +1021,6 @@
    [:dl.reaction-info-panel.left
     [reaction-info-title-dt]
     [:dd [edit-title title]]
-    
     [reaction-info-status-dt]
     [:dd [edit-status active]]]])
 
@@ -1041,10 +1036,10 @@
      [:h2 {:class "content-title"}
       @(subscribe [:lang/get :reactions.focus.title])]
      [:div {:class "tenant-wrapper"}
-      [reaction-focus-actions id]
+      [reaction-actions-focus id]
       [reaction-info-panel-focus reaction]  
-      [ruleset-focus ruleset]
-      [reaction-focus-actions id]]]))
+      [reaction-ruleset-focus ruleset]
+      [reaction-actions-focus id]]]))
 
 (defn- reaction-edit []
   (let [{:keys [ruleset]
@@ -1056,11 +1051,11 @@
      [:h2 {:class "content-title"}
       @(subscribe [:lang/get :reactions.edit.title])]
      [:div {:class "tenant-wrapper"}
-      [reaction-edit-actions error?]
+      [reaction-actions-edit error?]
       (when error? [reaction-edit-invalid])
       [reaction-info-panel-edit reaction]
-      [ruleset-edit ruleset]
-      [reaction-edit-actions error?]]]))
+      [reaction-ruleset-edit ruleset]
+      [reaction-actions-edit error?]]]))
 
 (defn- reaction-new []
   (let [{:keys [ruleset]
@@ -1075,7 +1070,7 @@
       [reaction-new-actions error?]
       (when error? [reaction-edit-invalid])
       [reaction-info-panel-new reaction]
-      [ruleset-new ruleset]
+      [reaction-ruleset-new ruleset]
       [reaction-new-actions error?]]]))
 
 (defn reactions
