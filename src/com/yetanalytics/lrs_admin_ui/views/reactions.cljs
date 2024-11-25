@@ -586,41 +586,78 @@
     [:ul.reaction-error-list
      [:li @(subscribe [:lang/get :reactions.errors.one-clause])]]))
 
-(defn- render-conditions
-  [mode conditions]
+(defn- conditions-focus
+  [conditions]
   (into [:div.conditions]
         (map-indexed
          (fn [idx condition*]
-           (let [condition-name (if (contains? #{:edit :new} mode)
-                                  (get condition* :name)
-                                  (first condition*))
-                 condition      (if (contains? #{:edit :new} mode)
-                                  condition*
-                                  (second condition*))
+           (let [condition-name (first condition*)
+                 condition      (second condition*)
                  condition-path [:ruleset :conditions idx]]
              [:div.condition
-              (when (contains? #{:edit :new} mode)
-                [render-condition-name-errors condition-name])
               [render-or-edit-condition-name
-               mode condition-path condition-name]
-              (when (contains? #{:edit :new} mode)
-                [render-condition-errors condition])
+               :focus condition-path condition-name]
+              [:div.condition-body
+               [render-clause
+                :focus
+                condition-path
+                condition]]]))
+         conditions)))
+
+(defn- conditions-edit
+  [conditions]
+  (into [:div.conditions]
+        (map-indexed
+         (fn [idx condition*]
+           (let [condition-name (get condition* :name)
+                 condition      condition*
+                 condition-path [:ruleset :conditions idx]]
+             [:div.condition
+              [render-condition-name-errors condition-name]
+              [render-or-edit-condition-name
+               :edit condition-path condition-name]
+              [render-condition-errors condition]
               [:div.condition-body
                (when condition ; condition can be nil during edit
                  [render-clause
-                  mode
+                  :edit
                   condition-path
                   condition])]
-              (when (contains? #{:edit :new} mode)
-                [delete-icon
-                 :to-delete-desc "Condition"
-                 :on-click
-                 (fn []
-                   (dispatch [:reaction/delete-condition idx]))])
-              (when (and (contains? #{:edit :new} mode)
-                         (= condition {:name condition-name})) ; when empty
-                [add-clause
-                 condition-path])]))
+              [delete-icon
+               :to-delete-desc "Condition"
+               :on-click
+               (fn []
+                 (dispatch [:reaction/delete-condition idx]))]
+              (when (= condition {:name condition-name}) ; when empty
+                [add-clause condition-path])]))
+         conditions)))
+
+(defn- conditions-new
+  [conditions]
+  (into [:div.conditions]
+        (map-indexed
+         (fn [idx condition*]
+           (let [condition-name (get condition* :name)
+                 condition      condition*
+                 condition-path [:ruleset :conditions idx]]
+             [:div.condition
+              [render-condition-name-errors condition-name]
+              [render-or-edit-condition-name
+               :new condition-path condition-name]
+              [render-condition-errors condition]
+              [:div.condition-body
+               (when condition ; condition can be nil during edit
+                 [render-clause
+                  :new
+                  condition-path
+                  condition])]
+              [delete-icon
+               :to-delete-desc "Condition"
+               :on-click
+               (fn []
+                 (dispatch [:reaction/delete-condition idx]))]
+              (when (= condition {:name condition-name}) ; when empty
+                [add-clause condition-path])]))
          conditions)))
 
 (defn- render-identity-paths
@@ -682,7 +719,7 @@
     @(subscribe [:lang/get :reactions.details.ruleset.conditions])
     [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.ruleset.conditions])}]]
    [:div {:id "reaction-ruleset-conditions"}
-    [render-conditions :focus conditions]]
+    [conditions-focus conditions]]
    [:hr]
    [:label {:for "reaction-ruleset-templates"}
     @(subscribe [:lang/get :reactions.template.title])
@@ -702,7 +739,7 @@
     [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.ruleset.conditions])}]]
    [:div {:id "reaction-ruleset-conditions"}
     [render-conditions-errors conditions]
-    [render-conditions :edit conditions]
+    [conditions-edit conditions]
     [add-condition :to-add-desc ""]]
    [:hr]
    [:label {:for "reaction-ruleset-templates"}
@@ -723,7 +760,7 @@
     [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.ruleset.conditions])}]]
    [:div {:id "reaction-ruleset-conditions"}
     [render-conditions-errors conditions]
-    [render-conditions :new conditions]
+    [conditions-new conditions]
     [add-condition :to-add-desc ""]]
    [:hr]
    [:label {:for "reaction-ruleset-templates"}
