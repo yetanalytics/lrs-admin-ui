@@ -673,38 +673,66 @@
        (when dupe-err?
          [:li @(subscribe [:lang/get :reactions.errors.dupe-condition-names])])])))
 
-(defn- ruleset-view
-  [mode
-   {:keys [identityPaths
-           conditions
-           template]}]
-  ;; Cannot use <dl> elements here since that would cause DOM nesting errors
+(defn- ruleset-focus
+  [{:keys [identityPaths conditions template]}]
   [:div.reaction-ruleset {:id "ruleset-view"}
    ;; TODO: Properly redo divs to remove extraneous nesting
    [:hr]
-
    [:label {:for "reaction-ruleset-conditions"}
     @(subscribe [:lang/get :reactions.details.ruleset.conditions])
     [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.ruleset.conditions])}]]
    [:div {:id "reaction-ruleset-conditions"}
-    (when (contains? #{:edit :new} mode)
-      [render-conditions-errors conditions])
-    [render-conditions mode conditions]
-    (when (contains? #{:edit :new} mode)
-      [add-condition :to-add-desc ""])]
-   
+    [render-conditions :focus conditions]]
    [:hr]
-
    [:label {:for "reaction-ruleset-templates"}
     @(subscribe [:lang/get :reactions.template.title])
     [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.template])}]]
-   [:div {:id "reaction-ruleset-conditions"}
-    [t/render-or-edit-template mode template]]
-   
+   [:div {:id "reaction-ruleset-templates"}
+    [t/render-or-edit-template :focus template]]
    [:hr]
+   [render-identity-paths :focus identityPaths]])
 
-   [render-identity-paths
-    mode identityPaths]])
+(defn- ruleset-edit
+  [{:keys [identityPaths conditions template]}]
+  [:div.reaction-ruleset {:id "ruleset-view"}
+   ;; TODO: Properly redo divs to remove extraneous nesting
+   [:hr]
+   [:label {:for "reaction-ruleset-conditions"}
+    @(subscribe [:lang/get :reactions.details.ruleset.conditions])
+    [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.ruleset.conditions])}]]
+   [:div {:id "reaction-ruleset-conditions"}
+    [render-conditions-errors conditions]
+    [render-conditions :edit conditions]
+    [add-condition :to-add-desc ""]]
+   [:hr]
+   [:label {:for "reaction-ruleset-templates"}
+    @(subscribe [:lang/get :reactions.template.title])
+    [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.template])}]]
+   [:div {:id "reaction-ruleset-templates"}
+    [t/render-or-edit-template :edit template]]
+   [:hr]
+   [render-identity-paths :edit identityPaths]])
+
+(defn- ruleset-new
+  [{:keys [identityPaths conditions template]}]
+  [:div.reaction-ruleset {:id "ruleset-view"}
+   ;; TODO: Properly redo divs to remove extraneous nesting
+   [:hr]
+   [:label {:for "reaction-ruleset-conditions"}
+    @(subscribe [:lang/get :reactions.details.ruleset.conditions])
+    [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.ruleset.conditions])}]]
+   [:div {:id "reaction-ruleset-conditions"}
+    [render-conditions-errors conditions]
+    [render-conditions :new conditions]
+    [add-condition :to-add-desc ""]]
+   [:hr]
+   [:label {:for "reaction-ruleset-templates"}
+    @(subscribe [:lang/get :reactions.template.title])
+    [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.template])}]]
+   [:div {:id "reaction-ruleset-templates"}
+    [t/render-or-edit-template :new template]]
+   [:hr]
+   [render-identity-paths :new identityPaths]])
 
 (defn- render-error
   [?error]
@@ -903,7 +931,7 @@
      [:div {:class "tenant-wrapper"}
       [reaction-focus-actions id]
       [reaction-info-panel-focus reaction]  
-      [ruleset-view :focus ruleset]
+      [ruleset-focus ruleset]
       [reaction-focus-actions id]]]))
 
 (defn- reaction-edit []
@@ -919,7 +947,7 @@
       [reaction-edit-actions error?]
       (when error? [reaction-edit-invalid])
       [reaction-info-panel-edit reaction]
-      [ruleset-view :edit ruleset]
+      [ruleset-edit ruleset]
       [reaction-edit-actions error?]]]))
 
 (defn- reaction-new []
@@ -935,7 +963,7 @@
       [reaction-new-actions error?]
       (when error? [reaction-edit-invalid])
       [reaction-info-panel-new reaction]
-      [ruleset-view :new ruleset]
+      [ruleset-new ruleset]
       [reaction-new-actions error?]]]))
 
 (defn reactions
