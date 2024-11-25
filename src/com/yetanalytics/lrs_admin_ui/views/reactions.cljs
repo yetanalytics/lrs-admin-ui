@@ -720,58 +720,80 @@
      [:dd (:message ?error)]]
     "None"))
 
-(defn- reaction-actions
-  [mode ?id error?]
-  [:<>
-   [:div {:class "api-keys-table-actions"}
-    [:input {:type "button",
-             :class "btn-brand-bold",
-             :on-click #(dispatch [:reaction/back-to-list])
-             :value @(subscribe [:lang/get :reactions.buttons.back])}] 
-    (cond
-      (= :focus mode)
-      [:<>
-       [:input {:type "button",
-                :class "btn-brand-bold",
-                :on-click #(dispatch [:reaction/edit ?id])
-                :value @(subscribe [:lang/get :reactions.buttons.edit])}]
-       [:input {:type "button"
-                :class "btn-brand-bold"
-                :on-click #(dispatch [:reaction/download ?id])
-                :value @(subscribe [:lang/get :reactions.buttons.download])}]]
-      (and (= :edit mode)
-           @(subscribe [:reaction/edit-dirty?]))
-      [:<>
-       (when (not error?)
-         [:input {:type "button",
-                  :class "btn-brand-bold",
-                  :on-click #(dispatch [:reaction/save-edit])
-                  :value @(subscribe [:lang/get :reactions.buttons.save])}])
-       [:input {:type "button",
-                :class "btn-brand-bold",
-                :on-click #(dispatch [:reaction/revert-edit])
-                :value @(subscribe [:lang/get :reactions.buttons.revert])}]]
-      (= :new mode)
-      [:<>
-       [:span
-        [:label {:for "reaction-upload"
-                 :class "file-input-button"}
-         @(subscribe [:lang/get :reactions.buttons.upload])]
-        [:input {:id "reaction-upload"
-                 :type "file"
-                 :class "hidden-file-input"
-                 :accept ".json"
-                 :on-change (fn [ev]
-                              (upload/process-upload-event
-                               ev
-                               (fn [data]
-                                 
-                                 (dispatch [:reaction/upload-edit data]))))}]]
-       (when (not error?)
-         [:input {:type "button",
-                  :class "btn-brand-bold",
-                  :on-click #(dispatch [:reaction/save-edit])
-                  :value @(subscribe [:lang/get :reactions.buttons.create])}])])]])
+(defn- back-button []
+  [:input {:type     "button",
+           :class    "btn-brand-bold",
+           :on-click #(dispatch [:reaction/back-to-list])
+           :value    @(subscribe [:lang/get :reactions.buttons.back])}])
+
+(defn- edit-button [id]
+  [:input {:type     "button",
+           :class    "btn-brand-bold",
+           :on-click #(dispatch [:reaction/edit id])
+           :value    @(subscribe [:lang/get :reactions.buttons.edit])}])
+
+(defn- download-button [id]
+  [:input {:type     "button"
+           :class    "btn-brand-bold"
+           :on-click #(dispatch [:reaction/download id])
+           :value    @(subscribe [:lang/get :reactions.buttons.download])}])
+
+(defn- create-button []
+  [:input {:type     "button"
+           :class    "btn-brand-bold"
+           :on-click #(dispatch [:reaction/save-edit])
+           :value    @(subscribe [:lang/get :reactions.buttons.create])}])
+
+(defn- save-button []
+  [:input {:type     "button"
+           :class    "btn-brand-bold"
+           :on-click #(dispatch [:reaction/save-edit])
+           :value    @(subscribe [:lang/get :reactions.buttons.save])}])
+
+(defn- revert-button []
+  [:input {:type     "button"
+           :class    "btn-brand-bold"
+           :on-click #(dispatch [:reaction/revert-edit])
+           :value    @(subscribe [:lang/get :reactions.buttons.revert])}])
+
+(defn- upload-button []
+  [:span
+   [:label {:for   "reaction-upload"
+            :class "file-input-button"}
+    @(subscribe [:lang/get :reactions.buttons.upload])]
+   [:input {:id        "reaction-upload"
+            :type      "file"
+            :class     "hidden-file-input"
+            :accept    ".json"
+            :on-change (fn [ev]
+                         (upload/process-upload-event
+                          ev
+                          (fn [data]
+
+                            (dispatch [:reaction/upload-edit data]))))}]])
+
+(defn- reaction-focus-actions
+  [id]
+  [:div {:class "api-keys-table-actions"}
+   [back-button]
+   [edit-button id]
+   [download-button id]])
+
+(defn- reaction-edit-actions
+  [error?]
+  [:div {:class "api-keys-table-actions"}
+   [back-button]
+   (when (not error?)
+     [save-button])
+   [revert-button]])
+
+(defn- reaction-new-actions
+  [error?]
+  [:div {:class "api-keys-table-actions"}
+   [back-button]
+   [upload-button]
+   (when (not error?)
+     [create-button])])
 
 (defn- edit-title
   [title]
@@ -871,13 +893,13 @@
      [:h2 {:class "content-title"}
       @(subscribe [:lang/get :reactions.focus.title])]
      [:div {:class "tenant-wrapper"}
-      [reaction-actions :focus id nil]
+      [reaction-focus-actions id]
       [reaction-info-panel-focus reaction]  
       [ruleset-view :focus ruleset]
-      [reaction-actions :focus id nil]]]))
+      [reaction-focus-actions id]]]))
 
 (defn- reaction-edit []
-  (let [{:keys [id ruleset]
+  (let [{:keys [ruleset]
          :as reaction} @(subscribe [:reaction/editing])
         error?  (or
                  (some? @(subscribe [:reaction/edit-spec-errors]))
@@ -886,14 +908,14 @@
      [:h2 {:class "content-title"}
       @(subscribe [:lang/get :reactions.edit.title])]
      [:div {:class "tenant-wrapper"}
-      [reaction-actions :edit id error?]
+      [reaction-edit-actions error?]
       (when error? [reaction-edit-invalid])
       [reaction-info-panel-edit reaction]
       [ruleset-view :edit ruleset]
-      [reaction-actions :edit id error?]]]))
+      [reaction-edit-actions error?]]]))
 
 (defn- reaction-new []
-  (let [{:keys [id ruleset]
+  (let [{:keys [ruleset]
          :as reaction} @(subscribe [:reaction/editing])
         error?  (or
                  (some? @(subscribe [:reaction/edit-spec-errors]))
@@ -902,11 +924,11 @@
      [:h2 {:class "content-title"}
       @(subscribe [:lang/get :reactions.new.title])]
      [:div {:class "tenant-wrapper"}
-      [reaction-actions :new id error?]
+      [reaction-new-actions error?]
       (when error? [reaction-edit-invalid])
       [reaction-info-panel-new reaction]
       [ruleset-view :new ruleset]
-      [reaction-actions :new id error?]]]))
+      [reaction-new-actions error?]]]))
 
 (defn reactions
   []
