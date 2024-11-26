@@ -92,7 +92,7 @@
    (.stringify js/JSON (clj->js template) nil 2)])
 
 (defn template-edit
-  []
+  [_template]
   [:<>
    [dynamic-variables]
    [:h5 @(subscribe [:lang/get :reactions.template.template-json])

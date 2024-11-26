@@ -1170,11 +1170,9 @@
 (re-frame/reg-event-fx
  :reaction/save-edit-success
  global-interceptors
- (fn [{:keys [db]} [_ {:keys [reactionId]}]]
-   {:db (-> db
-            cancel-edit
-            (assoc ::db/reaction-focus reactionId))
-    :fx [[:dispatch [:reaction/load-reactions]]]}))
+ (fn [_ [_ {:keys [reactionId]}]]
+   {:fx [[:dispatch [:reaction/load-reactions]]
+         [:dispatch [::re-route/navigate :reactions/focus {:id reactionId}]]]}))
 
 ;; TODO: :reaction/save-edit-fail
 

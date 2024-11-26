@@ -1,6 +1,7 @@
 (ns com.yetanalytics.lrs-admin-ui.views.reactions
   (:require [reagent.core :as r]
             [re-frame.core :refer [dispatch subscribe]]
+            [com.yetanalytics.re-route :as re-route]
             [com.yetanalytics.lrs-admin-ui.functions :as fns]
             [com.yetanalytics.lrs-admin-ui.functions.reaction :as rfns]
             [com.yetanalytics.lrs-admin-ui.functions.upload :as upload]
@@ -47,8 +48,10 @@
                        active
                        error
                        ruleset]} @(subscribe [:reaction/list])]
-           [:tr {:class "reaction-row"
-                 :on-click #(dispatch [:reaction/set-focus id])}
+           [:tr {:class    "reaction-row"
+                 :on-click (fn [_]
+                             (dispatch
+                              [::re-route/navigate :reactions/focus {:id id}]))}
             [:td {:data-label @(subscribe [:lang/get :reactions.col.title])} title]
             [:td {:data-label @(subscribe [:lang/get :reactions.col.conds])} (count (:conditions ruleset))]
             [:td {:data-label @(subscribe [:lang/get :reactions.col.created])} (iso8601->local-display created)]
@@ -58,14 +61,14 @@
             [:td {:data-label @(subscribe [:lang/get :reactions.col.action])}
              [:ul {:class "action-icon-list"}
               [:li
-               [:a {:href "#!"
-                    :class "icon-edit"
+               [:a {:href     ""
+                    :class    "icon-edit"
                     :on-click (fn [e]
                                 (fns/ps-event e)
-                                (dispatch [:reaction/edit id]))}
+                                (dispatch [::re-route/navigate :reactions/edit {:id id}]))}
                 @(subscribe [:lang/get :reactions.action.edit])]]
               [:li
-               [:a {:href "#!"
+               [:a {:href ""
                     :class "icon-delete"
                     :on-click (fn [e]
                                 (fns/ps-event e)
@@ -75,18 +78,18 @@
 (defn- reactions-list-buttons
   []
   [:div {:class "api-keys-table-actions"}
-   [:input {:type "button",
-            :class "btn-brand-bold",
-            :on-click #(dispatch [:reaction/new])
-            :value @(subscribe [:lang/get :reactions.add])}]
+   [:input {:type     "button"
+            :class    "btn-brand-bold"
+            :on-click #(dispatch [::re-route/navigate :reactions/new])
+            :value    @(subscribe [:lang/get :reactions.add])}]
    ;; TODO: Currently the "Download All" button is unimplemented because
    ;; there is no corresponding "Upload All" button (and implementing that
    ;; would be tricky because there is no multi-reaction insert). However,
    ;; we may want to implement this in the future.
-   #_[:input {:type "button"
-              :class "btn-brand-bold"
+   #_[:input {:type     "button"
+              :class    "btn-brand-bold"
               :on-click #(dispatch [:reaction/download-all])
-              :value @(subscribe [:lang/get :reactions.download-all])}]])
+              :value    @(subscribe [:lang/get :reactions.download-all])}]])
 
 (defn reactions-list
   []
@@ -879,13 +882,14 @@
 (defn- back-button []
   [:input {:type     "button",
            :class    "btn-brand-bold",
-           :on-click #(dispatch [:reaction/back-to-list])
+           :on-click (fn [_]
+                       (dispatch [::re-route/navigate :reactions]))
            :value    @(subscribe [:lang/get :reactions.buttons.back])}])
 
 (defn- edit-button [id]
   [:input {:type     "button",
            :class    "btn-brand-bold",
-           :on-click #(dispatch [:reaction/edit id])
+           :on-click #(dispatch [::re-route/navigate :reactions/edit {:id id}])
            :value    @(subscribe [:lang/get :reactions.buttons.edit])}])
 
 (defn- download-button [id]
@@ -925,7 +929,6 @@
                          (upload/process-upload-event
                           ev
                           (fn [data]
-
                             (dispatch [:reaction/upload-edit data]))))}]])
 
 (defn- reaction-actions-focus
