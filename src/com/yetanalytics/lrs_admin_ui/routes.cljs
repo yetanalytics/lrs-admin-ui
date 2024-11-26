@@ -78,7 +78,9 @@
        :controllers [{:identity (fn [params]
                                   (get-in params [:path-params :id]))
                       :start    (fn [id]
-                                  (dispatch [:reaction/set-focus id]))}]}]
+                                  (dispatch [:reaction/set-focus id]))
+                      :stop     (fn [_]
+                                  (dispatch [:reaction/unset-focus]))}]}]
      ["/reactions/:id/edit"
       {:name        :reactions/edit
        :view        reaction-edit

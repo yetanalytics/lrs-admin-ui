@@ -1061,9 +1061,7 @@
                              rfns/focus->edit-form)]
      {:db (-> db
               (assoc ::db/editing-reaction reaction)
-              prep-edit-reaction-template)
-      ;; unset focus in case we're looking at one
-      :fx [[:dispatch [:reaction/unset-focus]]]}
+              prep-edit-reaction-template)}
      {:fx [[:dispatch [:notification/notify true
                        "Cannot edit, reaction not found!"]]]})))
 
@@ -1088,9 +1086,7 @@
                                     "verb" {"id" "https://adlnet.gov/expapi/verbs/completed"}}}}]
      {:db (-> db
               (assoc ::db/editing-reaction reaction)
-              prep-edit-reaction-template)
-      ;; unset focus in case we're looking at one
-      :fx [[:dispatch [:reaction/unset-focus]]]})))
+              prep-edit-reaction-template)})))
 
 (re-frame/reg-event-fx
  :reaction/upload-edit
@@ -1105,8 +1101,7 @@
        (if (valid? ::rse/reaction reaction)
          {:db (-> db
                   (assoc ::db/editing-reaction reaction)
-                  prep-edit-reaction-template)
-          :fx [[:dispatch [:reaction/unset-focus]]]}
+                  prep-edit-reaction-template)}
          {:fx [[:dispatch [:notification/notify true
                            "Cannot upload invalid reaction"]]]}))
      {:fx [[:dispatch [:notification/notify true
@@ -1121,9 +1116,7 @@
                                  rfns/focus->edit-form)]
        {:db (-> db
                 (assoc ::db/editing-reaction reaction)
-                prep-edit-reaction-template)
-        ;; unset focus in case we're looking at one
-        :fx [[:dispatch [:reaction/unset-focus]]]}))))
+                prep-edit-reaction-template)}))))
 
 (re-frame/reg-event-fx
  :reaction/server-error
@@ -1214,7 +1207,7 @@
  global-interceptors
  (fn [_ _]
    {:fx [[:dispatch [:reaction/load-reactions]]
-         [:dispatch [:reaction/back-to-list]]
+         #_[:dispatch [:reaction/back-to-list]]
          [:dispatch [:notification/notify false
                      "Reaction Deleted"]]]}))
 
@@ -1223,8 +1216,7 @@
  global-interceptors
  (fn [_ _]
    ;; TODO: Whatever new needs to clear
-   {:fx [[:dispatch [:reaction/unset-focus]]
-         [:dispatch [:reaction/clear-edit]]]}))
+   {:fx [[:dispatch [:reaction/clear-edit]]]}))
 
 (re-frame/reg-event-db
  :reaction/edit-title
