@@ -88,7 +88,7 @@
               :on-click #(dispatch [:reaction/download-all])
               :value @(subscribe [:lang/get :reactions.download-all])}]])
 
-(defn- reactions-list
+(defn reactions-list
   []
   [:div {:class "left-content-wrapper"}
    [:h2 {:class "content-title"}
@@ -1047,7 +1047,7 @@
   [:div.reaction-edit-invalid
    @(subscribe [:lang/get :reactions.errors.invalid])])
 
-(defn- reaction-focus []
+(defn reaction-focus []
   (let [{:keys [id ruleset]
          :as reaction} @(subscribe [:reaction/focus])]
     [:div {:class "left-content-wrapper"}
@@ -1059,7 +1059,7 @@
       [reaction-ruleset-focus ruleset]
       [reaction-actions-focus id]]]))
 
-(defn- reaction-edit []
+(defn reaction-edit []
   (let [{:keys [ruleset]
          :as reaction} @(subscribe [:reaction/editing])
         error?  (or
@@ -1075,7 +1075,7 @@
       [reaction-ruleset-edit ruleset]
       [reaction-actions-edit error?]]]))
 
-(defn- reaction-new []
+(defn reaction-new []
   (let [{:keys [ruleset]
          :as reaction} @(subscribe [:reaction/editing])
         error?  (or
