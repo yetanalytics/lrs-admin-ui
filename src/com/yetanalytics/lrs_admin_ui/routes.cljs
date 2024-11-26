@@ -57,34 +57,35 @@
             :controllers [{:start (fn [_]
                                     (dispatch [:status/get-all-data]))}]}])
     enable-reactions
-    (conj ["/reactions"
-           {:name        :reactions
-            :view        reactions-list
-            :controllers [{:start (fn [_]
-                                    (dispatch [:reaction/back-to-list])
-                                    (dispatch [:reaction/load-reactions]))}]}]
-          ["/reactions/new"
-           {:name :reactions/new
-            :view reaction-new
-            :controllers [{:start (fn [_]
-                                    (dispatch [:reaction/new]))
-                           :stop  (fn [_]
-                                    (dispatch [:reaction/cancel-edit]))}]}]
-          ["/reactions/:id/view"
-           {:name        :reactions/focus
-            :view        reaction-focus
-            :parameters  {:path [:id]}
-            :controllers [{:identity (fn [params]
-                                       (get-in params [:path-params :id]))
-                           :start    (fn [id]
-                                       (dispatch [:reaction/set-focus id]))}]}]
-          ["/reactions/:id/edit"
-           {:name        :reactions/edit
-            :view        reaction-edit
-            :parameters  {:path [:id]}
-            :controllers [{:identity (fn [params]
-                                       (get-in params [:path-params :id]))
-                           :start    (fn [id]
-                                       (dispatch [:reaction/edit id]))
-                           :stop     (fn [_]
-                                       (dispatch [:reaction/cancel-edit]))}]}])))
+    (conj
+     ["/reactions"
+      {:name        :reactions
+       :view        reactions-list
+       :controllers [{:start (fn [_]
+                               (dispatch [:reaction/back-to-list])
+                               (dispatch [:reaction/load-reactions]))}]}]
+     ["/reactions/new"
+      {:name        :reactions/new
+       :view        reaction-new
+       :controllers [{:start (fn [_]
+                               (dispatch [:reaction/new]))
+                      :stop  (fn [_]
+                               (dispatch [:reaction/cancel-edit]))}]}]
+     ["/reactions/:id/view"
+      {:name        :reactions/focus
+       :view        reaction-focus
+       :parameters  {:path [:id]}
+       :controllers [{:identity (fn [params]
+                                  (get-in params [:path-params :id]))
+                      :start    (fn [id]
+                                  (dispatch [:reaction/set-focus id]))}]}]
+     ["/reactions/:id/edit"
+      {:name        :reactions/edit
+       :view        reaction-edit
+       :parameters  {:path [:id]}
+       :controllers [{:identity (fn [params]
+                                  (get-in params [:path-params :id]))
+                      :start    (fn [id]
+                                  (dispatch [:reaction/edit id]))
+                      :stop     (fn [_]
+                                  (dispatch [:reaction/cancel-edit]))}]}])))
