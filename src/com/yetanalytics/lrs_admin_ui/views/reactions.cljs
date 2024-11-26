@@ -1093,16 +1093,3 @@
       [reaction-info-panel-new reaction]
       [reaction-ruleset-edit ruleset]
       [reaction-actions-new error?]]]))
-
-(defn reactions
-  []
-  (let [mode @(subscribe [:reaction/mode])]
-    (case mode
-      :list
-      [reactions-list]
-      :focus
-      [reaction-focus]
-      :edit
-      [reaction-edit]
-      :new
-      [reaction-new])))

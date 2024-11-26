@@ -394,20 +394,6 @@
 
 ;; Reactions
 
-;; Are we viewing the list, an individual activiy, editing or creating?
-(reg-sub
- :reaction/mode
- :<- [:reaction/editing]
- :<- [:reaction/focus-id]
- (fn [[editing
-       focus]]
-   (cond
-     editing (if (:id editing)
-               :edit
-               :new)
-     focus :focus
-     :else :list)))
-
 (reg-sub
  :reaction/enabled?
  (fn [db _]
