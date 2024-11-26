@@ -985,11 +985,13 @@
 (defn- reaction-info-panel-right [{:keys [created modified error]}]
   [:dl.reaction-info-panel.right
    [:dt @(subscribe [:lang/get :reactions.details.created])]
-   [:dd (or (iso8601->local-display created) "[New]")]
-  
+   [:dd (if (some? created)
+          (iso8601->local-display created)
+          "[New]")]  
    [:dt @(subscribe [:lang/get :reactions.details.modified])]
-   [:dd (or (iso8601->local-display modified) "[New]")]
-  
+   [:dd (if (some? modified)
+          (iso8601->local-display modified)
+          "[New]")]
    [:dt @(subscribe [:lang/get :reactions.details.error])]
    [:dd [reaction-error error]]])
 
