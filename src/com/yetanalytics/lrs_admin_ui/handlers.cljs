@@ -1160,19 +1160,21 @@
               [:notification/notify true
                "Cannot save invalid reaction."]]]}))))
 
-(defn- cancel-edit
-  [db]
-  (dissoc db
-          ::db/editing-reaction
-          ::db/editing-reaction-template-json
-          ::db/editing-reaction-template-errors))
-
 (re-frame/reg-event-fx
  :reaction/save-edit-success
  global-interceptors
  (fn [_ [_ {:keys [reactionId]}]]
    {:fx [[:dispatch [:reaction/load-reactions]]
          [:dispatch [::re-route/navigate :reactions/focus {:id reactionId}]]]}))
+
+(re-frame/reg-event-db
+ :reaction/clear-edit
+ global-interceptors
+ (fn [db _]
+   (dissoc db
+           ::db/editing-reaction
+           ::db/editing-reaction-template-json
+           ::db/editing-reaction-template-errors)))
 
 ;; TODO: :reaction/save-edit-fail
 
@@ -1216,19 +1218,13 @@
          [:dispatch [:notification/notify false
                      "Reaction Deleted"]]]}))
 
-(re-frame/reg-event-db
- :reaction/cancel-edit
- global-interceptors
- (fn [db _]
-   (cancel-edit db)))
-
 (re-frame/reg-event-fx
  :reaction/back-to-list
  global-interceptors
  (fn [_ _]
    ;; TODO: Whatever new needs to clear
    {:fx [[:dispatch [:reaction/unset-focus]]
-         [:dispatch [:reaction/cancel-edit]]]}))
+         [:dispatch [:reaction/clear-edit]]]}))
 
 (re-frame/reg-event-db
  :reaction/edit-title

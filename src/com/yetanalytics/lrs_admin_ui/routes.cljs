@@ -70,7 +70,7 @@
        :controllers [{:start (fn [_]
                                (dispatch [:reaction/new]))
                       :stop  (fn [_]
-                               (dispatch [:reaction/cancel-edit]))}]}]
+                               (dispatch [:reaction/clear-edit]))}]}]
      ["/reactions/:id/view"
       {:name        :reactions/focus
        :view        reaction-focus
@@ -88,4 +88,4 @@
                       :start    (fn [id]
                                   (dispatch [:reaction/edit id]))
                       :stop     (fn [_]
-                                  (dispatch [:reaction/cancel-edit]))}]}])))
+                                  (dispatch [:reaction/clear-edit]))}]}])))
