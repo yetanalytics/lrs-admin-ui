@@ -62,7 +62,6 @@
       {:name        :reactions
        :view        reactions-list
        :controllers [{:start (fn [_]
-                               (dispatch [:reaction/back-to-list])
                                (dispatch [:reaction/load-reactions]))}]}]
      ["/reactions/new"
       {:name        :reactions/new

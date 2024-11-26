@@ -1207,16 +1207,8 @@
  global-interceptors
  (fn [_ _]
    {:fx [[:dispatch [:reaction/load-reactions]]
-         #_[:dispatch [:reaction/back-to-list]]
          [:dispatch [:notification/notify false
                      "Reaction Deleted"]]]}))
-
-(re-frame/reg-event-fx
- :reaction/back-to-list
- global-interceptors
- (fn [_ _]
-   ;; TODO: Whatever new needs to clear
-   {:fx [[:dispatch [:reaction/clear-edit]]]}))
 
 (re-frame/reg-event-db
  :reaction/edit-title
