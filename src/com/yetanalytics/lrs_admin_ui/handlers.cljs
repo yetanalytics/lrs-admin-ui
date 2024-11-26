@@ -1157,6 +1157,9 @@
  :reaction/save-edit-success
  global-interceptors
  (fn [_ [_ {:keys [reactionId]}]]
+   ;; TODO: Only reload the reaction being updated, rather than all of them.
+   ;; TODO: Display some sort of loading screen before reaction is updated
+   ;; (for slow connection).
    {:fx [[:dispatch [:reaction/load-reactions]]
          [:dispatch [::re-route/navigate :reactions/focus {:id reactionId}]]]}))
 
