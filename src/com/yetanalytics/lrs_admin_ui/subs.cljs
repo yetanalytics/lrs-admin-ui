@@ -502,6 +502,14 @@
  (fn [emap [_ in-path]]
    (get emap in-path)))
 
+(reg-sub
+ :reaction/edit-error?
+ :<- [:reaction/edit-spec-errors]
+ :<- [:reaction/edit-template-errors]
+ (fn [[spec-errors template-errors] _]
+   (boolean (or (some? spec-errors)
+                (seq template-errors)))))
+
 ;; Dialog
 
 (reg-sub

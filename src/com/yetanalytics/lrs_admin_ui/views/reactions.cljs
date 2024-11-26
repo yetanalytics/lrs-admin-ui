@@ -1065,9 +1065,7 @@
 (defn reaction-edit []
   (let [{:keys [ruleset]
          :as reaction} @(subscribe [:reaction/editing])
-        error?  (or
-                 (some? @(subscribe [:reaction/edit-spec-errors]))
-                 (seq @(subscribe [:reaction/edit-template-errors])))]
+        error? @(subscribe [:reaction/edit-error?])]
     [:div {:class "left-content-wrapper"}
      [:h2 {:class "content-title"}
       @(subscribe [:lang/get :reactions.edit.title])]
@@ -1081,9 +1079,7 @@
 (defn reaction-new []
   (let [{:keys [ruleset]
          :as reaction} @(subscribe [:reaction/editing])
-        error?  (or
-                 (some? @(subscribe [:reaction/edit-spec-errors]))
-                 (seq @(subscribe [:reaction/edit-template-errors])))]
+        error? @(subscribe [:reaction/edit-error?])]
     [:div {:class "left-content-wrapper"}
      [:h2 {:class "content-title"}
       @(subscribe [:lang/get :reactions.new.title])]
