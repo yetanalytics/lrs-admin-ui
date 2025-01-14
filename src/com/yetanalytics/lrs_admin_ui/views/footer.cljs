@@ -41,7 +41,7 @@
        [:div {:class "col-3 text-center footer-icon pointer"}
         [:a {:href "#"
              :on-click #(do (ps-event %)
-                            (dispatch-sync [:session/logout]))}
+                            (dispatch-sync [:logout/logout]))}
          [:i
           [:img {:src "images/icons/icon-mobile-logout.svg" :alt "Logout" :width "16"}]]
          [:span {:class "font-condensed font-10 fg-primary"} @(subscribe [:lang/get :footer.nav.logout])]]]])
