@@ -176,7 +176,6 @@
    ;; incongrous mix of authentication procedures.
    (let [curr-token (stor/get-item "lrs-jwt")
          curr-uname (stor/get-item "username")]
-     (println "Current token:" curr-token)
      (if (some? curr-token)
        {:http-xhrio
         {:method          :get
