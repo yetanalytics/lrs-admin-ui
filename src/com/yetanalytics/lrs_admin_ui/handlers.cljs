@@ -1,8 +1,10 @@
 (ns com.yetanalytics.lrs-admin-ui.handlers
   (:require [re-frame.core                                    :as re-frame]
             [reagent.core                                     :as r]
+            [com.yetanalytics.re-route                        :as re-route]
             [com.yetanalytics.lrs-admin-ui.db                 :as db]
             [com.yetanalytics.lrs-admin-ui.input              :as input]
+            [com.yetanalytics.lrs-admin-ui.routes             :refer [routes]]
             [day8.re-frame.http-fx]
             [com.yetanalytics.lrs-admin-ui.functions          :as fns]
             [com.yetanalytics.lrs-admin-ui.functions.download :as download]
@@ -114,17 +116,23 @@
                                      jwt-interaction-window
                                      url-prefix
                                      proxy-path
+                                     enable-admin-delete-actor
                                      enable-admin-status
                                      enable-reactions
                                      no-val?
                                      no-val-logout-url
-                                     enable-admin-delete-actor
                                      admin-language-code
                                      stmt-get-max
                                      custom-language]
                        ?oidc        :oidc
-                       ?oidc-enable :oidc-enable-local-admin}]]
-   (let [jwt-refresh-interval*    (* 1000 jwt-refresh-interval)
+                       ?oidc-enable :oidc-enable-local-admin
+                       :as          env}]]
+   (let [ui-route-env             (select-keys env [:proxy-path
+                                                    :enable-admin-delete-actor
+                                                    :enable-admin-status
+                                                    :enable-reactions])
+         ui-routes                (routes ui-route-env)
+         jwt-refresh-interval*    (* 1000 jwt-refresh-interval)
          jwt-interaction-window*  (* 1000 jwt-interaction-window)
          oidc-enable-local-admin? (or ?oidc-enable false)
          admin-lang-keyword       (keyword admin-language-code)
@@ -147,10 +155,17 @@
             (and no-val?
                  (not-empty no-val-logout-url))
             (assoc ::db/no-val-logout-url no-val-logout-url))
-      :fx (cond-> []
-            ?oidc (conj [:dispatch [:oidc/init ?oidc]])
+      :fx (cond-> [[:dispatch [::re-route/init
+                               ui-routes
+                               :not-found
+                               {:enabled? false}]]]
+            ?oidc   (conj [:dispatch [:oidc/init ?oidc]])
             no-val? (conj [:dispatch [:session/proxy-token-init]]))
       :session/store ["proxy-path" proxy-path]})))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Login / Auth
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (re-frame/reg-event-fx
  :db/verify-login
@@ -161,7 +176,6 @@
    ;; incongrous mix of authentication procedures.
    (let [curr-token (stor/get-item "lrs-jwt")
          curr-uname (stor/get-item "username")]
-     (println "Current token:" curr-token)
      (if (some? curr-token)
        {:http-xhrio
         {:method          :get
@@ -970,7 +984,7 @@
  :update-password/update-success
  (fn [_ _]
    {:fx [[:dispatch [:update-password/clear]]
-         [:dispatch [:session/set-page :credentials]]
+         [:dispatch [::re-route/navigate :credentials]]
          [:dispatch [:notification/notify false
                      "Password updated."]]]}))
 
@@ -1060,22 +1074,14 @@
     :fx [[:dispatch
           [:server-error error]]]}))
 
-(def status-dispatch-all
-  (into []
-        (for [status-query ["statement-count"
-                            "actor-count"
-                            "last-statement-stored"
-                            "timeline"
-                            "platform-frequency"]]
-          [:dispatch [:status/get-data [status-query]]])))
-
-(defmethod page-fx :status [_]
-  status-dispatch-all)
-
 (re-frame/reg-event-fx
  :status/get-all-data
- (fn [_ _]
-   {:fx status-dispatch-all}))
+ (fn [_]
+   {:fx [[:dispatch [:status/get-data ["statement-count"]]]
+         [:dispatch [:status/get-data ["actor-count"]]]
+         [:dispatch [:status/get-data ["last-statement-stored"]]]
+         [:dispatch [:status/get-data ["timeline"]]]
+         [:dispatch [:status/get-data ["platform-frequency"]]]]}))
 
 (defn- coerce-status-data
   "Convert string keys in status data to keyword where appropriate."
@@ -1156,10 +1162,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Reaction Management
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defmethod page-fx :reactions [_]
-  [[:dispatch [:reaction/back-to-list]]
-   [:dispatch [:reaction/load-reactions]]])
 
 (re-frame/reg-event-fx
  :reaction/load-reactions

@@ -9,12 +9,10 @@
 ;; Spec to define the db
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(s/def :session/page keyword?)
 (s/def :session/token (s/nilable string?))
 (s/def :session/username (s/nilable string?))
 (s/def ::session
-  (s/keys :req-un [:session/page
-                   :session/token
+  (s/keys :req-un [:session/token
                    :session/username]))
 
 (s/def :login/username (s/nilable string?))

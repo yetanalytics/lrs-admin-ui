@@ -1,6 +1,7 @@
 (ns com.yetanalytics.lrs-admin-ui.views.header
   (:require [com.yetanalytics.lrs-admin-ui.functions :as fns]
-            [re-frame.core :refer [subscribe dispatch dispatch-sync]]))
+            [com.yetanalytics.re-route :as re-route]
+            [re-frame.core :refer [subscribe dispatch-sync]]))
 
 (defn username []
   (let [display-name @(subscribe [:session/get-display-name])]
@@ -9,10 +10,7 @@
      (if @(subscribe [:oidc/enabled?])
        [:span display-name]
        [:a {:class "fg-primary"
-            :href "#"
-            :on-click (fn [e]
-                        (fns/ps-event e)
-                        (dispatch [:session/set-page :update-password]))}
+            :href @(subscribe [::re-route/href :update-password])}
         display-name])]))
 
 (defn header []
