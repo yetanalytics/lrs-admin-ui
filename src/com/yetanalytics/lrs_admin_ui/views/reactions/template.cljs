@@ -42,7 +42,7 @@
 (defn dynamic-variables
   []
   (let [open?     (r/atom false)
-        condition (r/atom "")
+        condition (r/atom "") ; TODO: Store in an app-db buffer
         path      (r/atom [""])]
     (fn []
       [:div.dynamic-variables

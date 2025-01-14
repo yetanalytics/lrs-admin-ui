@@ -9,7 +9,7 @@
 (defn yet-copy []
   [:span {:class "text-white"}
    ;; Unescape needed to render special chars.
-   (format "%s2021-2024 " (unescapeEntities "&copy;"))
+   (format "%s2021-2025 " (unescapeEntities "&copy;"))
    [:a {:href "https://www.yetanalytics.com"
         :target "_blank"
         :rel "noopener noreferrer"
@@ -40,7 +40,7 @@
        [:div {:class "col-3 text-center footer-icon pointer"}
         [:a {:href "#"
              :on-click #(do (ps-event %)
-                            (dispatch-sync [:session/logout]))}
+                            (dispatch-sync [:logout/logout]))}
          [:i
           [:img {:src @(subscribe [:resources/icon "icon-mobile-logout.svg"]) :alt "Logout" :width "16"}]]
          [:span {:class "font-condensed font-10 fg-primary"} @(subscribe [:lang/get :footer.nav.logout])]]]])
