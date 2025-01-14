@@ -23,6 +23,25 @@
    (::db/proxy-path db)))
 
 (reg-sub
+ ::db/resource-base
+ (fn [db _]
+   (::db/resource-base db)))
+
+(reg-sub
+ :resources/image
+ :<- [::db/proxy-path]
+ :<- [::db/resource-base]
+ (fn [[proxy-path resource-base] [_ image-name]]
+   (str proxy-path resource-base "images/" image-name)))
+
+(reg-sub
+ :resources/icon
+ :<- [::db/proxy-path]
+ :<- [::db/resource-base]
+ (fn [[proxy-path resource-base] [_ icon-name]]
+   (str proxy-path resource-base "images/icons/" icon-name)))
+
+(reg-sub
  :db/language
  (fn [db _]
    (::db/language db)))
@@ -46,13 +65,6 @@
      (or (get langmap pref-lang)
          (get langmap :en-US)
          (get langmap (-> langmap keys first))))))
-
-(reg-sub
- :session/get-page
- (fn [_ _]
-   (subscribe [:db/get-session]))
- (fn [session _]
-   (:page session)))
 
 (reg-sub
  :session/get-token
@@ -382,20 +394,6 @@
 
 ;; Reactions
 
-;; Are we viewing the list, an individual activiy, editing or creating?
-(reg-sub
- :reaction/mode
- :<- [:reaction/editing]
- :<- [:reaction/focus-id]
- (fn [[editing
-       focus]]
-   (cond
-     editing (if (:id editing)
-               :edit
-               :new)
-     focus :focus
-     :else :list)))
-
 (reg-sub
  :reaction/enabled?
  (fn [db _]
@@ -503,6 +501,14 @@
  :<- [:reaction/edit-spec-errors-map]
  (fn [emap [_ in-path]]
    (get emap in-path)))
+
+(reg-sub
+ :reaction/edit-error?
+ :<- [:reaction/edit-spec-errors]
+ :<- [:reaction/edit-template-errors]
+ (fn [[spec-errors template-errors] _]
+   (boolean (or (some? spec-errors)
+                (seq template-errors)))))
 
 ;; Dialog
 

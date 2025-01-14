@@ -9,12 +9,10 @@
 ;; Spec to define the db
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(s/def :session/page keyword?)
 (s/def :session/token (s/nilable string?))
 (s/def :session/username (s/nilable string?))
 (s/def ::session
-  (s/keys :req-un [:session/page
-                   :session/token
+  (s/keys :req-un [:session/token
                    :session/username]))
 
 (s/def :login/username (s/nilable string?))
@@ -82,6 +80,7 @@
 (s/def ::server-host string?)
 (s/def ::xapi-prefix string?) ;; default /xapi
 (s/def ::proxy-path (s/nilable string?)) ;; default nil
+(s/def ::resource-base string?)
 
 (s/def ::pref-lang keyword?)
 (s/def ::language map?)
@@ -186,12 +185,18 @@
 
 (s/def ::no-val-logout-url string?)
 
+(s/def ::jwt-refresh-interval int?)
+(s/def ::jwt-interaction-window int?)
+(s/def ::last-interaction-time int?)
+
 (s/def ::db (s/keys :req [::session
                           ::credentials
                           ::login
                           ::browser
                           ::accounts
+                          ::new-account
                           ::server-host
+                          ::resource-base
                           ::xapi-prefix
                           ::proxy-path
                           ::language
@@ -205,7 +210,10 @@
                           ::status
                           ::update-password
                           ::enable-reactions
-                          ::reactions]
+                          ::reactions
+                          ::jwt-refresh-interval
+                          ::jwt-interaction-window
+                          ::last-interaction-time]
                     :opt [::reaction-focus
                           ::editing-reaction
                           ::editing-reaction-template-errors

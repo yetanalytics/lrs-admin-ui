@@ -19,6 +19,9 @@
    :header.nav.monitor     {:en-US "LRS Monitor"}
    :header.nav.data        {:en-US "Data Management"}
    :header.nav.reactions   {:en-US "Reactions"}
+   ;;404 Page
+   :not-found.title {:en-US "404 Not Found"}
+   :not-found.body  {:en-US "The page that you are looking for cannot be found."}
    ;;Login Page
    :login.title        {:en-US "LOGIN"}
    :login.username     {:en-US "Username"}

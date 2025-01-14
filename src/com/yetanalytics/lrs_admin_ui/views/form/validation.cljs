@@ -1,7 +1,7 @@
 (ns com.yetanalytics.lrs-admin-ui.views.form.validation
-  (:require
-   [reagent.core :as r]
-   [goog.string]))
+  (:require [reagent.core :as r]
+            [re-frame.core :refer [subscribe]]
+            [goog.string]))
 
 (defn- unescape
   "Alias for `goog.string/unescapeEntities`, where `s` is the string to
@@ -12,27 +12,27 @@
 (defn- type->div-class
   [validation-type]
   (case validation-type
-    :valid "validation-display"
+    :valid   "validation-display"
     :warning "validation-display warning"
-    :error "validation-display invalid"
+    :error   "validation-display invalid"
     :invalid "validation-display invalid"
     :loading "validation-display loading"))
 
 (defn- type->icon-path
   [validation-type]
   (case validation-type
-    :valid "images/icons/valid.svg"
-    :warning "images/icons/warning.svg"
-    :error "images/icons/invalid.svg"
-    :invalid "images/icons/invalid.svg"
-    :loading "images/icons/loading.svg"))
+    :valid   @(subscribe [:resources/icon "valid.svg"])
+    :warning @(subscribe [:resources/icon "warning.svg"])
+    :error   @(subscribe [:resources/icon "invalid.svg"])
+    :invalid @(subscribe [:resources/icon "invalid.svg"])
+    :loading @(subscribe [:resources/icon "loading.svg"])))
 
 (defn- type->item-icon-path
   [validation-type]
   (case validation-type
-    :warning "images/icons/warning-item.svg"
-    :error "images/icons/error-item.svg"
-    :invalid "images/icons/error-item.svg"))
+    :warning @(subscribe [:resources/icon "warning-item.svg"])
+    :error   @(subscribe [:resources/icon "error-item.svg"])
+    :invalid @(subscribe [:resources/icon "error-item.svg"])))
 
 (defn validation-static-display
   [validation-type message]

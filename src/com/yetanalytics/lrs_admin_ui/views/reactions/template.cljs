@@ -42,7 +42,7 @@
 (defn dynamic-variables
   []
   (let [open?     (r/atom false)
-        condition (r/atom "")
+        condition (r/atom "") ; TODO: Store in an app-db buffer
         path      (r/atom [""])]
     (fn []
       [:div.dynamic-variables
@@ -86,8 +86,13 @@
                     [:a {:class "icon-copy"
                          :on-click #(fns/ps-event %)}]]])])])])])))
 
-(defn edit-template
-  []
+(defn template-focus
+  [template]
+  [:pre.template
+   (.stringify js/JSON (clj->js template) nil 2)])
+
+(defn template-edit
+  [_template]
   [:<>
    [dynamic-variables]
    [:h5 @(subscribe [:lang/get :reactions.template.template-json])
@@ -98,10 +103,3 @@
      :save     #(dispatch [:reaction/update-template %])
      :error    #(dispatch [:reaction/set-template-errors %])}
     :keywordize-keys? false]])
-
-(defn render-or-edit-template
-  [mode template]
-  (if (contains? #{:edit :new} mode)
-    [edit-template]
-    [:pre.template
-     (.stringify js/JSON (clj->js template) nil 2)]))

@@ -2,9 +2,9 @@
   (:require
    [goog.dom :as gdom]
    [reagent.dom :as rdom]
+   [re-frame.core :refer [dispatch-sync]]
    [com.yetanalytics.lrs-admin-ui.subs]
    [com.yetanalytics.lrs-admin-ui.handlers]
-   [re-frame.core :refer [dispatch-sync]]
    [com.yetanalytics.lrs-admin-ui.views :as views]))
 
 (set! *warn-on-infer* true)
