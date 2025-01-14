@@ -331,7 +331,7 @@
     (gstr/format 
      @(subscribe [:lang/get :reactions.details.conditions.delete-button]) 
      to-delete-desc)
-    [:img {:src "images/icons/icon-delete-brand.svg"}]]])
+    [:img {:src @(subscribe [:resources/icon "icon-delete-brand.svg"])}]]])
 
 (defn- add-condition
   []
@@ -341,7 +341,7 @@
                     (fns/ps-event e)
                     (dispatch [:reaction/add-condition]))}
     @(subscribe [:lang/get :reactions.details.conditions.add-condition])
-    [:img {:src "images/icons/add.svg"}]]])
+    [:img {:src @(subscribe [:resources/icon "add.svg"])}]]])
 
 (defn- add-clause
   [parent-path]
@@ -658,7 +658,7 @@
                                  (fns/ps-event e)
                                  (dispatch [:reaction/add-identity-path]))}
                  @(subscribe [:lang/get :reactions.identity-paths.add])
-                 [:img {:src "images/icons/add.svg"}]]])]))]])))
+                 [:img {:src @(subscribe [:resources/icon "add.svg"])}]]])]))]])))
 
 (defn- render-conditions-errors
   "Render out top-level conditions errors, currently there is only one, an empty

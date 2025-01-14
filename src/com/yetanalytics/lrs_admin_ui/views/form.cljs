@@ -150,18 +150,18 @@
    | `label`       | Dropdown label
    | `label-left?` | Whether the label should be placed to the left of the icon.
    | `options`     | The ID of the combo box in the DOM.
-   | `icon-src`    | The filepath of the icon.
+   | `icon-name`   | The file name of the icon.
    | `class`       | Custom CSS class name."
   [{:keys [select-fn
            label
            label-left?
            options
-           icon-src
+           icon-name
            class]
     :or {options     []
          select-fn   (fn [v] (println 'select v))
          label-left? false
-         icon-src    "images/icons/add.svg"
+         icon-name   "add.svg"
          class       ""}}]
   (let [state (r/atom {:dropdown-open? false
                        :dropdown-focus nil})
@@ -176,7 +176,7 @@
        [action-select-top
         {:label          label
          :label-left?    label-left?
-         :icon-src       icon-src
+         :icon-name      icon-name
          :dropdown-open? dropdown-open?}]
        [:div.action-dropdown-list
         {:class (str class (if @dropdown-open? " dropdown-open" ""))}

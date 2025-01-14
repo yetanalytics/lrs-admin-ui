@@ -15,7 +15,6 @@
             [com.yetanalytics.re-oidc                         :as re-oidc]
             [ajax.core                                        :as ajax]
             [cljs.spec.alpha                                  :refer [valid?]]
-            [clojure.string                                   :refer [split]]
             [goog.string                                      :refer [format]]
             goog.string.format
             [clojure.walk                                     :as w]
@@ -71,6 +70,7 @@
                        :batch-size 10
                        :back-stack []}
          ::db/server-host (or server-host "")
+         ::db/resource-base (if server-host "/" "/admin/")
          ::db/xapi-prefix "/xapi"
          ::db/proxy-path (stor/get-item "proxy-path")
          ::db/language lang/language
@@ -93,14 +93,15 @@
 (re-frame/reg-event-fx
  :db/get-env
  (fn [{{server-host ::db/server-host} :db} _]
-   (let [path-parts (split js/window.location.pathname "/")]
+   (let [?window-host (->> js/window.location.pathname
+                           (re-matches #"(.+)/admin/ui.*")
+                           second)]
      {:http-xhrio {:method          :get
-                   ;; Check if this is prod or dev. If prod and at admin path
-                   ;; then use "env" relative path to account for proxy. If dev
-                   ;; use absolute.
-                   :uri             (if (and (some #(= "admin" %) path-parts)
-                                             (= server-host ""))
-                                      "env"
+                   ;; Check if this is prod or dev. If prod, then `server-host`
+                   ;; is empty, so take the host from the browser URL.
+                   :uri             (if (and (= server-host "")
+                                             (some? ?window-host))
+                                      (str ?window-host "/admin/env")
                                       (str server-host "/admin/env"))
                    :format          (ajax/json-request-format)
                    :response-format (ajax/json-response-format {:keywords? true})
