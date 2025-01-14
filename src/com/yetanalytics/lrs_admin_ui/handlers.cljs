@@ -125,7 +125,8 @@
                                      stmt-get-max
                                      custom-language]
                        ?oidc        :oidc
-                       ?oidc-enable :oidc-enable-local-admin}]]
+                       ?oidc-enable :oidc-enable-local-admin
+                       :as          env}]]
    (let [routes (routes (select-keys env [:proxy-path
                                           :enable-admin-delete-actor
                                           :enable-admin-status
@@ -148,10 +149,8 @@
                          ::db/enable-reactions enable-reactions
                          ::db/enable-admin-delete-actor enable-admin-delete-actor
                          ::db/stmt-get-max stmt-get-max
-                         ::db/pref-lang (keyword admin-language-code)
-                         ::db/language (merge-with merge
-                                                   lang/language
-                                                   custom-language))
+                         ::db/pref-lang admin-lang-keyword
+                         ::db/language language-map)
             (and no-val?
                  (not-empty no-val-logout-url))
             (assoc ::db/no-val-logout-url no-val-logout-url))
