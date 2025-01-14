@@ -6,9 +6,12 @@
    [com.yetanalytics.lrs-admin-ui.views.credentials     :refer [credentials]]
    [com.yetanalytics.lrs-admin-ui.views.data-management :refer [data-management]]
    [com.yetanalytics.lrs-admin-ui.views.not-found       :refer [not-found]]
-   [com.yetanalytics.lrs-admin-ui.views.reactions       :refer [reactions]]
    [com.yetanalytics.lrs-admin-ui.views.status          :refer [status]]
-   [com.yetanalytics.lrs-admin-ui.views.update-password :refer [update-password]]))
+   [com.yetanalytics.lrs-admin-ui.views.update-password :refer [update-password]]
+   [com.yetanalytics.lrs-admin-ui.views.reactions       :refer [reactions-list
+                                                                reaction-focus
+                                                                reaction-edit
+                                                                reaction-new]]))
 
 (defn routes [{:keys [proxy-path
                       enable-admin-delete-actor
@@ -30,15 +33,13 @@
            ["/accounts"
             {:name        :accounts
              :view        accounts
-             :controllers [{:start
-                            (fn [_]
-                              (dispatch [:accounts/load-accounts]))}]}]
+             :controllers [{:start (fn [_]
+                                     (dispatch [:accounts/load-accounts]))}]}]
            ["/accounts/password"
             {:name        :update-password
              :view        update-password
-             :controllers [{:stop
-                            (fn [_]
-                              (dispatch [:update-password/clear]))}]}]
+             :controllers [{:stop (fn [_]
+                                    (dispatch [:update-password/clear]))}]}]
            ["/browser"
             {:name :browser
              :view browser}]
@@ -53,16 +54,39 @@
     (conj ["/status"
            {:name        :status
             :view        status
-            :controllers [{:start
-                           (fn [_]
-                             (dispatch [:status/get-all-data]))}]}])
-    ;; TODO: Add `/reactions/new`, `/reactions/view`, and `/reactions/edit`
-    ;; routes for their respective pages.
+            :controllers [{:start (fn [_]
+                                    (dispatch [:status/get-all-data]))}]}])
     enable-reactions
-    (conj ["/reactions"
-           {:name        :reactions
-            :view        reactions
-            :controllers [{:start
-                           (fn [_]
-                             (dispatch [:reaction/back-to-list])
-                             (dispatch [:reaction/load-reactions]))}]}])))
+    (conj
+     ["/reactions"
+      {:name        :reactions
+       :view        reactions-list
+       :controllers [{:start (fn [_]
+                               (dispatch [:reaction/load-reactions]))}]}]
+     ["/reactions/new"
+      {:name        :reactions/new
+       :view        reaction-new
+       :controllers [{:start (fn [_]
+                               (dispatch [:reaction/new]))
+                      :stop  (fn [_]
+                               (dispatch [:reaction/clear-edit]))}]}]
+     ["/reactions/:id/view"
+      {:name        :reactions/focus
+       :view        reaction-focus
+       :parameters  {:path [:id]}
+       :controllers [{:identity (fn [params]
+                                  (get-in params [:path-params :id]))
+                      :start    (fn [id]
+                                  (dispatch [:reaction/set-focus id]))
+                      :stop     (fn [_]
+                                  (dispatch [:reaction/unset-focus]))}]}]
+     ["/reactions/:id/edit"
+      {:name        :reactions/edit
+       :view        reaction-edit
+       :parameters  {:path [:id]}
+       :controllers [{:identity (fn [params]
+                                  (get-in params [:path-params :id]))
+                      :start    (fn [id]
+                                  (dispatch [:reaction/edit id]))
+                      :stop     (fn [_]
+                                  (dispatch [:reaction/clear-edit]))}]}])))

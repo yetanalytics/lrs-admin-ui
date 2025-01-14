@@ -1240,9 +1240,7 @@
                              rfns/focus->edit-form)]
      {:db (-> db
               (assoc ::db/editing-reaction reaction)
-              prep-edit-reaction-template)
-      ;; unset focus in case we're looking at one
-      :fx [[:dispatch [:reaction/unset-focus]]]}
+              prep-edit-reaction-template)}
      {:fx [[:dispatch [:notification/notify true
                        "Cannot edit, reaction not found!"]]]})))
 
@@ -1266,9 +1264,7 @@
                                     "verb" {"id" "https://adlnet.gov/expapi/verbs/completed"}}}}]
      {:db (-> db
               (assoc ::db/editing-reaction reaction)
-              prep-edit-reaction-template)
-      ;; unset focus in case we're looking at one
-      :fx [[:dispatch [:reaction/unset-focus]]]})))
+              prep-edit-reaction-template)})))
 
 (re-frame/reg-event-fx
  :reaction/upload-edit
@@ -1282,8 +1278,7 @@
        (if (valid? ::rse/reaction reaction)
          {:db (-> db
                   (assoc ::db/editing-reaction reaction)
-                  prep-edit-reaction-template)
-          :fx [[:dispatch [:reaction/unset-focus]]]}
+                  prep-edit-reaction-template)}
          {:fx [[:dispatch [:notification/notify true
                            "Cannot upload invalid reaction"]]]}))
      {:fx [[:dispatch [:notification/notify true
@@ -1297,9 +1292,7 @@
                                  rfns/focus->edit-form)]
        {:db (-> db
                 (assoc ::db/editing-reaction reaction)
-                prep-edit-reaction-template)
-        ;; unset focus in case we're looking at one
-        :fx [[:dispatch [:reaction/unset-focus]]]}))))
+                prep-edit-reaction-template)}))))
 
 (re-frame/reg-event-fx
  :reaction/server-error
@@ -1334,20 +1327,22 @@
               [:notification/notify true
                "Cannot save invalid reaction."]]]}))))
 
-(defn- cancel-edit
-  [db]
-  (dissoc db
-          ::db/editing-reaction
-          ::db/editing-reaction-template-json
-          ::db/editing-reaction-template-errors))
-
 (re-frame/reg-event-fx
  :reaction/save-edit-success
- (fn [{:keys [db]} [_ {:keys [reactionId]}]]
-   {:db (-> db
-            cancel-edit
-            (assoc ::db/reaction-focus reactionId))
-    :fx [[:dispatch [:reaction/load-reactions]]]}))
+ (fn [_ [_ {:keys [reactionId]}]]
+   ;; TODO: Only reload the reaction being updated, rather than all of them.
+   ;; TODO: Display some sort of loading screen before reaction is updated
+   ;; (for slow connection).
+   {:fx [[:dispatch [:reaction/load-reactions]]
+         [:dispatch [::re-route/navigate :reactions/focus {:id reactionId}]]]}))
+
+(re-frame/reg-event-db
+ :reaction/clear-edit
+ (fn [db _]
+   (dissoc db
+           ::db/editing-reaction
+           ::db/editing-reaction-template-json
+           ::db/editing-reaction-template-errors)))
 
 ;; TODO: :reaction/save-edit-fail
 
@@ -1384,21 +1379,8 @@
  :reaction/delete-success
  (fn [_ _]
    {:fx [[:dispatch [:reaction/load-reactions]]
-         [:dispatch [:reaction/back-to-list]]
          [:dispatch [:notification/notify false
                      "Reaction Deleted"]]]}))
-
-(re-frame/reg-event-db
- :reaction/cancel-edit
- (fn [db _]
-   (cancel-edit db)))
-
-(re-frame/reg-event-fx
- :reaction/back-to-list
- (fn [_ _]
-   ;; TODO: Whatever new needs to clear
-   {:fx [[:dispatch [:reaction/unset-focus]]
-         [:dispatch [:reaction/cancel-edit]]]}))
 
 (re-frame/reg-event-db
  :reaction/edit-title

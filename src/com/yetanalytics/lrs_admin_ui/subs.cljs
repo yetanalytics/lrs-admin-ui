@@ -394,20 +394,6 @@
 
 ;; Reactions
 
-;; Are we viewing the list, an individual activiy, editing or creating?
-(reg-sub
- :reaction/mode
- :<- [:reaction/editing]
- :<- [:reaction/focus-id]
- (fn [[editing
-       focus]]
-   (cond
-     editing (if (:id editing)
-               :edit
-               :new)
-     focus :focus
-     :else :list)))
-
 (reg-sub
  :reaction/enabled?
  (fn [db _]
@@ -515,6 +501,14 @@
  :<- [:reaction/edit-spec-errors-map]
  (fn [emap [_ in-path]]
    (get emap in-path)))
+
+(reg-sub
+ :reaction/edit-error?
+ :<- [:reaction/edit-spec-errors]
+ :<- [:reaction/edit-template-errors]
+ (fn [[spec-errors template-errors] _]
+   (boolean (or (some? spec-errors)
+                (seq template-errors)))))
 
 ;; Dialog
 
