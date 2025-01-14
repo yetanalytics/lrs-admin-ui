@@ -127,10 +127,11 @@
                        ?oidc        :oidc
                        ?oidc-enable :oidc-enable-local-admin
                        :as          env}]]
-   (let [routes (routes (select-keys env [:proxy-path
-                                          :enable-admin-delete-actor
-                                          :enable-admin-status
-                                          :enable-reactions]))
+   (let [ui-route-env             (select-keys env [:proxy-path
+                                                    :enable-admin-delete-actor
+                                                    :enable-admin-status
+                                                    :enable-reactions])
+         ui-routes                (routes ui-route-env)
          jwt-refresh-interval*    (* 1000 jwt-refresh-interval)
          jwt-interaction-window*  (* 1000 jwt-interaction-window)
          oidc-enable-local-admin? (or ?oidc-enable false)
@@ -155,7 +156,7 @@
                  (not-empty no-val-logout-url))
             (assoc ::db/no-val-logout-url no-val-logout-url))
       :fx (cond-> [[:dispatch [::re-route/init
-                               routes
+                               ui-routes
                                :not-found
                                {:enabled? false}]]]
             ?oidc   (conj [:dispatch [:oidc/init ?oidc]])
