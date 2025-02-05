@@ -17,10 +17,11 @@
                scopes))
 
 (defn- api-key-row
-  [{:keys [api-key scopes] :as _credential} expanded]
+  [{:keys [api-key label scopes] :as _credential} expanded]
   [:div {:class      "api-key-row"
          :aria-label @(subscribe [:lang/get :notification.key.aria])
          :on-click   #(swap! expanded not)}
+   ;; API Key View
    [:div {:class "api-key-col"}
     [:span {:class (str "collapse-sign"
                         (when @expanded " expanded"))}
@@ -33,6 +34,10 @@
                             @(subscribe [:lang/get :notification.credentials.key-copied])])}
       [:a {:class "icon-copy"
            :on-click #(ps-event %)}]]]]
+   ;; Label
+   [:div {:class "api-key-col"}
+    "Label: " [:span (or label "(None)")]]
+   ;; Permissions
    [:div {:class "api-key-col"}
     @(subscribe [:lang/get :credentials.key.permissions])
     (scope-list-text scopes)]])
