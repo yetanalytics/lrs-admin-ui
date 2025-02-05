@@ -905,15 +905,15 @@ span.close-alert img {
 }
 
 @media only screen and (max-width: 1124px) {
-  .accordion .accordion-container .accordion-header > div:nth-child(2) {
+  .accordion .accordion-container > div:nth-child(2) {
     padding-left: 20px;
   }
 }
 
-
 /**************************************************
 # Action Icon List
 **************************************************/
+
 .action-row {
   display: table;
   width: 100%;
@@ -1075,7 +1075,7 @@ a.icon-copy:hover {
 }
 
 .api-key-col {
-  @extend .col-sm-12, .col-lg-6;
+  @extend .col-sm-8, .col-lg-4;
 }
 
 .api-key-col-header {
@@ -1125,7 +1125,7 @@ input.key-display {
 }
 
 .account-col {
-  @extend .api-key-col;
+  @extend .col-sm-12, .col-lg-6;
 }
 
 .account-col-header {
