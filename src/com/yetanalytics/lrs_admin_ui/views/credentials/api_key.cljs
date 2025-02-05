@@ -75,9 +75,9 @@
           :class "icon-close"} @(subscribe [:lang/get :credentials.key.permissions.cancel])]]]])
 
 (defn- api-key-expand-view
-  [{:keys [scopes] :as credential} edit]
+  [_credential edit]
   (let [delete-confirm (r/atom false)]
-    (fn [_credential _edit]
+    (fn [{:keys [scopes] :as credential} _edit]
       [:div {:class "action-row"}
        [:div {:class "action-label"}
         (scope-list-text scopes)]
@@ -118,10 +118,10 @@
      [:a {:class "icon-copy pointer"}]]]])
 
 (defn- api-key-expand
-  [idx credential]
+  [_idx _credential]
   (let [edit        (r/atom false)
         show-secret (r/atom false)]
-    (fn [_idx _credential _delete-confirm]
+    (fn [idx credential]
       [:div {:class "api-key-expand"}
        [:div {:class "api-key-col"}
         [:p {:class "api-key-col-header"}
@@ -145,9 +145,9 @@
           [api-key-expand-view credential edit])]])))
 
 (defn api-key
-  [{:keys [idx]}]
+  [_props]
   (let [expanded (r/atom false)]
-    (fn []
+    (fn [{:keys [idx]}]
       (let [credential @(subscribe [:credentials/get-credential idx])]
         [:li {:class "mb-2"}
          [:div {:class "accordion-container"}
