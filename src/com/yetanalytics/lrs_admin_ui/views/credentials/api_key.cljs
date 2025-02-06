@@ -4,7 +4,7 @@
    [re-frame.core :as re-frame :refer [dispatch subscribe]]
    [com.yetanalytics.lrs-admin-ui.functions.copy   :refer [copy-text]]
    [com.yetanalytics.lrs-admin-ui.functions.scopes :refer [scope-list has-scope? toggle-scope]]
-   [com.yetanalytics.lrs-admin-ui.functions        :refer [ps-event]]))
+   [com.yetanalytics.lrs-admin-ui.functions        :refer [ps-event ps-event-val]]))
 
 (defn- scope-list-text
   "Convert scopes into a comma-separated list, e.g. \"all, all-read\"."
@@ -43,8 +43,18 @@
     (scope-list-text scopes)]])
 
 (defn- api-key-expand-edit
-  [idx {:keys [scopes] :as credential} edit]
+  [idx {:keys [label scopes] :as credential} edit]
   [:div {:class "action-row"}
+   ;; Label editor
+   [:input
+    {:class     "label-editor round"
+     :value     label
+     :placeholder "Add Label"
+     :on-change (fn [e]
+                  (let [new-label (not-empty (ps-event-val e))
+                        new-cred  (assoc credential :label new-label)]
+                    (dispatch [:credentials/update-credential idx new-cred])))}]
+   ;; Scope selector
    [:ul {:class "role-select"}
     (map (fn [scope]
            [:li {:class "role-checkbox"
@@ -61,26 +71,28 @@
             [:label {:for "scopes"} (str " " scope)]])
          scope-list)]
    [:ul {:class "action-icon-list"}
+    ;; Save button
     [:li
      [:a {:href "#!",
           :on-click (fn []
                       (swap! edit not)
                       (dispatch [:credentials/save-credential credential]))
-          :class "icon-save"} @(subscribe [:lang/get :credentials.key.permissions.save])]]
+          :class "icon-save"}
+      @(subscribe [:lang/get :credentials.key.permissions.save])]]
+    ;; Cancel button
     [:li
      [:a {:href "#!",
           :on-click (fn []
                       (swap! edit not)
                       (dispatch [:credentials/load-credentials]))
-          :class "icon-close"} @(subscribe [:lang/get :credentials.key.permissions.cancel])]]]])
+          :class "icon-close"}
+      @(subscribe [:lang/get :credentials.key.permissions.cancel])]]]])
 
 (defn- api-key-expand-view
   [_credential edit]
   (let [delete-confirm (r/atom false)]
-    (fn [{:keys [scopes] :as credential} _edit]
+    (fn [credential _edit]
       [:div {:class "action-row"}
-       [:div {:class "action-label"}
-        (scope-list-text scopes)]
        [:ul {:class "action-icon-list"}
         [:li
          [:a {:href "#!",
@@ -139,7 +151,10 @@
                    :else @(subscribe [:lang/get :credentials.key.show])))]]]]]
        [:div {:class "api-key-col"}
         [:p {:class "api-key-col-header"}
-         @(subscribe [:lang/get :credentials.key.permissions])]
+         (if @edit
+           "Edit Credential"
+           "Actions")
+         #_@(subscribe [:lang/get :credentials.key.permissions])]
         (if @edit
           [api-key-expand-edit idx credential edit]
           [api-key-expand-view credential edit])]])))
