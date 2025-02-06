@@ -26,6 +26,7 @@
 
 (s/def :credential/api-key string?)
 (s/def :credential/secret-key string?)
+(s/def :credential/label (s/nilable (s/and string? not-empty)))
 
 (s/def :credential/scope string?)
 (s/def :credential/scopes (s/every :credential/scope))
@@ -33,6 +34,7 @@
 (s/def ::credential
   (s/keys :req-un [:credential/api-key
                    :credential/secret-key
+                   :credential/label
                    :credential/scopes]))
 
 (s/def ::credentials
