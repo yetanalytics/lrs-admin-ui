@@ -36,7 +36,8 @@
            :on-click #(ps-event %)}]]]]
    ;; Label
    [:div {:class "api-key-col"}
-    "Label: " [:span (or label "(None)")]]
+    @(subscribe [:lang/get :credentials.key.label])
+    [:span (or label "(None)")]]
    ;; Permissions
    [:div {:class "api-key-col"}
     @(subscribe [:lang/get :credentials.key.permissions])
@@ -105,11 +106,11 @@
                 :on-click #(do (dispatch [:credentials/delete-credential credential])
                                (swap! delete-confirm not))
                 :class "confirm-delete"}
-            "Yes"]
+            "Yes"] ; TODO: :lang/get
            [:a {:href "#!"
                 :on-click #(swap! delete-confirm not)
                 :class "confirm-delete"}
-            "No"]]
+            "No"]] ; TODO: :lang/get
           [:li
            [:a {:href "#!"
                 :on-click #(swap! delete-confirm not)
@@ -152,9 +153,8 @@
        [:div {:class "api-key-col"}
         [:p {:class "api-key-col-header"}
          (if @edit
-           "Edit Credential"
-           "Actions")
-         #_@(subscribe [:lang/get :credentials.key.permissions])]
+           @(subscribe [:lang/get :credentials.key.edit-credential])
+           @(subscribe [:lang/get :credentials.key.actions]))]
         (if @edit
           [api-key-expand-edit idx credential edit]
           [api-key-expand-view credential edit])]])))
