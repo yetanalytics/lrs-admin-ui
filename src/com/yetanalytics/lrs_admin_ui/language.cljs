@@ -32,8 +32,8 @@
    :credentials.tenant.number  {:en-US "Number of Credentials: "}
    :credentials.tenant.key  {:en-US "Api Key"}
    :credentials.key.aria {:en-US "Show/Hide Api Key Details"}
-   :credentials.key.label {:en-US "Label: "}
-   :credentials.key.permissions {:en-US "Permissions: "}
+   :credentials.key.label {:en-US "Label:"}
+   :credentials.key.permissions {:en-US "Permissions:"}
    :credentials.key.secret {:en-US "API Key Secret"}
    :credentials.key.hide {:en-US "Hide"}
    :credentials.key.show {:en-US "Show Secret Key"}

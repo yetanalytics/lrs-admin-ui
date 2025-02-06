@@ -1,20 +1,11 @@
 (ns com.yetanalytics.lrs-admin-ui.views.credentials.api-key
   (:require
+   [clojure.string :as cstr]
    [reagent.core :as r]
    [re-frame.core :as re-frame :refer [dispatch subscribe]]
    [com.yetanalytics.lrs-admin-ui.functions.copy   :refer [copy-text]]
    [com.yetanalytics.lrs-admin-ui.functions.scopes :refer [scope-list has-scope? toggle-scope]]
    [com.yetanalytics.lrs-admin-ui.functions        :refer [ps-event ps-event-val]]))
-
-(defn- scope-list-text
-  "Convert scopes into a comma-separated list, e.g. \"all, all-read\"."
-  [scopes]
-  (map-indexed (fn [idx scope]
-                 [:span {:key (str "scope-display-" scope)}
-                  (str (when (> idx 0)
-                         ", ")
-                       scope)])
-               scopes))
 
 (defn- api-key-row
   [{:keys [api-key label scopes] :as _credential} expanded]
@@ -36,12 +27,16 @@
            :on-click #(ps-event %)}]]]]
    ;; Label
    [:div {:class "api-key-col"}
-    @(subscribe [:lang/get :credentials.key.label])
-    [:span (or label "(None)")]]
+    (str
+     @(subscribe [:lang/get :credentials.key.label])
+     " "
+     (or label "(None)"))]
    ;; Permissions
    [:div {:class "api-key-col"}
-    @(subscribe [:lang/get :credentials.key.permissions])
-    (scope-list-text scopes)]])
+    (str
+     @(subscribe [:lang/get :credentials.key.permissions])
+     " "
+     (cstr/join ", " scopes))]])
 
 (defn- api-key-expand-edit
   [idx {:keys [label scopes] :as credential} edit]
