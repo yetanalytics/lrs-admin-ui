@@ -939,7 +939,7 @@ span.close-alert img {
 .action-icon-list li {
   display: inline-block;
   vertical-align: top;
-  margin: 0 0 18px 24px;
+  margin: 0 12px 18px 0;
   padding: 0;
 }
 
@@ -1108,6 +1108,30 @@ input.key-display {
   vertical-align: top;
 }
 
+// Credential Label Editor
+
+input.label-editor {
+  margin-bottom: 8px;
+}
+
+// Credential Roles Editor
+
+ul.role-select {
+  padding-left: 0;
+  margin-bottom: 8px;
+}
+
+ul.role-select li.role-checkbox {
+  vertical-align: top;
+  margin: 0px;
+  padding: 0px;
+  list-style-type: none;
+}
+
+.role-checkbox label {
+  padding-left: 4px;
+}
+
 /**************************************************
 # Accounts
 ***************************************************/
@@ -1250,27 +1274,6 @@ div.browser-filters {
   font-size: .9em;
   white-space: nowrap;
 }
-
-/**************************************************
-# Roles
-**************************************************/
-
-ul.role-select {
-  margin: 0px;
-  padding: 0px;
-}
-
-ul.role-select li.role-checkbox {
-  vertical-align: top;
-  margin: 0px;
-  padding: 0px;
-  list-style-type: none;
-}
-
-.role-checkbox label {
-  padding-left: 4px;
-}
-
 
 /**************************************************
 # Tooltip
