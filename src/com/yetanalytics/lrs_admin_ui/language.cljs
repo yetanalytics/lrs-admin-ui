@@ -83,6 +83,8 @@
    :datamgmt.title {:en-US "DATA MANAGEMENT"}
    :datamgmt.delete.title {:en-US "Delete Actor"}
    :datamgmt.delete.button {:en-US "DELETE"}
+   :datamgmt.download.title {:en-US "Download CSV"}
+   :datamgmt.download.button {:en-US "DOWNLOAD"}
 
    ;;Reactions
    :reactions.title {:en-us "REACTIONS"}
