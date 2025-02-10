@@ -470,6 +470,19 @@
 ;; Api Key Management
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn- has-seed-cred?
+  [credentials]
+  (boolean (some (fn [cred] (when (:seed? cred) cred)) credentials)))
+
+(re-frame/reg-event-fx
+ :credentials/notify-on-seed
+ global-interceptors
+ (fn [{:keys [db]} _]
+   (let [credentials (get db ::db/credentials)]
+     (if (has-seed-cred? credentials)
+       {:fx [[:dispatch [:notification/notify true "Seed credentials should be deleted!"]]]}
+       {}))))
+
 (re-frame/reg-event-db
  :credentials/set-credentials
  global-interceptors
