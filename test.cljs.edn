@@ -8,7 +8,10 @@
   :launch-js ["chromium"
               "--headless=new"
               "--disable-gpu"
+              "--no-sandbox"
+              "--disable-setuid-sandbox"
               "--password-store=basic"
+              "--user-data-dir=/tmp/chromium"
               "--repl" :open-url]
   }
 {:main com.yetanalytics.lrs-admin-ui.test-runner}
