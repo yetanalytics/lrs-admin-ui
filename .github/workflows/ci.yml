@@ -32,20 +32,5 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-deps-
 
-    - name: Debug environment
-      run: |
-        echo "## OS Release Info"
-        cat /etc/os-release || true
-
-        echo "## Installed Browser(s)"
-        which chromium || echo "Chromium not found"
-        which google-chrome || echo "Chrome not found"
-
-        echo "## Browser Versions"
-        chromium --version || true
-        google-chrome --version || true
-
-        echo "## List Some Dependencies"
-        dpkg -l | grep font || true
     - name: Run tests
       run: make test
