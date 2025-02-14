@@ -27,11 +27,11 @@
                    :on-click #(do (dispatch [:accounts/delete-account account])
                                   (swap! delete-confirm not))
                    :class "confirm-delete"}
-               "Yes"]
+               "Yes"] ; TODO: :lang/get
               [:a {:href "#!"
                    :on-click #(swap! delete-confirm not)
                    :class "confirm-delete"}
-               "No"]]
+               "No"]] ; TODO: :lang/get
              [:li
               [:a {:href "#!"
                    :on-click #(swap! delete-confirm not)
