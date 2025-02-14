@@ -38,8 +38,8 @@
   [:a {:class "pointer"
        :title title
        :on-click #(dispatch [:browser/add-filter key value])}
-   [:img {:src "images/icons/add-filter.svg"
-          :width "15px"
+   [:img {:src    @(subscribe [:resources/icon "add-filter.svg"])
+          :width  "15px"
           :height "20px"}]])
 
 (defn verb-cell
@@ -127,7 +127,7 @@
        (when (seq b-s)
          [:a {:on-click #(dispatch [:browser/back])
               :class "pointer"}
-          [:img {:src "images/icons/prev.svg"
+          [:img {:src   @(subscribe [:resources/icon "prev.svg"])
                  :width "30px"}]])]
       [:div {:class "table-nav-pages"}
        [:span " Page: " (+ 1 (count b-s))]]
@@ -148,7 +148,7 @@
        (when (seq @(subscribe [:browser/get-more-link]))
          [:a {:on-click #(dispatch [:browser/more])
               :class "pointer"}
-          [:img {:src "images/icons/next.svg"
+          [:img {:src   @(subscribe [:resources/icon "next.svg"])
                  :width "30px"}]])]]]))
 
 (defn refresh-button []

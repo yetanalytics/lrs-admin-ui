@@ -16,10 +16,9 @@
     [:span {:class "close-alert pointer"
             :on-click #(dispatch [:notification/hide id])}
      [:img {:class "close-alert"
-            :src (format "images/icons/icon-close-%s.svg"
-                         (cond
-                           error? "black"
-                           :else "white"))}]]]])
+            :src @(subscribe [:resources/icon
+                              (format "icon-close-%s.svg"
+                                      (if error? "black" "white"))])}]]]])
 
 (defn notifications []
   (let [notifications @(subscribe [:notifications/get-notifications])]

@@ -20,7 +20,7 @@
 (defn delete-actor []
   (let [ifi-types ["mbox" "mbox_sha1sum" "openid" "account"]
         ifi-type (r/atom (first ifi-types))
-        input (r/atom nil)]
+        input (r/atom nil)] ; TODO: Store in an app-db buffer
     (fn []
       [:div
        [:h4 {:class "content-title"}
