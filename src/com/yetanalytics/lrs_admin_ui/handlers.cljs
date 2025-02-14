@@ -344,6 +344,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (re-frame/reg-fx
+ :download
+ (fn [[download-url file-name]]
+   (download/download download-url file-name)))
+
+(re-frame/reg-fx
  :download-json
  (fn [[json-data json-data-name]]
    (download/download-json json-data json-data-name)))
@@ -764,6 +769,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Delete Actor
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (re-frame/reg-event-fx
  :delete-actor/delete-actor
  (fn [{{server-host ::db/server-host
@@ -787,10 +793,48 @@
  (fn [_ [_ actor-ifi]]
    {:fx [[:dispatch [:notification/notify false (str "Successfully deleted " actor-ifi)]]
          [:dispatch [:browser/load-xapi]]]}))
+
 (re-frame/reg-event-fx
  :delete-actor/server-error
  (fn [_ [_ actor-ifi _err]]
    {:fx [[:dispatch  [:notification/notify true  (str "Error when attempting to delete actor " actor-ifi)]]]}))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Download CSV
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(re-frame/reg-event-fx
+ :csv/download
+ (fn [{{server-host ::db/server-host
+        proxy-path  ::db/proxy-path
+        :as _db} :db} _]
+   (let [download-url
+         (-> (httpfn/serv-uri server-host "/admin/csv" proxy-path)
+             ; URL-encoded form of `[["id"] ["verb" "id"]]`
+             ; FIXME: Remove hardcoded property-paths value
+             (str "?property-paths=%5B%5B%22id%22%5D%20%5B%22verb%22%20%22id%22%5D%5D"))]
+     {:download [download-url "statements.csv"]})
+   #_{:http-xhrio {:method          :get
+                 :uri             (httpfn/serv-uri
+                                   server-host
+                                   "/admin/csv"
+                                   proxy-path)
+                 ;; FIXME: Hardcoded parameters are temporary!
+                 :params          {:property-paths [["id"] ["verb" "id"]]}
+                 :response-format (ajax/text-response-format)
+                 :on-success      [:csv/download-success]
+                 :on-failure      [:csv/download-error]
+                 :interceptors    [httpfn/add-jwt-interceptor]}}))
+
+(re-frame/reg-event-fx
+ :csv/download-success
+ {})
+
+(re-frame/reg-event-fx
+ :csv/download-error
+ (fn [_ _]
+   {:fx [[:dispatch [:notification/notify true
+                     "CSV Download Failed."]]]}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; OIDC Support
