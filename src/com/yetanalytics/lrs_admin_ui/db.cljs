@@ -183,7 +183,8 @@
   (s/keys :req-un [:dialog-data/prompt
                    :dialog-data/choices]))
 
-(s/def ::no-val-logout-url string?)
+(s/def ::no-val? boolean?)
+(s/def ::no-val-logout-url (s/nilable string?))
 
 (s/def ::jwt-refresh-interval int?)
 (s/def ::jwt-interaction-window int?)
@@ -220,6 +221,7 @@
                           ::editing-reaction-template-json
                           ::dialog-ref
                           ::dialog-data
+                          ::no-val?
                           ::no-val-logout-url]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

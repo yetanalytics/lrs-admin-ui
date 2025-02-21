@@ -140,21 +140,21 @@
                                               lang/language
                                               custom-language)]
      ;; TODO: Put env vars in their own map
-     {:db (cond-> (assoc db
-                         ::db/jwt-refresh-interval jwt-refresh-interval*
-                         ::db/jwt-interaction-window jwt-interaction-window*
-                         ::db/xapi-prefix url-prefix
-                         ::db/proxy-path proxy-path
-                         ::db/oidc-enable-local-admin oidc-enable-local-admin?
-                         ::db/enable-admin-status enable-admin-status
-                         ::db/enable-reactions enable-reactions
-                         ::db/enable-admin-delete-actor enable-admin-delete-actor
-                         ::db/stmt-get-max stmt-get-max
-                         ::db/pref-lang admin-lang-keyword
-                         ::db/language language-map)
-            (and no-val?
-                 (not-empty no-val-logout-url))
-            (assoc ::db/no-val-logout-url no-val-logout-url))
+     {:db (assoc db
+                 ::db/jwt-refresh-interval jwt-refresh-interval*
+                 ::db/jwt-interaction-window jwt-interaction-window*
+                 ::db/xapi-prefix url-prefix
+                 ::db/proxy-path proxy-path
+                 ::db/oidc-enable-local-admin oidc-enable-local-admin?
+                 ::db/enable-admin-status enable-admin-status
+                 ::db/enable-reactions enable-reactions
+                 ::db/enable-admin-delete-actor enable-admin-delete-actor
+                 ::db/stmt-get-max stmt-get-max
+                 ::db/pref-lang admin-lang-keyword
+                 ::db/language language-map
+                 ::db/no-val? no-val?
+                 ::db/no-val-logout-url (when no-val?
+                                          (not-empty no-val-logout-url)))
       :fx (cond-> [[:dispatch [::re-route/init
                                ui-routes
                                :not-found
@@ -359,6 +359,10 @@
      {:fx [[:dispatch [:session/set-token json-web-token]]
            [:dispatch [:login/set-password nil]]
            [:dispatch [:login/set-username nil]]
+           ;; Have to hardcode seeding the home (i.e. the credential) page
+           ;; due to race condition with set-token
+           [:dispatch [::re-route/navigate :home]]
+           [:dispatch [:credentials/load-credentials]]
            [:dispatch-later {:ms       jwt-refresh-interval
                              :dispatch [:login/try-renew]}]]})))
 
@@ -495,19 +499,25 @@
  (fn [{:keys [db]} _]
    (let [{server-host        ::db/server-host
           proxy-path         ::db/proxy-path
-          ?no-val-logout-url ::db/no-val-logout-url} db]
+          no-val?            ::db/no-val?
+          ?no-val-logout-url ::db/no-val-logout-url} db
+          logged-in? (oidc/logged-in? db)]
      (cond
        ;; OIDC login
-       (oidc/logged-in? db)
+       logged-in?
        {:fx [[:dispatch [:session/clear-token]]
              [:dispatch [:session/clear-username]]
              [:dispatch [::re-oidc/logout]]]}
        ;; Proxy JWT login
-       ?no-val-logout-url
+       no-val?
        {:fx [[:dispatch [:session/clear-token]]
              [:dispatch [:session/clear-username]]
-             [:logout/no-val-logout-redirect
-              {:logout-url ?no-val-logout-url}]]}
+             (if ?no-val-logout-url
+               [:logout/no-val-logout-redirect
+                {:logout-url ?no-val-logout-url}]
+               ;; Ideally should not happen but we need a fallback if
+               ;; jwtNoValLogoutUrl is not set.
+               [:dispatch [::re-route/navigate :home]])]}
        ;; Regular JWT login
        :else
        {:http-xhrio
@@ -528,7 +538,8 @@
  (fn [_ _]
    {:fx [[:dispatch [:session/clear-token]]
          [:dispatch [:session/clear-username]]
-         [:dispatch [:notification/notify false "You have logged out."]]]}))
+         [:dispatch [:notification/notify false "You have logged out."]]
+         [:dispatch [::re-route/navigate :home]]]}))
 
 (re-frame/reg-fx
  :logout/no-val-logout-redirect
