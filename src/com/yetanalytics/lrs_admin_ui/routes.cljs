@@ -1,6 +1,6 @@
 (ns com.yetanalytics.lrs-admin-ui.routes
   (:require
-   [re-frame.core :refer [subscribe dispatch]]
+   [re-frame.core :refer [dispatch]]
    [com.yetanalytics.re-route :as re-route]
    [com.yetanalytics.lrs-admin-ui.views.accounts        :refer [accounts]]
    [com.yetanalytics.lrs-admin-ui.views.browser         :refer [browser]]
