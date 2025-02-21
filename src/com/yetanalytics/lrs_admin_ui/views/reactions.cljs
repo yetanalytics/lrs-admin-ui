@@ -1050,17 +1050,24 @@
   [:div.reaction-edit-invalid
    @(subscribe [:lang/get :reactions.errors.invalid])])
 
+(defn- missing-reaction
+  []
+  [:div {:class "tenant-wrapper"}
+   [:p @(subscribe [:lang/get :reactions.not-found])]])
+
 (defn reaction-focus []
   (let [{:keys [id ruleset]
          :as reaction} @(subscribe [:reaction/focus])]
     [:div {:class "left-content-wrapper"}
      [:h2 {:class "content-title"}
       @(subscribe [:lang/get :reactions.focus.title])]
-     [:div {:class "tenant-wrapper"}
-      [reaction-actions-focus id]
-      [reaction-info-panel-focus reaction]  
-      [reaction-ruleset-focus ruleset]
-      [reaction-actions-focus id]]]))
+     (if (some? reaction)
+       [:div {:class "tenant-wrapper"}
+        [reaction-actions-focus id]
+        [reaction-info-panel-focus reaction]  
+        [reaction-ruleset-focus ruleset]
+        [reaction-actions-focus id]]
+       [missing-reaction])]))
 
 (defn reaction-edit []
   (let [{:keys [ruleset]
@@ -1069,12 +1076,14 @@
     [:div {:class "left-content-wrapper"}
      [:h2 {:class "content-title"}
       @(subscribe [:lang/get :reactions.edit.title])]
-     [:div {:class "tenant-wrapper"}
-      [reaction-actions-edit error?]
-      (when error? [reaction-edit-invalid])
-      [reaction-info-panel-edit reaction]
-      [reaction-ruleset-edit ruleset]
-      [reaction-actions-edit error?]]]))
+     (if (some? reaction)
+       [:div {:class "tenant-wrapper"}
+        [reaction-actions-edit error?]
+        (when error? [reaction-edit-invalid])
+        [reaction-info-panel-edit reaction]
+        [reaction-ruleset-edit ruleset]
+        [reaction-actions-edit error?]]
+       [missing-reaction])]))
 
 (defn reaction-new []
   (let [{:keys [ruleset]

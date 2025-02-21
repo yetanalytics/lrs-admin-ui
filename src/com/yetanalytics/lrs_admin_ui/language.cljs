@@ -102,6 +102,8 @@
    :reactions.action.edit {:en-US "Edit"}
    :reactions.action.delete {:en-US "Delete"}
 
+   :reactions.not-found {:en-US "The Reaction cannot be found."}
+
    :reactions.new.title {:en-US "New Reaction"}
    :reactions.edit.title {:en-US "Edit Reaction"}
    :reactions.focus.title {:en-US "Reaction Details"}
