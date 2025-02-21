@@ -14,6 +14,8 @@
             [com.yetanalytics.lrs-admin-ui.functions.oidc     :as oidc]
             [com.yetanalytics.lrs-admin-ui.functions.time     :as t]
             [com.yetanalytics.lrs-admin-ui.functions.reaction :as rfns]
+            [com.yetanalytics.lrs-admin-ui.functions.session  :refer [login-dispatch*
+                                                                      login-dispatch]]
             [com.yetanalytics.re-oidc                         :as re-oidc]
             [ajax.core                                        :as ajax]
             [cljs.spec.alpha                                  :refer [valid?]]
@@ -620,6 +622,9 @@
 ;; Data Browser
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defmethod re-route/on-start :browser [{:keys [db]} _params]
+  (login-dispatch* db))
+
 (re-frame/reg-event-fx
  :browser/try-load-xapi
  (fn [{{server-host ::db/server-host
@@ -742,6 +747,15 @@
 ;; Api Key Management
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defmethod re-route/on-start :not-found [{:keys [db]} _params]
+  (login-dispatch* db))
+
+(defmethod re-route/on-start :home [{:keys [db]} _params]
+  (login-dispatch db [:credentials/load-credentials]))
+
+(defmethod re-route/on-start :credentials [{:keys [db]} _params]
+  (login-dispatch db [:credentials/load-credentials]))
+
 (re-frame/reg-event-db
  :credentials/set-credentials
  (fn [db [_ credentials]]
@@ -844,6 +858,14 @@
 ;; Account Management
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defmethod re-route/on-start :accounts [{:keys [db]} _params]
+  (login-dispatch db [:accounts/load-accounts]))
+
+(defmethod re-route/on-start :update-password [{:keys [db]} _params]
+  (login-dispatch* db))
+
+(defmethod re-route/on-stop :update-password [_ _]
+  {:fx [[:dispatch [:update-password/clear]]]})
 
 (re-frame/reg-event-fx
  :accounts/load-accounts
@@ -1009,6 +1031,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Delete Actor
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defmethod re-route/on-start :data-management [{:keys [db]} _params]
+  (login-dispatch* db))
+
 (re-frame/reg-event-fx
  :delete-actor/delete-actor
  (fn [{{server-host ::db/server-host
@@ -1041,6 +1067,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Status Dashboard
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defmethod re-route/on-start :status [{:keys [db]} _params]
+  (login-dispatch db [:status/get-all-data]))
 
 (re-frame/reg-event-fx
  :status/get-data
@@ -1173,6 +1202,27 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Reaction Management
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defmethod re-route/on-start :reactions [{:keys [db]} _]
+  (login-dispatch db [:reaction/load-reactions]))
+
+(defmethod re-route/on-start :reactions/new [{:keys [db]} _]
+  (login-dispatch db [:reaction/new]))
+
+(defmethod re-route/on-start :reactions/focus [{:keys [db]} [_ _ reaction-id]]
+  (login-dispatch db [:reaction/set-focus reaction-id]))
+
+(defmethod re-route/on-start :reactions/edit [{:keys [db]} [_ _ reaction-id]]
+  (login-dispatch db [:reaction/edit reaction-id]))
+
+(defmethod re-route/on-stop :reactions/new [_ _]
+  {:fx [[:dispatch [:reaction/clear-edit]]]})
+
+(defmethod re-route/on-stop :reactions/edit [_ _]
+  {:fx [[:dispatch [:reaction/clear-edit]]]})
+
+(defmethod re-route/on-stop :reactions/focus [_ _]
+  {:fx [[:dispatch [:reaction/unset-focus]]]})
 
 (re-frame/reg-event-fx
  :reaction/load-reactions

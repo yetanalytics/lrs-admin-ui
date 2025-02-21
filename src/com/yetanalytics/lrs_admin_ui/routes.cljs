@@ -1,6 +1,7 @@
 (ns com.yetanalytics.lrs-admin-ui.routes
   (:require
-   [re-frame.core :refer [dispatch]]
+   [re-frame.core :refer [subscribe dispatch]]
+   [com.yetanalytics.re-route :as re-route]
    [com.yetanalytics.lrs-admin-ui.views.accounts        :refer [accounts]]
    [com.yetanalytics.lrs-admin-ui.views.browser         :refer [browser]]
    [com.yetanalytics.lrs-admin-ui.views.credentials     :refer [credentials]]
@@ -23,53 +24,68 @@
              :view        credentials
              :controllers [{:start
                             (fn [_]
-                              (dispatch [:credentials/load-credentials]))}]}]
+                              (dispatch [::re-route/on-start :home]))}]}]
            ["/credentials"
             {:name        :credentials
              :view        credentials
              :controllers [{:start
                             (fn [_]
-                              (dispatch [:credentials/load-credentials]))}]}]
+                              (dispatch [::re-route/on-start :credentials]))}]}]
            ["/accounts"
             {:name        :accounts
              :view        accounts
-             :controllers [{:start (fn [_]
-                                     (dispatch [:accounts/load-accounts]))}]}]
+             :controllers [{:start
+                            (fn [_]
+                              (dispatch [::re-route/on-start :accounts]))}]}]
            ["/accounts/password"
             {:name        :update-password
              :view        update-password
-             :controllers [{:stop (fn [_]
-                                    (dispatch [:update-password/clear]))}]}]
+             :controllers [{:start
+                            (fn [_]
+                              (dispatch [::re-route/on-start :update-password]))
+                            :stop
+                            (fn [_]
+                              (dispatch [::re-route/on-stop :update-password]))}]}]
            ["/browser"
             {:name :browser
-             :view browser}]
+             :view browser
+             :controllers [{:start
+                            (fn [_]
+                              (dispatch [::re-route/on-start :browser]))}]}]
            ["/not-found"
             {:name :not-found
-             :view not-found}]]
+             :view not-found
+             :controllers [{:start
+                            (fn [_]
+                              (dispatch [::re-route/on-start :not-found]))}]}]]
     enable-admin-delete-actor
     (conj ["/data-management"
            {:name :data-management
-            :view data-management}])
+            :view data-management
+            :controllers [{:start
+                           (fn [_]
+                             (dispatch [::re-route/on-start :data-management]))}]}])
     enable-admin-status
     (conj ["/status"
            {:name        :status
             :view        status
-            :controllers [{:start (fn [_]
-                                    (dispatch [:status/get-all-data]))}]}])
+            :controllers [{:start
+                           (fn [_]
+                             (dispatch [::re-route/on-start :status]))}]}])
     enable-reactions
     (conj
      ["/reactions"
       {:name        :reactions
        :view        reactions-list
        :controllers [{:start (fn [_]
-                               (dispatch [:reaction/load-reactions]))}]}]
+                               (dispatch [::re-route/on-start :reactions]))}]}]
      ["/reactions/new"
       {:name        :reactions/new
        :view        reaction-new
        :controllers [{:start (fn [_]
-                               (dispatch [:reaction/new]))
+                               (dispatch [::re-route/on-start :reactions/new]))
                       :stop  (fn [_]
-                               (dispatch [:reaction/clear-edit]))}]}]
+                               (dispatch [::re-route/on-stop :reactions/new]))}]}]
      ["/reactions/:id/view"
       {:name        :reactions/focus
        :view        reaction-focus
@@ -77,9 +93,9 @@
        :controllers [{:identity (fn [params]
                                   (get-in params [:path-params :id]))
                       :start    (fn [id]
-                                  (dispatch [:reaction/set-focus id]))
+                                  (dispatch [::re-route/on-start :reactions/focus id]))
                       :stop     (fn [_]
-                                  (dispatch [:reaction/unset-focus]))}]}]
+                                  (dispatch [::re-route/on-stop :reactions/focus]))}]}]
      ["/reactions/:id/edit"
       {:name        :reactions/edit
        :view        reaction-edit
@@ -87,6 +103,6 @@
        :controllers [{:identity (fn [params]
                                   (get-in params [:path-params :id]))
                       :start    (fn [id]
-                                  (dispatch [:reaction/edit id]))
+                                  (dispatch [::re-route/on-start :reactions/edit id]))
                       :stop     (fn [_]
-                                  (dispatch [:reaction/clear-edit]))}]}])))
+                                  (dispatch [::re-route/on-stop :reactions/edit]))}]}])))
