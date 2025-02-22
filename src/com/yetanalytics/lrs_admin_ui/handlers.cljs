@@ -1207,13 +1207,13 @@
   (login-dispatch db [:reaction/load-reactions]))
 
 (defmethod re-route/on-start :reactions/new [{:keys [db]} _]
-  (login-dispatch db [:reaction/new]))
+  (login-dispatch db [:reaction/set-new]))
 
 (defmethod re-route/on-start :reactions/focus [{:keys [db]} [_ _ reaction-id]]
-  (login-dispatch db [:reaction/set-focus reaction-id]))
+  (login-dispatch db [:reaction/load-reactions-and-focus reaction-id]))
 
 (defmethod re-route/on-start :reactions/edit [{:keys [db]} [_ _ reaction-id]]
-  (login-dispatch db [:reaction/edit reaction-id]))
+  (login-dispatch db [:reaction/load-reactions-and-edit reaction-id]))
 
 (defmethod re-route/on-stop :reactions/new [_ _]
   {:fx [[:dispatch [:reaction/clear-edit]]]})
@@ -1244,6 +1244,16 @@
    (assoc db
           ::db/reactions
           (mapv rfns/db->focus-form reactions))))
+
+;; Reaction View ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(re-frame/reg-event-fx
+ :reaction/load-reactions-and-focus
+ (fn [{:keys [db]} [_ reaction-id]]
+   (if (empty? (get db ::db/reactions))
+     {:fx [[:dispatch [:reaction/load-reactions]]
+           [:dispatch [:reaction/set-focus reaction-id]]]}
+     {:fx [[:dispatch [:reaction/set-focus reaction-id]]]})))
 
 (re-frame/reg-event-db
  :reaction/set-focus
@@ -1294,19 +1304,52 @@
  (fn [{:keys [db]}]
    {:db db}))
 
-(re-frame/reg-event-fx
- :reaction/edit
- (fn [{:keys [db]} [_ reaction-id]]
-   (if-let [reaction (some-> (find-reaction db reaction-id)
-                             rfns/focus->edit-form)]
-     {:db (-> db
-              (assoc ::db/editing-reaction reaction)
-              prep-edit-reaction-template)}
-     {:fx [[:dispatch [:notification/notify true
-                       "Cannot edit, reaction not found!"]]]})))
+;; Reaction Edit ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; TODO: Somehow refactor this effect, since right now it's mostly copy-pasted
+;; code from :reaction/load-reactions.
 
 (re-frame/reg-event-fx
- :reaction/new
+ :reaction/load-reactions-and-edit
+ (fn [{{reactions   ::db/reactions
+        server-host ::db/server-host
+        proxy-path  ::db/proxy-path} :db} [_ reaction-id]]
+   (if (empty? reactions)
+     {:http-xhrio {:method          :get
+                   :uri             (httpfn/serv-uri
+                                     server-host
+                                     "/admin/reaction"
+                                     proxy-path)
+                   :response-format (ajax/json-response-format {:keywords? true})
+                   :on-success      [:reaction/set-reactions-and-edit reaction-id]
+                   :on-failure      [:server-error]
+                   :interceptors    [httpfn/add-jwt-interceptor]}}
+     {:fx [[:dispatch [:reaction/set-edit reaction-id]]]})))
+
+(defn- set-reaction-edit [db reaction-id]
+  (if-let [reaction (some-> (find-reaction db reaction-id)
+                            rfns/focus->edit-form)]
+    {:db (-> db
+             (assoc ::db/editing-reaction reaction)
+             prep-edit-reaction-template)}
+    {:fx [[:dispatch [:notification/notify true
+                      "Cannot edit, reaction not found!"]]]}))
+
+(re-frame/reg-event-fx
+ :reaction/set-reactions-and-edit
+ (fn [{:keys [db]} [_ reaction-id {:keys [reactions]}]]
+   (let [db* (assoc db
+                    ::db/reactions
+                    (mapv rfns/db->focus-form reactions))]
+     (set-reaction-edit db* reaction-id))))
+
+(re-frame/reg-event-fx
+ :reaction/set-edit
+ (fn [{:keys [db]} [_ reaction-id]]
+   (set-reaction-edit db reaction-id)))
+
+(re-frame/reg-event-fx
+ :reaction/set-new
  (fn [{:keys [db]} _]
    (let [reaction {:title  (format "reaction_%s"
                                    (fns/rand-alpha-str 8))
