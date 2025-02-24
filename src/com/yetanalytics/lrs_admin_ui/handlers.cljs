@@ -93,7 +93,8 @@
                                           enable-admin-delete-actor
                                           admin-language-code
                                           stmt-get-max
-                                          custom-language]
+                                          custom-language
+                                          auth-by-cred-id]
                        ?oidc             :oidc
                        ?oidc-local-admin :oidc-enable-local-admin}]]
    {:db (cond-> (assoc db
@@ -107,7 +108,8 @@
                        ::db/pref-lang (keyword admin-language-code)
                        ::db/language (merge-with merge
                                                  lang/language
-                                                 custom-language))
+                                                 custom-language)
+                       ::db/auth-by-cred-id auth-by-cred-id)
           (and no-val?
                (not-empty no-val-logout-url))
           (assoc ::db/no-val-logout-url no-val-logout-url))
@@ -360,10 +362,13 @@
 (re-frame/reg-event-fx
  :browser/load-xapi
  global-interceptors
- (fn [{{server-host ::db/server-host
-        proxy-path  ::db/proxy-path
-        xapi-prefix ::db/xapi-prefix} :db} [_ {:keys [path params]}]]
-   (let [xapi-url (httpfn/build-xapi-url
+ (fn [{{server-host     ::db/server-host
+        proxy-path      ::db/proxy-path
+        xapi-prefix     ::db/xapi-prefix
+        auth-by-cred-id ::db/auth-by-cred-id :as db} :db} [_ {:keys [path params]}]]
+   (let [params (cond-> params
+                  auth-by-cred-id (assoc :credentialID (get-in db [::db/browser :credential :id])))
+         xapi-url (httpfn/build-xapi-url
                    server-host xapi-prefix path params proxy-path)]
      {:dispatch   [:browser/set-address xapi-url]
       :http-xhrio {:method          :get
