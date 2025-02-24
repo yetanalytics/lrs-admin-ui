@@ -27,6 +27,8 @@
 (s/def :credential/secret-key string?)
 (s/def :credential/label (s/nilable (s/and string? not-empty)))
 
+(s/def :credential/id string?)
+
 (s/def :credential/scope string?)
 (s/def :credential/scopes (s/every :credential/scope))
 
@@ -34,7 +36,8 @@
   (s/keys :req-un [:credential/api-key
                    :credential/secret-key
                    :credential/label
-                   :credential/scopes]))
+                   :credential/scopes
+                   :credential/id]))
 
 (s/def ::credentials
   (s/every ::credential))
@@ -229,7 +232,8 @@
                           ::dialog-ref
                           ::dialog-data
                           ::no-val?
-                          ::no-val-logout-url]))
+                          ::no-val-logout-url
+                          ::auth-by-cred-id]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Continuous DB Validation
