@@ -7,11 +7,11 @@
         re-frame/re-frame                       {:mvn/version "1.2.0"}
         day8.re-frame/http-fx                   {:mvn/version "0.2.3"}
         lambdaisland/uri                        {:mvn/version "1.14.120"}
-        com.yetanalytics/re-oidc                {:git/url "https://github.com/yetanalytics/re-oidc.git"
-                                                 :git/sha "acd78308318c26f295f3c0245f77b4d71bb7214f"
-                                                 #_#_:mvn/version "0.0.5"
+        com.yetanalytics/re-oidc                {#_:git/url "https://github.com/yetanalytics/re-oidc.git"
+                                                 #_:git/sha "acd78308318c26f295f3c0245f77b4d71bb7214f"
+                                                 :mvn/version "0.1.0-SNAPSHOT"
                                                  :exclusions
-                                                 [#_cljsjs/oidc-client-ts
+                                                 [cljsjs/oidc-client-ts
                                                   reagent/reagent
                                                   re-frame/re-frame]}
         com.yetanalytics/xapi-schema            {:mvn/version "1.2.3"}
