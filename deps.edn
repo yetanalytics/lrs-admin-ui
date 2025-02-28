@@ -11,7 +11,7 @@
                                                  #_:git/sha "acd78308318c26f295f3c0245f77b4d71bb7214f"
                                                  :mvn/version "0.1.0-SNAPSHOT"
                                                  :exclusions
-                                                 [cljsjs/oidc-client-ts
+                                                 [io.github.cljsjs/oidc-client-ts
                                                   reagent/reagent
                                                   re-frame/re-frame]}
         com.yetanalytics/xapi-schema            {:mvn/version "1.2.3"}
@@ -37,7 +37,7 @@
                    com.bhauman/figwheel-main {:mvn/version "0.2.14"}}
                  :extra-paths ["target" "test"]}
            :build {:main-opts ["-m" "figwheel.main" "-b" "dev" "-r"]}
-           :min   {:main-opts ["-m" "figwheel.main" "-O" "advanced" "-bo" "dev"]}
+           :min   {:main-opts ["-m" "figwheel.main" #_"-O" #_"advanced" "-bo" "dev"]}
            :test  {:main-opts ["-m" "figwheel.main" "-co" "test.cljs.edn" "-m" "com.yetanalytics.lrs-admin-ui.test-runner"]}
            :dev {:extra-deps
                  {day8.re-frame/tracing      {:mvn/version "0.6.2"}
