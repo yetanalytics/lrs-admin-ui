@@ -1,5 +1,6 @@
 (ns com.yetanalytics.lrs-admin-ui.views.reactions.path
   (:require [reagent.core :as r]
+            [re-frame.core :refer [subscribe]]
             [clojure.string :as cstr]
             [com.yetanalytics.lrs-admin-ui.functions :as fns]
             [com.yetanalytics.lrs-reactions.path :as rpath]
@@ -110,7 +111,7 @@
                  :on-click (fn [e]
                              (fns/ps-event e)
                              (del-fn))}
-             [:img {:src "images/icons/minus.svg"}]]])
+             [:img {:src @(subscribe [:resources/icon "minus.svg"])}]]])
           ;; Offer another segment if path is valid & not complete
           (and valid?
                (not complete?))
@@ -120,7 +121,7 @@
                  :on-click (fn [e]
                              (fns/ps-event e)
                              (add-fn))}
-             [:img {:src "images/icons/add.svg"}]]])
+             [:img {:src @(subscribe [:resources/icon "add.svg"])}]]])
           ;; If remove function is provided, add icon for that
           remove-fn
           (conj
@@ -129,7 +130,7 @@
                  :on-click (fn [e]
                              (fns/ps-event e)
                              (remove-fn))}
-             [:img {:src "images/icons/icon-delete-brand.svg"}]]])
+             [:img {:src @(subscribe [:resources/icon "icon-delete-brand.svg"])}]]])
           )
         ;; Indicate expected type?
         )))
