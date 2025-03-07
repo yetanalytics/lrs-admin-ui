@@ -577,32 +577,29 @@
   (or (some? (get-in db [::db/session :token]))
       (oidc/logged-in? db)))
 
-(defn login-dispatch*
-  "Do nothing if logged in, otherwise redirect to the homepage.
-   Returns an `{:fx ...}` map."
-  [db]
-  (cond
-    (::db/no-val? db)
-    {:fx [[:dispatch [:session/verify-no-val-login]]]}
-    (logged-in? db)
-    {}
-    :else
-    {:fx [[:dispatch [::re-route/navigate :home]]]}))
-
 (defn login-dispatch
   "Dispatch `dispatch-vec` if logged in, otherwise redirect to the homepage.
+   If `dispatch-vec` is not provided, do nothing if logged in.
    Returns an `{:fx ...}` map."
-  [db dispatch-vec]
-  (cond
-    (::db/no-val? db)
-    {:fx [[:dispatch [:session/verify-no-val-login dispatch-vec]]]}
-    (logged-in? db)
-    {:fx [[:dispatch dispatch-vec]]}
-    :else
-    {:fx [[:dispatch [::re-route/navigate :home]]]}))
+  ([db]
+   (cond
+     (::db/no-val? db)
+     {:fx [[:dispatch [:session/verify-no-val-login]]]}
+     (logged-in? db)
+     {}
+     :else
+     {:fx [[:dispatch [::re-route/navigate :home]]]}))
+  ([db dispatch-vec]
+   (cond
+     (::db/no-val? db)
+     {:fx [[:dispatch [:session/verify-no-val-login dispatch-vec]]]}
+     (logged-in? db)
+     {:fx [[:dispatch dispatch-vec]]}
+     :else
+     {:fx [[:dispatch [::re-route/navigate :home]]]})))
 
 (defmethod re-route/on-start :not-found [{:keys [db]} _params]
-  (login-dispatch* db))
+  (login-dispatch db))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Notifications / Alert Bar
@@ -679,7 +676,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defmethod re-route/on-start :browser [{:keys [db]} _params]
-  (login-dispatch* db))
+  (login-dispatch db))
 
 (re-frame/reg-event-fx
  :browser/try-load-xapi
@@ -916,7 +913,7 @@
   (login-dispatch db [:accounts/load-accounts]))
 
 (defmethod re-route/on-start :update-password [{:keys [db]} _params]
-  (login-dispatch* db))
+  (login-dispatch db))
 
 (defmethod re-route/on-stop :update-password [_ _]
   {:fx [[:dispatch [:update-password/clear]]]})
@@ -1087,7 +1084,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defmethod re-route/on-start :data-management [{:keys [db]} _params]
-  (login-dispatch* db))
+  (login-dispatch db))
 
 (re-frame/reg-event-fx
  :delete-actor/delete-actor
