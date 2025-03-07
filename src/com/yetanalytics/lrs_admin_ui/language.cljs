@@ -19,6 +19,9 @@
    :header.nav.monitor     {:en-US "LRS Monitor"}
    :header.nav.data        {:en-US "Data Management"}
    :header.nav.reactions   {:en-US "Reactions"}
+   ;;404 Page
+   :not-found.title {:en-US "404 Not Found"}
+   :not-found.body  {:en-US "The page that you are looking for cannot be found."}
    ;;Login Page
    :login.title        {:en-US "LOGIN"}
    :login.username     {:en-US "Username"}
@@ -100,6 +103,8 @@
    :reactions.col.action {:en-US "Action"}
    :reactions.action.edit {:en-US "Edit"}
    :reactions.action.delete {:en-US "Delete"}
+
+   :reactions.not-found {:en-US "The Reaction cannot be found."}
 
    :reactions.new.title {:en-US "New Reaction"}
    :reactions.edit.title {:en-US "Edit Reaction"}
