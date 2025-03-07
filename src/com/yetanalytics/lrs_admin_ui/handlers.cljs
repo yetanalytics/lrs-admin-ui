@@ -14,8 +14,6 @@
             [com.yetanalytics.lrs-admin-ui.functions.oidc     :as oidc]
             [com.yetanalytics.lrs-admin-ui.functions.time     :as t]
             [com.yetanalytics.lrs-admin-ui.functions.reaction :as rfns]
-            [com.yetanalytics.lrs-admin-ui.functions.session  :refer [login-dispatch*
-                                                                      login-dispatch]]
             [com.yetanalytics.re-oidc                         :as re-oidc]
             [ajax.core                                        :as ajax]
             [cljs.spec.alpha                                  :refer [valid?]]
@@ -549,6 +547,64 @@
    (set! (.-location js/window) logout-url)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Login Session Verification
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(re-frame/reg-event-fx
+ :session/verify-no-val-login
+ (fn [{{server-host ::db/server-host
+        proxy-path  ::db/proxy-path} :db} [_ dispatch-vec]]
+   {:http-xhrio
+    {:method          :get
+     :uri             (httpfn/serv-uri
+                       server-host
+                       "/admin/verify"
+                       proxy-path)
+     :response-format (ajax/json-response-format {:keywords? true})
+     :on-success      [:session/verify-no-val-login-success dispatch-vec]
+     :on-failure      [:server-error]
+     :interceptors    [httpfn/add-jwt-interceptor]}}))
+
+(re-frame/reg-event-fx
+ :session/verify-no-val-login-success
+ (fn [_ [_ ?dispatch-vec _]]
+   (if ?dispatch-vec
+     {:fx [[:dispatch ?dispatch-vec]]}
+     {})))
+
+(defn- logged-in?
+  [db]
+  (or (some? (get-in db [::db/session :token]))
+      (oidc/logged-in? db)))
+
+(defn login-dispatch*
+  "Do nothing if logged in, otherwise redirect to the homepage.
+   Returns an `{:fx ...}` map."
+  [db]
+  (cond
+    (::db/no-val? db)
+    {:fx [[:dispatch [:session/verify-no-val-login]]]}
+    (logged-in? db)
+    {}
+    :else
+    {:fx [[:dispatch [::re-route/navigate :home]]]}))
+
+(defn login-dispatch
+  "Dispatch `dispatch-vec` if logged in, otherwise redirect to the homepage.
+   Returns an `{:fx ...}` map."
+  [db dispatch-vec]
+  (cond
+    (::db/no-val? db)
+    {:fx [[:dispatch [:session/verify-no-val-login dispatch-vec]]]}
+    (logged-in? db)
+    {:fx [[:dispatch dispatch-vec]]}
+    :else
+    {:fx [[:dispatch [::re-route/navigate :home]]]}))
+
+(defmethod re-route/on-start :not-found [{:keys [db]} _params]
+  (login-dispatch* db))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Notifications / Alert Bar
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -747,9 +803,6 @@
 ;; Api Key Management
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defmethod re-route/on-start :not-found [{:keys [db]} _params]
-  (login-dispatch* db))
-
 (defmethod re-route/on-start :home [{:keys [db]} _params]
   (login-dispatch db [:credentials/load-credentials]))
 
@@ -765,6 +818,7 @@
  :credentials/load-credentials
  (fn [{{server-host ::db/server-host
         proxy-path  ::db/proxy-path} :db} _]
+   (println "Loading Credentials!")
    {:http-xhrio {:method          :get
                  :uri             (httpfn/serv-uri
                                    server-host
