@@ -208,22 +208,8 @@
      {:fx [[:dispatch [:server-error error]]]})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; General
+;; Error Response Handling
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defmulti page-fx
-  "Given a set-page event query vector, adds any effects of moving to that page.
-  Note that you can use overloads beyond just the page keyword in your methods."
-  (fn [[_ page]]
-    page))
-
-(defmethod page-fx :default [_] [])
-
-(re-frame/reg-event-fx
- :session/set-page
- (fn [{:keys [db]} [_ page :as qvec]]
-   {:db (assoc-in db [::db/session :page] page)
-    :fx (page-fx qvec)}))
 
 (re-frame/reg-event-fx
  :server-error
