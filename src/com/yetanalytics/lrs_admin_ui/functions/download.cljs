@@ -3,7 +3,7 @@
 (defn download
   "Create a link of the form
    ```
-   <a href=[object-url] download=[file-name].[extension] />
+   <a href=[object-url] download=[file-name].[extension] target=\"_blank\" />
    ```
    then append it to the DOM, \"click\" on it, and it will download `data-blob`
    as a file. The `object-url` can either be a HTTP endpoint on a server, or
@@ -11,6 +11,7 @@
   [url file-name]
   (let [link-element (.createElement js/document "a")]
     (set! (.-href link-element) url)
+    (set! (.-target link-element) "_blank")
     (.setAttribute link-element "download" file-name)
     (.appendChild (.-body js/document) link-element)
     (.click link-element)
