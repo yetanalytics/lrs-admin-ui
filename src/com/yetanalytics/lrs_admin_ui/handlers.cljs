@@ -550,6 +550,10 @@
 ;; Login Session Verification
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; Because no-val JWT mode will always have a JWT present, we cannot use
+;; the lack of a token in the session store to determine if the user was
+;; logged out. Thus, we need to poll the server instead.
+
 (re-frame/reg-event-fx
  :session/verify-no-val-login
  (fn [{{server-host ::db/server-host
