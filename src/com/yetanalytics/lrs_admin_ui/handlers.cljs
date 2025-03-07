@@ -611,6 +611,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (re-frame/reg-fx
+ :download
+ (fn [[download-url file-name]]
+   (download/download download-url file-name)))
+
+(re-frame/reg-fx
  :download-json
  (fn [[json-data json-data-name]]
    (download/download-json json-data json-data-name)))
@@ -1040,11 +1045,13 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Delete Actor
+;; Data Management
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defmethod re-route/on-start :data-management [{:keys [db]} _params]
   (login-dispatch* db))
+
+;; Actor Delete ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (re-frame/reg-event-fx
  :delete-actor/delete-actor
@@ -1074,6 +1081,37 @@
  :delete-actor/server-error
  (fn [_ [_ actor-ifi _err]]
    {:fx [[:dispatch  [:notification/notify true  (str "Error when attempting to delete actor " actor-ifi)]]]}))
+
+;; Download CSV ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(re-frame/reg-event-fx
+ :csv/auth-and-download
+ (fn [{{server-host ::db/server-host
+        proxy-path  ::db/proxy-path
+        :as _db} :db} _]
+   {:http-xhrio {:method          :get
+                 :uri             (httpfn/serv-uri
+                                   server-host
+                                   "/admin/csv/auth"
+                                   proxy-path)
+                 :response-format (ajax/json-response-format {:keywords? true})
+                 :on-success      [:csv/download]
+                 :on-failure      [:server-error]
+                 :interceptors    [httpfn/add-jwt-interceptor]}}))
+
+(re-frame/reg-event-fx
+ :csv/download
+ (fn [{{server-host ::db/server-host
+        proxy-path  ::db/proxy-path
+        :as _db} :db} [_ {:keys [json-web-token]}]]
+   ;; FIXME: Remove hardcoded property-paths value
+   (let [property-paths "%5B%5B%22id%22%5D%20%5B%22verb%22%20%22id%22%5D%5D"
+         query-params   (format "?token=%s&property-paths=%s"
+                                json-web-token
+                                property-paths)
+         download-url   (-> (httpfn/serv-uri server-host "/admin/csv" proxy-path)
+                            (str query-params))]
+     {:download [download-url "statements.csv"]})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Status Dashboard
