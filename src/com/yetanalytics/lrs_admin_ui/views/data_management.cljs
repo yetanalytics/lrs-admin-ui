@@ -14,5 +14,5 @@
     @(subscribe [:lang/get :datamgmt.download.title])]
    [:input {:type "button",
             :class "btn-brand-bold",
-            :on-click #(dispatch [:csv/download])
+            :on-click #(dispatch [:csv/auth-and-download])
             :value @(subscribe [:lang/get :datamgmt.download.button])}]])
