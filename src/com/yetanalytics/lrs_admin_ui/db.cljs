@@ -99,7 +99,7 @@
 
 (s/def ::notifications (s/every ::notification))
 
-(s/def ::enable-admin-delete-actor boolean?)
+(s/def ::enable-admin-management boolean?)
 
 (s/def ::stmt-get-max int?)
 
@@ -211,7 +211,7 @@
                           ::language
                           ::pref-lang
                           ::notifications
-                          ::enable-admin-delete-actor
+                          ::enable-admin-management
                           ::stmt-get-max
                           ::oidc-auth
                           ::oidc-enable-local-admin

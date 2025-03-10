@@ -82,7 +82,7 @@
          ::db/jwt-refresh-interval 3540
          ::db/jwt-interaction-window 600
          ::db/stmt-get-max 10
-         ::db/enable-admin-delete-actor false
+         ::db/enable-admin-management false
          ::db/notifications []
          ::db/oidc-auth false
          ::db/oidc-enable-local-admin false
@@ -118,7 +118,7 @@
                                      jwt-interaction-window
                                      url-prefix
                                      proxy-path
-                                     enable-admin-delete-actor
+                                     enable-admin-management
                                      enable-admin-status
                                      enable-reactions
                                      no-val?
@@ -131,7 +131,7 @@
                        ?oidc-enable :oidc-enable-local-admin
                        :as          env}]]
    (let [ui-route-env             (select-keys env [:proxy-path
-                                                    :enable-admin-delete-actor
+                                                    :enable-admin-management
                                                     :enable-admin-status
                                                     :enable-reactions])
          ui-routes                (routes ui-route-env)
@@ -151,7 +151,7 @@
                  ::db/oidc-enable-local-admin oidc-enable-local-admin?
                  ::db/enable-admin-status enable-admin-status
                  ::db/enable-reactions enable-reactions
-                 ::db/enable-admin-delete-actor enable-admin-delete-actor
+                 ::db/enable-admin-management enable-admin-management
                  ::db/stmt-get-max stmt-get-max
                  ::db/pref-lang admin-lang-keyword
                  ::db/language language-map
