@@ -1271,6 +1271,22 @@ ul.role-select li.role-checkbox {
   padding-left: 4px;
 }
 
+/**************************************************
+# CSV Download
+**************************************************/
+
+div.property-paths {
+  border: 1px solid;
+  border-radius: 1px;
+  margin-bottom: 32px;
+  padding: 8px;
+}
+
+// Same properties as div.reaction-ruleset > label
+div.property-paths > label {
+  font-size: larger;
+  padding-bottom: 8px;
+}
 
 /**************************************************
 # Tooltip

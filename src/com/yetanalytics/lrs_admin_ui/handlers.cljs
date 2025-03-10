@@ -1038,7 +1038,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defmethod re-route/on-start :data-management [{:keys [db]} _params]
-  (login-dispatch* db))
+  (login-dispatch db [:csv/set-properties]))
 
 ;; Actor Delete ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -1092,15 +1092,72 @@
  :csv/download
  (fn [{{server-host ::db/server-host
         proxy-path  ::db/proxy-path
+        {:keys [property-paths] :as _csv-props}
+        ::db/csv-download-properties
         :as _db} :db} [_ {:keys [json-web-token]}]]
-   ;; FIXME: Remove hardcoded property-paths value
-   (let [property-paths "%5B%5B%22id%22%5D%20%5B%22verb%22%20%22id%22%5D%5D"
-         query-params   (format "?token=%s&property-paths=%s"
-                                json-web-token
-                                property-paths)
-         download-url   (-> (httpfn/serv-uri server-host "/admin/csv" proxy-path)
-                            (str query-params))]
+   (let [prop-path-str (fns/url-encode property-paths)
+         query-params  (format "?token=%s&property-paths=%s"
+                               json-web-token
+                               prop-path-str)
+         download-url  (-> (httpfn/serv-uri server-host "/admin/csv" proxy-path)
+                           (str query-params))]
      {:download [download-url "statements.csv"]})))
+
+;; Property Paths
+
+(re-frame/reg-event-db
+ :csv/set-properties
+ (fn [db _]
+   (let [props* (get db ::db/csv-download-properties)]
+     (assoc db
+            ::db/csv-download-properties
+            (merge {:property-paths []} props*)))))
+
+(re-frame/reg-event-db
+ :csv/delete-property-path
+ (fn [db [_ idx]]
+   (update-in db
+              [::db/csv-download-properties :property-paths]
+              fns/remove-element
+              idx)))
+
+(re-frame/reg-event-db
+ :csv/add-property-path
+ (fn [db _]
+   (update-in db
+              [::db/csv-download-properties :property-paths]
+              conj
+              [""])))
+
+(re-frame/reg-event-db
+ :csv/add-property-path-segment
+ (fn [db [_ idx]]
+   (let [keypath     [::db/csv-download-properties :property-paths idx]
+         path-before (get-in db keypath)
+         next-keys   (:next-keys (rpath/analyze-path path-before))
+         path-after  (conj path-before (if (= '[idx] next-keys) 0 ""))]
+     (assoc-in db keypath path-after))))
+
+(re-frame/reg-event-db
+ :csv/delete-property-path-segment
+ (fn [db [_ idx]]
+   (let [keypath     [::db/csv-download-properties :property-paths idx]
+         path-before (get-in db keypath)
+         path-after  (vec (butlast path-before))]
+     (assoc-in db keypath path-after))))
+
+(re-frame/reg-event-fx
+ :csv/change-property-path-segment
+ (fn [{:keys [db]} [_ idx new-seg-val open-next?]]
+   (let [keypath     [::db/csv-download-properties :property-paths idx]
+         path-before (get-in db keypath)
+         path-after  (-> path-before butlast vec (conj new-seg-val))
+         {:keys [leaf-type complete?]} (rpath/analyze-path path-after)]
+     (cond-> {:db (assoc-in db keypath path-after)}
+       (and (not complete?)
+            (not= 'json leaf-type)
+            open-next?)
+       (assoc :fx [[:dispatch [:csv/add-property-path-segment idx]]])))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Status Dashboard
@@ -1537,17 +1594,12 @@
                "active" true
                "inactive" false))))
 
-(defn- remove-element
-  [v idx]
-  (into (subvec v 0 idx)
-        (subvec v (inc idx))))
-
 (re-frame/reg-event-db
  :reaction/delete-identity-path
  (fn [db [_ idx]]
    (update-in db
               [::db/editing-reaction :ruleset :identityPaths]
-              remove-element
+              fns/remove-element
               idx)))
 
 (re-frame/reg-event-db
@@ -1740,7 +1792,7 @@
      (cond
        (#{:and :or} (last parent-path))
        (let [parent (get-in db parent-path)
-             new-parent (remove-element parent k)]
+             new-parent (fns/remove-element parent k)]
          (assoc-in db parent-path new-parent))
        (#{:not} (last full-path))
        (assoc-in db full-path nil)
@@ -1768,7 +1820,7 @@
    (update-in
     db
     [::db/editing-reaction :ruleset :conditions]
-    remove-element
+    fns/remove-element
     condition-idx)))
 
 (re-frame/reg-event-db

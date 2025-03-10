@@ -89,6 +89,10 @@
    :datamgmt.download.title {:en-US "Download CSV"}
    :datamgmt.download.button {:en-US "DOWNLOAD"}
 
+   ;;CSV Download 
+   :csv-property-paths.title {:en-US "CSV Headers"}
+   :csv.property-paths.add {:en-US "Add Header "}
+
    ;;Reactions
    :reactions.title {:en-us "REACTIONS"}
    :reactions.title.beta {:en-US " (Beta)"}

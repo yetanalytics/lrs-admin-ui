@@ -4,6 +4,7 @@
             [com.yetanalytics.lrs-admin-ui.functions.time :as t]
             [com.yetanalytics.lrs-admin-ui.input :as i]
             [com.yetanalytics.lrs-admin-ui.functions.reaction :as rfns]
+            [com.yetanalytics.lrs-admin-ui.spec.csv-download]
             [com.yetanalytics.lrs-admin-ui.spec.reaction-edit]
             [clojure.spec.alpha :as s :include-macros true]))
 
@@ -387,10 +388,24 @@
    (true? (get loading-map loading-k))))
 
 ;; Delete Actor
+
 (reg-sub
  :delete-actor/enabled?
  (fn [db _]
    (::db/enable-admin-delete-actor db false)))
+
+;; Download CSV
+
+(reg-sub
+ :csv/property-paths
+ (fn [db _]
+   (get-in db [::db/csv-download-properties :property-paths])))
+
+(reg-sub
+ :csv/property-path-valid
+ :<- [:csv/property-paths]
+ (fn [property-paths _]
+   (s/valid? :validation/property-paths property-paths)))
 
 ;; Reactions
 

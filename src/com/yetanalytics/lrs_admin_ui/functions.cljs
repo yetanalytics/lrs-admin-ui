@@ -42,3 +42,14 @@
   "Produce a random alphanumeric string of the given length"
   [length]
   (apply str (repeatedly length #(rand-nth "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"))))
+
+(defn remove-element
+  "Remove an element at index `idx` from the vector `v`."
+  [v idx]
+  (into (subvec v 0 idx)
+        (subvec v (inc idx))))
+
+(defn url-encode
+  "Encode `x` as a URL-encoded string."
+  [x]
+  (js/encodeURIComponent (str x)))
