@@ -125,8 +125,7 @@
                                      no-val-logout-url
                                      admin-language-code
                                      stmt-get-max
-                                     custom-language
-                                     auth-by-cred-id]
+                                     custom-language]
                        ?oidc        :oidc
                        ?oidc-enable :oidc-enable-local-admin
                        :as          env}]]
@@ -157,8 +156,7 @@
                  ::db/language language-map
                  ::db/no-val? no-val?
                  ::db/no-val-logout-url (when no-val?
-                                          (not-empty no-val-logout-url))
-                 ::db/auth-by-cred-id auth-by-cred-id)
+                                          (not-empty no-val-logout-url)))
       :fx (cond-> [[:dispatch [::re-route/init
                                ui-routes
                                :not-found
@@ -647,21 +645,12 @@
 
 (re-frame/reg-event-fx
  :browser/load-xapi
- (fn [{{server-host     ::db/server-host
-        proxy-path      ::db/proxy-path
-        xapi-prefix     ::db/xapi-prefix
-        auth-by-cred-id ::db/auth-by-cred-id :as db} :db} [_ {:keys [path params]}]]
-   (let [build (fn [params*] (httpfn/build-xapi-url
-                              server-host xapi-prefix path params* proxy-path))
-         
-         display-xapi-url (build params)
-         xapi-url (if-not auth-by-cred-id
-                    display-xapi-url
-                    (-> params
-                        (assoc "credentialID"
-                               (get-in db [::db/browser :credential :id]))
-                        build))]
-     {:dispatch   [:browser/set-address display-xapi-url]
+ (fn [{{server-host ::db/server-host
+        proxy-path  ::db/proxy-path
+        xapi-prefix ::db/xapi-prefix} :db} [_ {:keys [path params]}]]
+   (let [xapi-url (httpfn/build-xapi-url
+                   server-host xapi-prefix path params proxy-path)]
+     {:dispatch   [:browser/set-address xapi-url]
       :http-xhrio {:method          :get
                    :uri             xapi-url
                    :response-format (ajax/json-response-format {:keywords? false})
