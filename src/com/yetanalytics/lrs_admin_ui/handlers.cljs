@@ -628,7 +628,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defmethod re-route/on-start :browser [{:keys [db]} _params]
-  (login-dispatch* db))
+  (login-dispatch db [:csv/set-properties]))
 
 (re-frame/reg-event-fx
  :browser/try-load-xapi
@@ -1125,7 +1125,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defmethod re-route/on-start :data-management [{:keys [db]} _params]
-  (login-dispatch db [:csv/set-properties]))
+  (login-dispatch* db))
 
 ;; Actor Delete ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
