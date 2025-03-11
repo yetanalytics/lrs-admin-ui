@@ -211,6 +211,19 @@
  (fn [{:keys [back-stack]} _]
    back-stack))
 
+;; Download CSV
+
+(reg-sub
+ :csv/property-paths
+ (fn [db _]
+   (get-in db [::db/csv-download-properties :property-paths])))
+
+(reg-sub
+ :csv/property-path-valid
+ :<- [:csv/property-paths]
+ (fn [property-paths _]
+   (s/valid? :validation/property-paths property-paths)))
+
 ;; OIDC State
 (reg-sub
  :oidc/login-available?
@@ -393,19 +406,6 @@
  :delete-actor/enabled?
  (fn [db _]
    (::db/enable-admin-delete-actor db false)))
-
-;; Download CSV
-
-(reg-sub
- :csv/property-paths
- (fn [db _]
-   (get-in db [::db/csv-download-properties :property-paths])))
-
-(reg-sub
- :csv/property-path-valid
- :<- [:csv/property-paths]
- (fn [property-paths _]
-   (s/valid? :validation/property-paths property-paths)))
 
 ;; Reactions
 

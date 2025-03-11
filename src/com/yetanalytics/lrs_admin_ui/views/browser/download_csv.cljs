@@ -1,4 +1,4 @@
-(ns com.yetanalytics.lrs-admin-ui.views.data-management.download-csv
+(ns com.yetanalytics.lrs-admin-ui.views.browser.download-csv
   (:require [re-frame.core :refer [subscribe dispatch]]
             [com.yetanalytics.lrs-admin-ui.functions :as fns]
             [com.yetanalytics.lrs-admin-ui.views.reactions.path :as p]))

@@ -3,6 +3,7 @@
    [reagent.core :as r]
    [re-frame.core :refer [subscribe dispatch]]
    [clojure.string :as cstr]
+   [com.yetanalytics.lrs-admin-ui.views.browser.download-csv :refer [property-paths]]
    [com.yetanalytics.lrs-admin-ui.functions :as fns]
    [com.yetanalytics.lrs-admin-ui.functions.http :as httpfn]
    [com.yetanalytics.lrs-admin-ui.functions.scopes :as scopes]
@@ -217,4 +218,14 @@
          (if (cstr/blank? content)
            [:div {:class "browser"}
             @(subscribe [:lang/get :browser.key-note])]
-           [statement-table {:data content}])]))))
+           [statement-table {:data content}])
+         ;; CSV Download
+         [:div {:class "h-divider"}]
+         [:h4 {:class "content-title"}
+          @(subscribe [:lang/get :datamgmt.download.title])]
+         [property-paths]
+         (when @(subscribe [:csv/property-path-valid])
+           [:input {:type "button"
+                    :class "btn-brand-bold"
+                    :on-click #(dispatch [:csv/auth-and-download])
+                    :value @(subscribe [:lang/get :datamgmt.download.button])}])]))))

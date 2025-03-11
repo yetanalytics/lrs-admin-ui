@@ -747,6 +747,93 @@
                      :back-stack [])
       :dispatch [:browser/try-load-xapi {:params params}]})))
 
+;; Download CSV ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(re-frame/reg-event-fx
+ :csv/auth-and-download
+ (fn [{{server-host ::db/server-host
+        proxy-path  ::db/proxy-path
+        :as _db} :db} _]
+   {:http-xhrio {:method          :get
+                 :uri             (httpfn/serv-uri
+                                   server-host
+                                   "/admin/csv/auth"
+                                   proxy-path)
+                 :response-format (ajax/json-response-format {:keywords? true})
+                 :on-success      [:csv/download]
+                 :on-failure      [:server-error]
+                 :interceptors    [httpfn/add-jwt-interceptor]}}))
+
+(re-frame/reg-event-fx
+ :csv/download
+ (fn [{{server-host ::db/server-host
+        proxy-path  ::db/proxy-path
+        {:keys [property-paths] :as _csv-props}
+        ::db/csv-download-properties
+        :as _db} :db} [_ {:keys [json-web-token]}]]
+   (let [prop-path-str (fns/url-encode property-paths)
+         query-params  (format "?token=%s&property-paths=%s"
+                               json-web-token
+                               prop-path-str)
+         download-url  (-> (httpfn/serv-uri server-host "/admin/csv" proxy-path)
+                           (str query-params))]
+     {:download [download-url "statements.csv"]})))
+
+;; Property Paths
+
+(re-frame/reg-event-db
+ :csv/set-properties
+ (fn [db _]
+   (let [props* (get db ::db/csv-download-properties)]
+     (assoc db
+            ::db/csv-download-properties
+            (merge {:property-paths []} props*)))))
+
+(re-frame/reg-event-db
+ :csv/delete-property-path
+ (fn [db [_ idx]]
+   (update-in db
+              [::db/csv-download-properties :property-paths]
+              fns/remove-element
+              idx)))
+
+(re-frame/reg-event-db
+ :csv/add-property-path
+ (fn [db _]
+   (update-in db
+              [::db/csv-download-properties :property-paths]
+              conj
+              [""])))
+
+(re-frame/reg-event-db
+ :csv/add-property-path-segment
+ (fn [db [_ idx]]
+   (let [keypath     [::db/csv-download-properties :property-paths idx]
+         path-before (get-in db keypath)
+         next-keys   (:next-keys (rpath/analyze-path path-before))
+         path-after  (conj path-before (if (= '[idx] next-keys) 0 ""))]
+     (assoc-in db keypath path-after))))
+
+(re-frame/reg-event-db
+ :csv/delete-property-path-segment
+ (fn [db [_ idx]]
+   (let [keypath     [::db/csv-download-properties :property-paths idx]
+         path-before (get-in db keypath)
+         path-after  (vec (butlast path-before))]
+     (assoc-in db keypath path-after))))
+
+(re-frame/reg-event-fx
+ :csv/change-property-path-segment
+ (fn [{:keys [db]} [_ idx new-seg-val open-next?]]
+   (let [keypath     [::db/csv-download-properties :property-paths idx]
+         path-before (get-in db keypath)
+         path-after  (-> path-before butlast vec (conj new-seg-val))
+         {:keys [leaf-type complete?]} (rpath/analyze-path path-after)]
+     (cond-> {:db (assoc-in db keypath path-after)}
+       (and (not complete?)
+            (not= 'json leaf-type)
+            open-next?)
+       (assoc :fx [[:dispatch [:csv/add-property-path-segment idx]]])))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Api Key Management
@@ -1070,94 +1157,6 @@
  :delete-actor/server-error
  (fn [_ [_ actor-ifi _err]]
    {:fx [[:dispatch  [:notification/notify true  (str "Error when attempting to delete actor " actor-ifi)]]]}))
-
-;; Download CSV ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(re-frame/reg-event-fx
- :csv/auth-and-download
- (fn [{{server-host ::db/server-host
-        proxy-path  ::db/proxy-path
-        :as _db} :db} _]
-   {:http-xhrio {:method          :get
-                 :uri             (httpfn/serv-uri
-                                   server-host
-                                   "/admin/csv/auth"
-                                   proxy-path)
-                 :response-format (ajax/json-response-format {:keywords? true})
-                 :on-success      [:csv/download]
-                 :on-failure      [:server-error]
-                 :interceptors    [httpfn/add-jwt-interceptor]}}))
-
-(re-frame/reg-event-fx
- :csv/download
- (fn [{{server-host ::db/server-host
-        proxy-path  ::db/proxy-path
-        {:keys [property-paths] :as _csv-props}
-        ::db/csv-download-properties
-        :as _db} :db} [_ {:keys [json-web-token]}]]
-   (let [prop-path-str (fns/url-encode property-paths)
-         query-params  (format "?token=%s&property-paths=%s"
-                               json-web-token
-                               prop-path-str)
-         download-url  (-> (httpfn/serv-uri server-host "/admin/csv" proxy-path)
-                           (str query-params))]
-     {:download [download-url "statements.csv"]})))
-
-;; Property Paths
-
-(re-frame/reg-event-db
- :csv/set-properties
- (fn [db _]
-   (let [props* (get db ::db/csv-download-properties)]
-     (assoc db
-            ::db/csv-download-properties
-            (merge {:property-paths []} props*)))))
-
-(re-frame/reg-event-db
- :csv/delete-property-path
- (fn [db [_ idx]]
-   (update-in db
-              [::db/csv-download-properties :property-paths]
-              fns/remove-element
-              idx)))
-
-(re-frame/reg-event-db
- :csv/add-property-path
- (fn [db _]
-   (update-in db
-              [::db/csv-download-properties :property-paths]
-              conj
-              [""])))
-
-(re-frame/reg-event-db
- :csv/add-property-path-segment
- (fn [db [_ idx]]
-   (let [keypath     [::db/csv-download-properties :property-paths idx]
-         path-before (get-in db keypath)
-         next-keys   (:next-keys (rpath/analyze-path path-before))
-         path-after  (conj path-before (if (= '[idx] next-keys) 0 ""))]
-     (assoc-in db keypath path-after))))
-
-(re-frame/reg-event-db
- :csv/delete-property-path-segment
- (fn [db [_ idx]]
-   (let [keypath     [::db/csv-download-properties :property-paths idx]
-         path-before (get-in db keypath)
-         path-after  (vec (butlast path-before))]
-     (assoc-in db keypath path-after))))
-
-(re-frame/reg-event-fx
- :csv/change-property-path-segment
- (fn [{:keys [db]} [_ idx new-seg-val open-next?]]
-   (let [keypath     [::db/csv-download-properties :property-paths idx]
-         path-before (get-in db keypath)
-         path-after  (-> path-before butlast vec (conj new-seg-val))
-         {:keys [leaf-type complete?]} (rpath/analyze-path path-after)]
-     (cond-> {:db (assoc-in db keypath path-after)}
-       (and (not complete?)
-            (not= 'json leaf-type)
-            open-next?)
-       (assoc :fx [[:dispatch [:csv/add-property-path-segment idx]]])))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Status Dashboard

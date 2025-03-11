@@ -66,6 +66,9 @@
    :browser.query {:en-US "Current Query:"}
    :browser.key-note {:en-US "Please Choose an API Key Above to Browse LRS Data"}
    :browser.refresh {:en-US "Refresh"}
+   ;;CSV Download 
+   :csv-property-paths.title {:en-US "CSV Headers"}
+   :csv.property-paths.add {:en-US "Add Header "}
    ;;Monitor
    :monitor.title {:en-US "LRS Monitor"}
    :monitor.no-data {:en-US "No Statement Data"}
@@ -88,10 +91,6 @@
    :datamgmt.delete.button {:en-US "DELETE"}
    :datamgmt.download.title {:en-US "Download CSV"}
    :datamgmt.download.button {:en-US "DOWNLOAD"}
-
-   ;;CSV Download 
-   :csv-property-paths.title {:en-US "CSV Headers"}
-   :csv.property-paths.add {:en-US "Add Header "}
 
    ;;Reactions
    :reactions.title {:en-us "REACTIONS"}
