@@ -52,7 +52,7 @@
        (verb-display verb)]
       [:div.cell-action
        [filter-button {:title "Filter by Verb"
-                       :key   "verb"
+                       :key   :verb
                        :value id}]]])))
 
 (defn actor-cell
@@ -64,7 +64,7 @@
        (actor-display actor)]
       [:div.cell-action
        [filter-button {:title "Filter by Actor"
-                       :key   "agent"
+                       :key   :agent
                        :value (js/JSON.stringify (clj->js actor))}]]])))
 
 (defn object-cell
@@ -78,7 +78,7 @@
       [:div.cell-action
        (when id
          [filter-button {:title "Filter by Activity"
-                         :key   "activity"
+                         :key   :activity
                          :value id}])]])))
 
 (defn row-num-cell
