@@ -15,7 +15,7 @@
                                                                 reaction-new]]))
 
 (defn routes [{:keys [proxy-path
-                      enable-admin-management
+                      enable-admin-delete-actor
                       enable-admin-status
                       enable-reactions]}]
   (cond-> [(str proxy-path "/admin/ui")
@@ -58,7 +58,7 @@
              :controllers [{:start
                             (fn [_]
                               (dispatch [::re-route/on-start :not-found]))}]}]]
-    enable-admin-management
+    enable-admin-delete-actor
     (conj ["/data-management"
            {:name :data-management
             :view data-management

@@ -392,7 +392,7 @@
 (reg-sub
  :delete-actor/enabled?
  (fn [db _]
-   (::db/enable-admin-management db false)))
+   (::db/enable-admin-delete-actor db false)))
 
 ;; Download CSV
 
