@@ -166,9 +166,9 @@
     (fn [{:keys [label params]}]
       (when (not-empty params)
         [:div {:class "filters-wrapper"}
-         [:span {:class (str "pointer collapse-sign"
-                             (when @filter-expand " expanded"))
-                 :on-click #(swap! filter-expand not)}
+         [:div {:class (str "pointer collapse-sign"
+                            (when @filter-expand " expanded"))
+                :on-click #(swap! filter-expand not)}
           label]
          (when @filter-expand
            [:div
