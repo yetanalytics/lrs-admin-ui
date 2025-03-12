@@ -66,9 +66,11 @@
    :browser.query {:en-US "Current Query:"}
    :browser.key-note {:en-US "Please Choose an API Key Above to Browse LRS Data"}
    :browser.refresh {:en-US "Refresh"}
+   :browser.filters {:en-US "Filters:"}
    ;;CSV Download 
    :csv-property-paths.title {:en-US "CSV Headers"}
    :csv.property-paths.add {:en-US "Add Header "}
+   :csv.filters {:en-US "Filters:"}
    ;;Monitor
    :monitor.title {:en-US "LRS Monitor"}
    :monitor.no-data {:en-US "No Statement Data"}

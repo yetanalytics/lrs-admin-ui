@@ -163,13 +163,13 @@
 
 (defn- filter-view [_params]
   (let [filter-expand (r/atom false)]
-    (fn [params]
+    (fn [{:keys [label params]}]
       (when (not-empty params)
         [:div {:class "filters-wrapper"}
          [:span {:class (str "pointer collapse-sign"
                              (when @filter-expand " expanded"))
                  :on-click #(swap! filter-expand not)}
-          "Filters:"]
+          label]
          (when @filter-expand
            [:div
             [:div {:class "filter-table"}
@@ -183,7 +183,7 @@
               (seq params))]
             [:ul {:class "action-icon-list"}
              [:li
-              [:a {:href "#!"
+              [:a {:href ""
                    :on-click #(dispatch [:browser/clear-filters])
                    :class "icon-clear-filters"} "Clear Filters"]]]])]))))
 
@@ -215,7 +215,8 @@
           [:p @(subscribe [:lang/get :browser.query])]
           [:div {:class "xapi-address"}
            address]
-          [filter-view params]]))
+          [filter-view {:label @(subscribe [:lang/get :browser.filters])
+                        :params params}]]))
      (if (cstr/blank? content)
        [:div {:class "browser"}
         @(subscribe [:lang/get :browser.key-note])]
@@ -228,7 +229,8 @@
      [:h4 {:class "content-title"}
       @(subscribe [:lang/get :datamgmt.download.title])]
      [property-paths]
-     [filter-view (select-keys params ["agent" "verb" "activity"])]
+     [filter-view {:label  @(subscribe [:lang/get :csv.filters])
+                   :params (select-keys params ["agent" "verb" "activity"])}]
      (when @(subscribe [:csv/property-path-valid])
        [:input {:type "button"
                 :class "btn-brand-bold"
