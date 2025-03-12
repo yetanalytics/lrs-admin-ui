@@ -771,12 +771,13 @@
         {:keys [property-paths] :as _csv-props}
         ::db/csv-download-properties
         :as _db} :db} [_ {:keys [json-web-token]}]]
-   (let [prop-path-str (fns/url-encode property-paths)
-         query-params  (format "?token=%s&property-paths=%s"
-                               json-web-token
-                               prop-path-str)
-         download-url  (-> (httpfn/serv-uri server-host "/admin/csv" proxy-path)
-                           (str query-params))]
+   (let [params-map    {:token          json-web-token
+                        :property-paths (str property-paths)}
+         download-url  (httpfn/serv-uri
+                        server-host
+                        "/admin/csv"
+                        proxy-path
+                        params-map)]
      {:download [download-url "statements.csv"]})))
 
 ;; Property Paths

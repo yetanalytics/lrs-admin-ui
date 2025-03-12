@@ -48,8 +48,3 @@
   [v idx]
   (into (subvec v 0 idx)
         (subvec v (inc idx))))
-
-(defn url-encode
-  "Encode `x` as a URL-encoded string."
-  [x]
-  (js/encodeURIComponent (str x)))
