@@ -161,21 +161,19 @@
                   (dispatch [:browser/refresh]))}
      @(subscribe [:lang/get :browser.refresh])]))
 
-(defn browser []
+(defn- browser-main []
   (let [filter-expand (r/atom false)]
     (fn []
       (let [content @(subscribe [:browser/get-content])
-            ;;filter out credentials that can't read the LRS
+            ;; filter out credentials that can't read the LRS
             read-credentials (filter scopes/has-statement-read-scopes?
                                      @(subscribe [:db/get-credentials]))]
-        [:div {:class "left-content-wrapper"}
-         [:h2 {:class "content-title"}
-          @(subscribe [:lang/get :browser.title])]
+        [:div
          [:p
           [:span
            [:b @(subscribe [:lang/get :browser.credentials])]
            [:select
-            {:name (str "update_credential")
+            {:name "update_credential"
              :on-change #(dispatch [:browser/update-credential
                                     (fns/ps-event-val %)])}
             [:option "Credential to Browse"]
@@ -218,14 +216,23 @@
          (if (cstr/blank? content)
            [:div {:class "browser"}
             @(subscribe [:lang/get :browser.key-note])]
-           [statement-table {:data content}])
-         ;; CSV Download
-         [:div {:class "h-divider"}]
-         [:h4 {:class "content-title"}
-          @(subscribe [:lang/get :datamgmt.download.title])]
-         [property-paths]
-         (when @(subscribe [:csv/property-path-valid])
-           [:input {:type "button"
-                    :class "btn-brand-bold"
-                    :on-click #(dispatch [:csv/auth-and-download])
-                    :value @(subscribe [:lang/get :datamgmt.download.button])}])]))))
+           [statement-table {:data content}])]))))
+
+(defn- csv-download []
+  [:div
+   [:h4 {:class "content-title"}
+    @(subscribe [:lang/get :datamgmt.download.title])]
+   [property-paths]
+   (when @(subscribe [:csv/property-path-valid])
+     [:input {:type "button"
+              :class "btn-brand-bold"
+              :on-click #(dispatch [:csv/auth-and-download])
+              :value @(subscribe [:lang/get :datamgmt.download.button])}])])
+
+(defn browser []
+  [:div {:class "left-content-wrapper"}
+   [:h2 {:class "content-title"}
+    @(subscribe [:lang/get :browser.title])]
+   [browser-main]
+   [:div {:class "h-divider"}]
+   [csv-download]])
