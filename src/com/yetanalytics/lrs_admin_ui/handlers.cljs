@@ -628,7 +628,20 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defmethod re-route/on-start :browser [{:keys [db]} _params]
-  (login-dispatch db [:csv/set-properties]))
+  (login-dispatch db [:browser/load-properties]))
+
+(re-frame/reg-event-fx
+ :browser/load-properties
+ (fn [_ _]
+   {:fx [[:dispatch [:csv/set-properties]]
+         [:dispatch [:browser/load-credentials]]]}))
+
+(re-frame/reg-event-fx
+ :browser/load-credentials
+ (fn [{:keys [db]} _]
+   (if (empty? (get db ::db/credentials))
+     {:fx [[:dispatch [:credentials/load-credentials]]]}
+     {})))
 
 (re-frame/reg-event-fx
  :browser/try-load-xapi
