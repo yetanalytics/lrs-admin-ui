@@ -766,14 +766,14 @@
  :csv/auth-and-download
  (fn [{{server-host ::db/server-host
         proxy-path  ::db/proxy-path
-        :as _db} :db} _]
+        :as _db} :db} [_ browser-address]]
    {:http-xhrio {:method          :get
                  :uri             (httpfn/serv-uri
                                    server-host
                                    "/admin/csv/auth"
                                    proxy-path)
                  :response-format (ajax/json-response-format {:keywords? true})
-                 :on-success      [:csv/download]
+                 :on-success      [:csv/download browser-address]
                  :on-failure      [:server-error]
                  :interceptors    [httpfn/add-jwt-interceptor]}}))
 
@@ -783,9 +783,13 @@
         proxy-path  ::db/proxy-path
         {:keys [property-paths] :as _csv-props}
         ::db/csv-download-properties
-        :as _db} :db} [_ {:keys [json-web-token]}]]
-   (let [params-map    {:token          json-web-token
-                        :property-paths (str property-paths)}
+        :as _db} :db} [_ browser-address {:keys [json-web-token]}]]
+   (let [query-params  (-> (httpfn/extract-params browser-address)
+                           (select-keys ["agent" "verb" "activity"]))
+         params-map    (merge
+                        query-params
+                        {"token"          json-web-token
+                         "property-paths" (str property-paths)})
          download-url  (httpfn/serv-uri
                         server-host
                         "/admin/csv"

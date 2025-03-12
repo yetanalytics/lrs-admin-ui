@@ -161,73 +161,79 @@
                   (dispatch [:browser/refresh]))}
      @(subscribe [:lang/get :browser.refresh])]))
 
-(defn- browser-main []
+(defn- filter-view [_params]
   (let [filter-expand (r/atom false)]
-    (fn []
-      (let [content @(subscribe [:browser/get-content])
-            ;; filter out credentials that can't read the LRS
-            read-credentials (filter scopes/has-statement-read-scopes?
-                                     @(subscribe [:db/get-credentials]))]
-        [:div
-         [:p
-          [:span
-           [:b @(subscribe [:lang/get :browser.credentials])]
-           [:select
-            {:name "update_credential"
-             :on-change #(dispatch [:browser/update-credential
-                                    (fns/ps-event-val %)])}
-            [:option "Credential to Browse"]
-            (map-indexed
-             (fn [idx credential]
-               [:option {:value (:api-key credential)
-                         :key (str "browser-credential-" idx)}
-                (fns/elide (:api-key credential) 20)])
-             read-credentials)]
-           [refresh-button]]]
-         (let [address @(subscribe [:browser/get-address])
-               params  (httpfn/extract-params address)]
-           (when (some? address)
-             [:div {:class "browser-filters"}
-              [:p @(subscribe [:lang/get :browser.query])]
-              [:div {:class "xapi-address"}
-               address]
-              (when (not-empty params)
-                [:div {:class "filters-wrapper"}
-                 [:span {:class (str "pointer collapse-sign"
-                                     (when @filter-expand " expanded"))
-                         :on-click #(swap! filter-expand not)}
-                  "Filters:"]
-                 (when @filter-expand
-                   [:div
-                    [:div {:class "filter-table"}
-                     (map
-                      (fn [[key val]]
-                        [:div {:class "filter-row"}
-                         [:div {:class "filter-column key"}
-                          key]
-                         [:div {:class "filter-column"}
-                          val]])
-                      (seq params))]
-                    [:ul {:class "action-icon-list"}
-                     [:li
-                      [:a {:href "#!"
-                           :on-click #(dispatch [:browser/clear-filters])
-                           :class "icon-clear-filters"} "Clear Filters"]]]])])]))
-         (if (cstr/blank? content)
-           [:div {:class "browser"}
-            @(subscribe [:lang/get :browser.key-note])]
-           [statement-table {:data content}])]))))
+    (fn [params]
+      (when (not-empty params)
+        [:div {:class "filters-wrapper"}
+         [:span {:class (str "pointer collapse-sign"
+                             (when @filter-expand " expanded"))
+                 :on-click #(swap! filter-expand not)}
+          "Filters:"]
+         (when @filter-expand
+           [:div
+            [:div {:class "filter-table"}
+             (map
+              (fn [[key val]]
+                [:div {:class "filter-row"}
+                 [:div {:class "filter-column key"}
+                  key]
+                 [:div {:class "filter-column"}
+                  val]])
+              (seq params))]
+            [:ul {:class "action-icon-list"}
+             [:li
+              [:a {:href "#!"
+                   :on-click #(dispatch [:browser/clear-filters])
+                   :class "icon-clear-filters"} "Clear Filters"]]]])]))))
+
+(defn- browser-main []
+  (let [content @(subscribe [:browser/get-content])
+        ;; filter out credentials that can't read the LRS
+        read-credentials (filter scopes/has-statement-read-scopes?
+                                 @(subscribe [:db/get-credentials]))]
+    [:div
+     [:p
+      [:span
+       [:b @(subscribe [:lang/get :browser.credentials])]
+       [:select
+        {:name "update_credential"
+         :on-change #(dispatch [:browser/update-credential
+                                (fns/ps-event-val %)])}
+        [:option "Credential to Browse"]
+        (map-indexed
+         (fn [idx credential]
+           [:option {:value (:api-key credential)
+                     :key (str "browser-credential-" idx)}
+            (fns/elide (:api-key credential) 20)])
+         read-credentials)]
+       [refresh-button]]]
+     (let [address @(subscribe [:browser/get-address])
+           params  (httpfn/extract-params address)]
+       (when (some? address)
+         [:div {:class "browser-filters"}
+          [:p @(subscribe [:lang/get :browser.query])]
+          [:div {:class "xapi-address"}
+           address]
+          [filter-view params]]))
+     (if (cstr/blank? content)
+       [:div {:class "browser"}
+        @(subscribe [:lang/get :browser.key-note])]
+       [statement-table {:data content}])]))
 
 (defn- csv-download []
-  [:div
-   [:h4 {:class "content-title"}
-    @(subscribe [:lang/get :datamgmt.download.title])]
-   [property-paths]
-   (when @(subscribe [:csv/property-path-valid])
-     [:input {:type "button"
-              :class "btn-brand-bold"
-              :on-click #(dispatch [:csv/auth-and-download])
-              :value @(subscribe [:lang/get :datamgmt.download.button])}])])
+  (let [address @(subscribe [:browser/get-address])
+        params  (httpfn/extract-params address)]
+    [:div
+     [:h4 {:class "content-title"}
+      @(subscribe [:lang/get :datamgmt.download.title])]
+     [property-paths]
+     [filter-view (select-keys params ["agent" "verb" "activity"])]
+     (when @(subscribe [:csv/property-path-valid])
+       [:input {:type "button"
+                :class "btn-brand-bold"
+                :on-click #(dispatch [:csv/auth-and-download address])
+                :value @(subscribe [:lang/get :datamgmt.download.button])}])]))
 
 (defn browser []
   [:div {:class "left-content-wrapper"}
