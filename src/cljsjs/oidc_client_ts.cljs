@@ -1,6 +1,6 @@
-(ns cljsjs.oidc-client
+(ns cljsjs.oidc-client-ts
   "A shim so we can run w/o the cljsjs dep and pass analyses"
-  (:require [oidc-client :as oidc]))
+  (:require [oidc-client-ts :as oidc]))
 
 (def UserManager oidc/UserManager)
 (def Log oidc/Log)

@@ -86,12 +86,12 @@
     [:p (or label placeholder)]]
    [:span {:class "form-select-top-right"}
     [:img {:src (if @dropdown-open?
-                  "images/icons/icon-expand-less.svg"
-                  "images/icons/icon-expand-more.svg")}]]])
+                  @(subscribe [:resources/icon "icon-expand-less.svg"])
+                  @(subscribe [:resources/icon "icon-expand-more.svg"]))}]]])
 
 (defn action-select-top
   "The top pane of a select input with a custom dropdown icon."
-  [{:keys [label label-left? icon-src dropdown-open?]}]
+  [{:keys [label label-left? icon-name dropdown-open?]}]
   [:div.action-dropdown-icon
    [:a {:href "#"
         :on-click (fn [e]
@@ -99,7 +99,7 @@
                     (reset! dropdown-open? true))}
     (when (and label label-left?)
       [:span.action-dropdown-label (str label " ")])
-    [:img {:src icon-src}]
+    [:img {:src @(subscribe [:resources/icon icon-name])}]
     (when (and label (not label-left?))
       [:span.action-dropdown-label (str " " label)])]])
 
@@ -118,7 +118,7 @@
                            (fns/ps-event e)))
           :tab-index   0
           :aria-label  "Select the text in the search bar."}
-   [:img {:src "images/icons/icon-add.svg"}]
+   [:img {:src @(subscribe [:resources/icon "icon-add.svg"])}]
    "Add"])
 
 (defn items-dropdown
