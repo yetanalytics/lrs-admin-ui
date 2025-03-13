@@ -38,10 +38,19 @@
 
 
 ;;JWTs
-(defn add-jwt [{:keys [headers] :as request}]
-  (assoc request :headers
-         (conj headers {"Authorization"
-                        (format "Bearer %s" @(subscribe [:session/get-token]))})))
+
+(defn add-jwt* [token {:keys [headers] :as request}]
+  (assoc request
+         :headers
+         (conj headers {"Authorization" (format "Bearer %s" token)})))
+
+(defn add-jwt [request]
+  (let [token @(subscribe [:session/get-token])]
+    (add-jwt* token request)))
+
+(defn add-jwt-interceptor* [token]
+  (to-interceptor {:name "JWT Authentication Interceptor"
+                   :request (partial add-jwt* token)}))
 
 (def add-jwt-interceptor
   (to-interceptor {:name "JWT Authentication Interceptor"
