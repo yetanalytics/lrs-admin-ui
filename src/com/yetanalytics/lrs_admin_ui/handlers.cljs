@@ -753,8 +753,9 @@
 
 (re-frame/reg-event-fx
  :credentials/notify-on-seed
- (fn [{:keys [db]} _]
-   (let [credentials (get db ::db/credentials)]
+ (fn [{:keys [db]} [_ credentials]]
+   (let [credentials (or (not-empty credentials)
+                         (::db/credentials db))]
      (if (has-seed-cred? credentials)
        {:fx [[:dispatch [:notification/notify true "Seed credentials should be deleted!"]]]}
        {}))))
@@ -768,10 +769,11 @@
 (defmethod re-route/on-start :credentials [{:keys [db]} _params]
   (login-dispatch db [:credentials/load-credentials]))
 
-(re-frame/reg-event-db
+(re-frame/reg-event-fx
  :credentials/set-credentials
  (fn [db [_ credentials]]
-   (assoc db ::db/credentials credentials)))
+   {:db (assoc db ::db/credentials credentials)
+    :fx [[:dispatch [:credentials/notify-on-seed credentials]]]}))
 
 (re-frame/reg-event-fx
  :credentials/load-credentials

@@ -5,9 +5,6 @@
 
 (defn tenant []
   (let [credentials @(subscribe [:db/get-credentials])]
-    ;; FIXME: Apply notify-on-seed effect properly after re-route PR is merged
-    (when (not-empty credentials)
-      (dispatch [:credentials/notify-on-seed]))
     [:div {:class "tenant-wrapper"}
      [:div {:class "api-keys-table-actions"}
       [:input {:type "button",
