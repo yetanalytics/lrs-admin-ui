@@ -68,8 +68,9 @@
    :browser.refresh {:en-US "Refresh"}
    :browser.filters {:en-US "Filters:"}
    ;;CSV Download 
-   :csv-property-paths.title {:en-US "CSV Headers"}
-   :csv.property-paths.add {:en-US "Add Header "}
+   :csv.property-paths.title {:en-US "CSV Columns"}
+   :csv.property-paths.add {:en-US "Add CSV Column "}
+   :csv.property-paths.instructions {:en-US "To export your data, select the xAPI statement property paths as CSV columns below."}
    :csv.filters {:en-US "Filters:"}
    ;;Monitor
    :monitor.title {:en-US "LRS Monitor"}

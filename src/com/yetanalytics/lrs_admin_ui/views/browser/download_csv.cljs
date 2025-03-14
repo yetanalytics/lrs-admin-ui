@@ -28,9 +28,10 @@
          [:div {:class (str "pointer collapse-sign"
                             (when @paths-expand " expanded"))
                 :on-click #(swap! paths-expand not)}
-          @(subscribe [:lang/get :csv-property-paths.title])]
+          @(subscribe [:lang/get :csv.property-paths.title])]
          (when @paths-expand
-           [:<>
+           [:div
+            [:p [:em @(subscribe [:lang/get :csv.property-paths.instructions])]]
             (into
              [:ul {:class "identity-paths"}]
              (map-indexed
