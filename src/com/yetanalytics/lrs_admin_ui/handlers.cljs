@@ -40,6 +40,7 @@
    [::db/accounts]
    [::db/new-account]
    [::db/browser]
+   [::db/csv-download-properties]
    [::db/status]
    [::db/reactions]
    [::db/reaction-focus]
