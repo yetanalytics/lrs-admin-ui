@@ -817,6 +817,22 @@
               idx)))
 
 (re-frame/reg-event-db
+ :csv/move-property-path-up
+ (fn [db [_ idx]]
+   (update-in db
+              [::db/csv-download-properties :property-paths]
+              fns/move-element-up
+              idx)))
+
+(re-frame/reg-event-db
+ :csv/move-property-path-down
+ (fn [db [_ idx]]
+   (update-in db
+              [::db/csv-download-properties :property-paths]
+              fns/move-element-down
+              idx)))
+
+(re-frame/reg-event-db
  :csv/add-property-path
  (fn [db _]
    (update-in db

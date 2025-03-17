@@ -5,25 +5,32 @@
             [com.yetanalytics.lrs-admin-ui.views.reactions.path :as p]))
 
 (defn- path-edit
-  [idx path & {:keys [remove-fn
-                      validate?
-                      open-next?]
-               :or   {validate?  true
-                      open-next? false}}]
-  [p/path-input path
-   :add-fn    (fn []
-                (dispatch [:csv/add-property-path-segment idx]))
-   :del-fn    (fn []
-                (dispatch [:csv/delete-property-path-segment idx]))
-   :change-fn (fn [seg-val]
-                (dispatch [:csv/change-property-path-segment idx seg-val open-next?]))
-   :remove-fn remove-fn
-   :validate? validate?])
+  [{:keys [index path up-disabled? down-disabled?]}]
+  [:div {:class "property-path"}
+   [:img {:class    (str "orderer" (when up-disabled? " disabled"))
+          :src      @(subscribe [:resources/icon "icon-arrow-up-blue.svg"])
+          :on-click (fn []
+                      (dispatch [:csv/move-property-path-up index]))}]
+   [:img {:class    (str "orderer" (when down-disabled? " disabled"))
+          :src      @(subscribe [:resources/icon "icon-arrow-down-blue.svg"])
+          :on-click (fn []
+                      (dispatch [:csv/move-property-path-down index]))}]
+   [p/path-input path
+    :add-fn    (fn []
+                 (dispatch [:csv/add-property-path-segment index]))
+    :del-fn    (fn []
+                 (dispatch [:csv/delete-property-path-segment index]))
+    :change-fn (fn [seg-val]
+                 (dispatch [:csv/change-property-path-segment index seg-val true]))
+    :remove-fn (fn []
+                 (dispatch [:csv/delete-property-path index]))
+    :validate? true]])
 
 (defn property-paths []
   (let [paths-expand (r/atom false)]
     (fn []
-      (let [property-paths @(subscribe [:csv/property-paths])]
+      (let [property-paths @(subscribe [:csv/property-paths])
+            max-index      (dec (count property-paths))]
         [:div {:class "filters-wrapper"}
          [:div {:class (str "pointer collapse-sign"
                             (when @paths-expand " expanded"))
@@ -36,9 +43,10 @@
              [:ul {:class "identity-paths"}]
              (map-indexed
               (fn [idx path]
-                [:li [path-edit idx path
-                      :remove-fn #(dispatch [:csv/delete-property-path idx])
-                      :open-next? true]])
+                [:li [path-edit {:index          idx
+                                 :path           path
+                                 :up-disabled?   (<= idx 0)
+                                 :down-disabled? (>= idx max-index)}]])
               property-paths))
             [:span.add-identity-path
              [:a {:href "#"

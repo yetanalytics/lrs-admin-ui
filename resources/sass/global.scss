@@ -1296,6 +1296,20 @@ div.property-paths > label {
   padding-bottom: 8px;
 }
 
+div.property-path {
+  display: flex;
+}
+
+div.property-path > .orderer {
+  margin-left: 8px;
+  height: 40px;
+  cursor: pointer;
+}
+
+div.property-path > .orderer.disabled {
+  cursor: auto;
+}
+
 /**************************************************
 # Tooltip
 **************************************************/

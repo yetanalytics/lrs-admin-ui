@@ -48,3 +48,25 @@
   [v idx]
   (into (subvec v 0 idx)
         (subvec v (inc idx))))
+
+(defn move-element-up
+  "Move element at index `idx` to the previous index in vector `v`. Does not
+   move if element is already at the beginning."
+  [v idx]
+  (if (zero? idx)
+    v
+    (let [pi (dec idx)
+          x  (get v idx)
+          y  (get v pi)]
+      (-> v (assoc pi x) (assoc idx y)))))
+
+(defn move-element-down
+  "Move element at index `idx` to the next index in vector `v`. Does not
+   move if element is already at the end."
+  [v idx]
+  (if (= idx (dec (count v)))
+    v
+    (let [ni (inc idx)
+          x  (get v idx)
+          y  (get v ni)]
+      (-> v (assoc ni x) (assoc idx y)))))
