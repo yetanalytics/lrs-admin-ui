@@ -1204,6 +1204,14 @@ div.browser-filters {
 
 .filters-wrapper {
   margin-top: 8px;
+  border: 1px solid;
+  border-radius: 1px;
+  margin-bottom: 32px;
+  padding: 8px;
+}
+
+.filters-wrapper .expanded {
+  margin-bottom: 8px;
 }
 
 .filters-wrapper .collapse-sign:before {
@@ -1271,6 +1279,36 @@ ul.role-select li.role-checkbox {
   padding-left: 4px;
 }
 
+/**************************************************
+# CSV Download
+**************************************************/
+
+div.property-paths {
+  border: 1px solid;
+  border-radius: 1px;
+  margin-bottom: 32px;
+  padding: 8px;
+}
+
+// Same properties as div.reaction-ruleset > label
+div.property-paths > label {
+  font-size: larger;
+  padding-bottom: 8px;
+}
+
+div.property-path {
+  display: flex;
+}
+
+div.property-path > .orderer {
+  margin-left: 8px;
+  height: 40px;
+  cursor: pointer;
+}
+
+div.property-path > .orderer.disabled {
+  cursor: auto;
+}
 
 /**************************************************
 # Tooltip
@@ -1328,6 +1366,7 @@ div.tooltip-text span.multi-line {
 div.table-nav {
   width: 100%;
   margin-top: 10px;
+  padding-bottom: 1px;
   font-size: 10pt;
 }
 
