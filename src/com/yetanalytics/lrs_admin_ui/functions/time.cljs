@@ -2,28 +2,37 @@
   (:require [goog.string :refer [format]]
             [goog.string.format]))
 
-(def tz-offset-mins
-  (.getTimezoneOffset (js/Date.)))
+(defn tz-offset-mins*
+  ([]
+   (tz-offset-mins* (js/Date.)))
+  ([^js/Date d]
+   (.getTimezoneOffset d)))
 
-(def tz-offset-string
-  (format "%s%02d:%02d"
-          (if (pos-int? tz-offset-mins)
-            "-"
-            "+")
-          (quot tz-offset-mins 60)
-          (rem tz-offset-mins 60)))
+(defn tz-offset-string
+  [& {:keys [tz-offset-mins]}]
+  (let [offset (or tz-offset-mins
+                   (tz-offset-mins*))]
+    (format "%s%02d:%02d"
+            (if (pos-int? offset)
+              "-"
+              "+")
+            (quot offset 60)
+            (rem offset 60))))
 
 (defn local-datetime->utc
   [local-datetime-str]
   (-> local-datetime-str
-      (str tz-offset-string)
+      (str (tz-offset-string))
       (js/Date.)
       .toISOString))
 
 (defn utc->local-datetime
-  [utc-str]
+  [utc-str & {:keys [tz-offset-mins]}]
   (let [date-ms (.parse js/Date utc-str)
-        local-date-ms (- date-ms (* 60000 tz-offset-mins))
+        local-date-ms (- date-ms
+                         (* 60000
+                            (or tz-offset-mins
+                                (tz-offset-mins* (new js/Date utc-str)))))
         date (js/Date. local-date-ms)]
     (subs (.toISOString date) 0 19)))
 
