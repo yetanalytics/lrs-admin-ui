@@ -7,7 +7,7 @@
                      utc->local-datetime]]))
 
 (deftest tz-offset-mins*-test
-  (testing "yields different offsets for different dates"
+  (testing "Yields different offsets for different dates on either side of the EDT/EST boundary"
     (is (not=
          (tz-offset-mins* (new js/Date "2025-03-04T00:00:00Z"))
          (tz-offset-mins* (new js/Date "2025-03-19T00:00:00Z"))))))
