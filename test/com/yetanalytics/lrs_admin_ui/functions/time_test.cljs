@@ -16,7 +16,7 @@
 (deftest local-datetime->utc-test
   (testing "derives timezone offset appropriate to the passed-in date"
     (is (= "2025-03-04T19:00:00.000Z"
-         (local-datetime->utc "2025-03-04T14:00:00")))
+           (local-datetime->utc "2025-03-04T14:00:00")))
     (is (= "2025-03-19T18:00:00.000Z"
            (local-datetime->utc "2025-03-19T14:00:00")))))
 
