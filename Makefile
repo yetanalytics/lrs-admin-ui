@@ -12,6 +12,7 @@ node_modules:
 dev: 	node_modules
 	clojure -A:fig:dev:build
 
+# NOTE: We force the test locale because there are some local date tests
 test: node_modules
 	TZ=America/New_York clojure -A:fig:test
 
