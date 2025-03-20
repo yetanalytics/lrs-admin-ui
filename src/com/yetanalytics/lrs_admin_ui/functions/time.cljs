@@ -10,16 +10,6 @@
   ([^js/Date d]
    (.getTimezoneOffset d)))
 
-(defn tz-offset-string
-  []
-  (let [offset (tz-offset-mins*)]
-    (format "%s%02d:%02d"
-            (if (pos-int? offset)
-              "-"
-              "+")
-            (quot offset 60)
-            (rem offset 60))))
-
 (defn local-datetime->utc
   [local-datetime-str]
   (let [[date-part time-part] (cs/split local-datetime-str #"T")
