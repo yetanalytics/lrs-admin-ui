@@ -9,9 +9,8 @@
    (.getTimezoneOffset d)))
 
 (defn tz-offset-string
-  [& {:keys [tz-offset-mins]}]
-  (let [offset (or tz-offset-mins
-                   (tz-offset-mins*))]
+  []
+  (let [offset (tz-offset-mins*)]
     (format "%s%02d:%02d"
             (if (pos-int? offset)
               "-"
@@ -27,12 +26,11 @@
       .toISOString))
 
 (defn utc->local-datetime
-  [utc-str & {:keys [tz-offset-mins]}]
+  [utc-str]
   (let [date-ms (.parse js/Date utc-str)
         local-date-ms (- date-ms
                          (* 60000
-                            (or tz-offset-mins
-                                (tz-offset-mins* (new js/Date utc-str)))))
+                            (tz-offset-mins* (new js/Date utc-str))))
         date (js/Date. local-date-ms)]
     (subs (.toISOString date) 0 19)))
 
