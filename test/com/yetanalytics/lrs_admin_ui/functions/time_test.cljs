@@ -4,6 +4,7 @@
   (:require [clojure.test :refer-macros [deftest is testing]]
             [com.yetanalytics.lrs-admin-ui.functions.time
              :refer [tz-offset-mins*
+                     local-datetime->utc
                      utc->local-datetime]]))
 
 (deftest tz-offset-mins*-test
@@ -11,6 +12,13 @@
     (is (not=
          (tz-offset-mins* (new js/Date "2025-03-04T00:00:00Z"))
          (tz-offset-mins* (new js/Date "2025-03-19T00:00:00Z"))))))
+
+(deftest local-datetime->utc-test
+  (testing "derives timezone offset appropriate to the passed-in date"
+    (is (= "2025-03-04T19:00:00.000Z"
+         (local-datetime->utc "2025-03-04T14:00:00")))
+    (is (= "2025-03-19T18:00:00.000Z"
+           (local-datetime->utc "2025-03-19T14:00:00")))))
 
 (deftest utc->local-datetime-test
   (testing "derives timezone offset appropriate to the passed-in date"

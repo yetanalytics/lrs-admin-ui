@@ -1,6 +1,8 @@
 (ns com.yetanalytics.lrs-admin-ui.functions.time
-  (:require [goog.string :refer [format]]
-            [goog.string.format]))
+  (:require
+   [clojure.string :as cs]
+   [goog.string :refer [format]]
+   [goog.string.format]))
 
 (defn tz-offset-mins*
   ([]
@@ -20,10 +22,10 @@
 
 (defn local-datetime->utc
   [local-datetime-str]
-  (-> local-datetime-str
-      (str (tz-offset-string))
-      (js/Date.)
-      .toISOString))
+  (let [[date-part time-part] (cs/split local-datetime-str #"T")
+        [y mo d]              (map js/Number (cs/split date-part #"-"))
+        [h mi s]              (map js/Number (cs/split time-part #":"))]
+    (.toISOString (new js/Date y (- mo 1) d h mi s))))
 
 (defn utc->local-datetime
   [utc-str]
