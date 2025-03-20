@@ -1,29 +1,28 @@
 (ns com.yetanalytics.lrs-admin-ui.functions.time
-  (:require [goog.string :refer [format]]
-            [goog.string.format]))
+  (:require
+   [clojure.string :as cs]
+   [goog.string :refer [format]]
+   [goog.string.format]))
 
-(def tz-offset-mins
-  (.getTimezoneOffset (js/Date.)))
-
-(def tz-offset-string
-  (format "%s%02d:%02d"
-          (if (pos-int? tz-offset-mins)
-            "-"
-            "+")
-          (quot tz-offset-mins 60)
-          (rem tz-offset-mins 60)))
+(defn tz-offset-mins*
+  ([]
+   (tz-offset-mins* (js/Date.)))
+  ([^js/Date d]
+   (.getTimezoneOffset d)))
 
 (defn local-datetime->utc
   [local-datetime-str]
-  (-> local-datetime-str
-      (str tz-offset-string)
-      (js/Date.)
-      .toISOString))
+  (let [[date-part time-part] (cs/split local-datetime-str #"T")
+        [y mo d]              (map js/Number (cs/split date-part #"-"))
+        [h mi s]              (map js/Number (cs/split time-part #":"))]
+    (.toISOString (new js/Date y (- mo 1) d h mi s))))
 
 (defn utc->local-datetime
   [utc-str]
   (let [date-ms (.parse js/Date utc-str)
-        local-date-ms (- date-ms (* 60000 tz-offset-mins))
+        local-date-ms (- date-ms
+                         (* 60000
+                            (tz-offset-mins* (new js/Date utc-str))))
         date (js/Date. local-date-ms)]
     (subs (.toISOString date) 0 19)))
 
