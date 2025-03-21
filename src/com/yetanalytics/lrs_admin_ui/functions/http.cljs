@@ -6,8 +6,15 @@
             goog.string.format))
 
 (defn serv-uri
-  [server-host path proxy-path]
-  (str server-host proxy-path path))
+  ([server-host path proxy-path]
+   (str server-host proxy-path path))
+  ([server-host path proxy-path params]
+   (let [uri       (serv-uri server-host path proxy-path)
+         param-map (if (string? params)
+                     (uri/query-map params)
+                     params)
+         params'   (uri/map->query-string param-map)]
+     (format "%s?%s" uri params'))))
 
 (defn build-xapi-url
   [server-host xapi-prefix path params proxy-path]

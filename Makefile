@@ -12,8 +12,9 @@ node_modules:
 dev: 	node_modules
 	clojure -A:fig:dev:build
 
+# NOTE: We force the test locale because there are some local date tests
 test: node_modules
-	clojure -A:fig:test
+	TZ=America/New_York clojure -A:fig:test
 
 resources/public/css/style.css: node_modules
 	npx sass resources/sass/style.scss:resources/public/css/style.css -I ./node_modules

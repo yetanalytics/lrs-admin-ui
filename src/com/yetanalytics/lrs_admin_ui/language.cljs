@@ -69,6 +69,12 @@
    :browser.query {:en-US "Current Query:"}
    :browser.key-note {:en-US "Please Choose an API Key Above to Browse LRS Data"}
    :browser.refresh {:en-US "Refresh"}
+   :browser.filters {:en-US "Filters:"}
+   ;;CSV Download 
+   :csv.property-paths.title {:en-US "CSV Columns"}
+   :csv.property-paths.add {:en-US "Add CSV Column "}
+   :csv.property-paths.instructions {:en-US "To export your data, select the xAPI statement property paths as CSV columns below."}
+   :csv.filters {:en-US "Filters:"}
    ;;Monitor
    :monitor.title {:en-US "LRS Monitor"}
    :monitor.no-data {:en-US "No Statement Data"}
@@ -89,6 +95,8 @@
    :datamgmt.title {:en-US "DATA MANAGEMENT"}
    :datamgmt.delete.title {:en-US "Delete Actor"}
    :datamgmt.delete.button {:en-US "DELETE"}
+   :datamgmt.download.title {:en-US "Download CSV"}
+   :datamgmt.download.button {:en-US "DOWNLOAD"}
 
    ;;Reactions
    :reactions.title {:en-us "REACTIONS"}
