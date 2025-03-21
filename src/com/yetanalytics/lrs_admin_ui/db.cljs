@@ -2,6 +2,7 @@
   (:require [cljs.spec.alpha :as s :include-macros true]
             [re-frame.core :as re-frame]
             [xapi-schema.spec :as xs]
+            [com.yetanalytics.lrs-admin-ui.spec.csv-download :as csvd]
             [com.yetanalytics.lrs-admin-ui.spec.reaction :as rs]
             [com.yetanalytics.lrs-admin-ui.spec.reaction-edit :as rse]))
 
@@ -170,6 +171,9 @@
   (s/every ::reaction-template-error))
 (s/def ::editing-reaction-template-json string?)
 
+(s/def ::csv-download-properties
+  (s/keys :req-un [::csvd/property-paths]))
+
 (s/def ::dialog-ref any?)
 
 (s/def :dialog-choice/label string?)
@@ -221,6 +225,7 @@
                           ::editing-reaction
                           ::editing-reaction-template-errors
                           ::editing-reaction-template-json
+                          ::csv-download-properties
                           ::dialog-ref
                           ::dialog-data
                           ::no-val?

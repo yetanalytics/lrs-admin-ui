@@ -3,7 +3,8 @@
             [com.yetanalytics.lrs-admin-ui.views.data-management.delete-actor :refer [delete-actor]]))
 
 (defn data-management []
-      [:div {:class "left-content-wrapper"}
-       [:h2 {:class "content-title"}
-        @(subscribe [:lang/get :datamgmt.title])]
-       [delete-actor]])
+  [:div {:class "left-content-wrapper"}
+   ;; Delete Actor
+   [:h2 {:class "content-title"}
+    @(subscribe [:lang/get :datamgmt.title])]
+   [delete-actor]])

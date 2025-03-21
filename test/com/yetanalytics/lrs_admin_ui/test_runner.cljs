@@ -5,6 +5,7 @@
    #_clojure.test.check.properties
    ;; require all the namespaces that you want to test
    [com.yetanalytics.lrs-admin-ui.functions.reaction-test]
+   [com.yetanalytics.lrs-admin-ui.functions.time-test]
    [figwheel.main.testing :refer-macros [run-tests-async]]))
 
 (defn -main [& args]
