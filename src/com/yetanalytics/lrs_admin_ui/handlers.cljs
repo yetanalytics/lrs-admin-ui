@@ -932,7 +932,6 @@
  :credentials/load-credentials
  (fn [{{server-host ::db/server-host
         proxy-path  ::db/proxy-path} :db} _]
-   (println "Loading Credentials!")
    {:http-xhrio {:method          :get
                  :uri             (httpfn/serv-uri
                                    server-host
