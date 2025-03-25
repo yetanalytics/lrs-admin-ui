@@ -349,7 +349,7 @@
            ;; Have to hardcode seeding the home (i.e. the credential) page
            ;; due to race condition with set-token
            [:dispatch [::re-route/navigate :home]]
-           [:dispatch [:credentials/load-credentials]]
+           [:dispatch [:credentials/load-init-credentials]]
            [:dispatch-later {:ms       jwt-refresh-interval
                              :dispatch [:login/try-renew]}]]})))
 
@@ -917,16 +917,52 @@
 ;; Api Key Management
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn- has-seed-cred?
+  [credentials]
+  (boolean (some (fn [cred] (when (:seed? cred) cred)) credentials)))
+
+(re-frame/reg-event-fx
+ :credentials/notify-on-seed
+ (fn [{:keys [db]} [_ credentials]]
+   (let [credentials (or (not-empty credentials)
+                         (::db/credentials db))]
+     (if (has-seed-cred? credentials)
+       {:fx [[:dispatch [:notification/notify true "Seed credentials should be deleted!"]]]}
+       {}))))
+
 (defmethod re-route/on-start :home [{:keys [db]} _params]
-  (login-dispatch db [:credentials/load-credentials]))
+  (login-dispatch db [:credentials/load-init-credentials]))
 
 (defmethod re-route/on-start :credentials [{:keys [db]} _params]
-  (login-dispatch db [:credentials/load-credentials]))
+  (login-dispatch db [:credentials/load-init-credentials]))
 
 (re-frame/reg-event-db
  :credentials/set-credentials
  (fn [db [_ credentials]]
    (assoc db ::db/credentials credentials)))
+
+(re-frame/reg-event-fx
+ :credentials/set-and-notify-credentials
+ (fn [_ [_ credentials]]
+   {:fx [[:dispatch [:credentials/set-credentials credentials]]
+         [:dispatch [:credentials/notify-on-seed credentials]]]}))
+
+;; load-init-credentials and load-credentials do the same thing, except that
+;; the former notifies if the seed cred exists.
+
+(re-frame/reg-event-fx
+ :credentials/load-init-credentials
+ (fn [{{server-host ::db/server-host
+        proxy-path  ::db/proxy-path} :db} _]
+   {:http-xhrio {:method          :get
+                 :uri             (httpfn/serv-uri
+                                   server-host
+                                   "/admin/creds"
+                                   proxy-path)
+                 :response-format (ajax/json-response-format {:keywords? true})
+                 :on-success      [:credentials/set-and-notify-credentials]
+                 :on-failure      [:server-error]
+                 :interceptors    [httpfn/add-jwt-interceptor]}}))
 
 (re-frame/reg-event-fx
  :credentials/load-credentials
