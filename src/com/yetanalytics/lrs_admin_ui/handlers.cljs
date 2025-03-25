@@ -14,8 +14,6 @@
             [com.yetanalytics.lrs-admin-ui.functions.oidc     :as oidc]
             [com.yetanalytics.lrs-admin-ui.functions.time     :as t]
             [com.yetanalytics.lrs-admin-ui.functions.reaction :as rfns]
-            [com.yetanalytics.lrs-admin-ui.functions.session  :refer [login-dispatch*
-                                                                      login-dispatch]]
             [com.yetanalytics.re-oidc                         :as re-oidc]
             [ajax.core                                        :as ajax]
             [cljs.spec.alpha                                  :refer [valid?]]
@@ -211,22 +209,8 @@
      {:fx [[:dispatch [:server-error error]]]})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; General
+;; Error Response Handling
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defmulti page-fx
-  "Given a set-page event query vector, adds any effects of moving to that page.
-  Note that you can use overloads beyond just the page keyword in your methods."
-  (fn [[_ page]]
-    page))
-
-(defmethod page-fx :default [_] [])
-
-(re-frame/reg-event-fx
- :session/set-page
- (fn [{:keys [db]} [_ page :as qvec]]
-   {:db (assoc-in db [::db/session :page] page)
-    :fx (page-fx qvec)}))
 
 (re-frame/reg-event-fx
  :server-error
@@ -548,6 +532,65 @@
  :logout/no-val-logout-redirect
  (fn [{:keys [logout-url]}]
    (set! (.-location js/window) logout-url)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Login Session Verification
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Because no-val JWT mode will always have a JWT present, we cannot use
+;; the lack of a token in the session store to determine if the user was
+;; logged out. Thus, we need to poll the server instead.
+
+(re-frame/reg-event-fx
+ :session/verify-no-val-login
+ (fn [{{server-host ::db/server-host
+        proxy-path  ::db/proxy-path} :db} [_ dispatch-vec]]
+   {:http-xhrio
+    {:method          :get
+     :uri             (httpfn/serv-uri
+                       server-host
+                       "/admin/verify"
+                       proxy-path)
+     :response-format (ajax/json-response-format {:keywords? true})
+     :on-success      [:session/verify-no-val-login-success dispatch-vec]
+     :on-failure      [:server-error]
+     :interceptors    [httpfn/add-jwt-interceptor]}}))
+
+(re-frame/reg-event-fx
+ :session/verify-no-val-login-success
+ (fn [_ [_ ?dispatch-vec _]]
+   (if ?dispatch-vec
+     {:fx [[:dispatch ?dispatch-vec]]}
+     {})))
+
+(defn- logged-in?
+  [db]
+  (or (some? (get-in db [::db/session :token]))
+      (oidc/logged-in? db)))
+
+(defn login-dispatch
+  "Dispatch `dispatch-vec` if logged in, otherwise redirect to the homepage.
+   If `dispatch-vec` is not provided, do nothing if logged in.
+   Returns an `{:fx ...}` map."
+  ([db]
+   (cond
+     (::db/no-val? db)
+     {:fx [[:dispatch [:session/verify-no-val-login]]]}
+     (logged-in? db)
+     {}
+     :else
+     {:fx [[:dispatch [::re-route/navigate :home]]]}))
+  ([db dispatch-vec]
+   (cond
+     (::db/no-val? db)
+     {:fx [[:dispatch [:session/verify-no-val-login dispatch-vec]]]}
+     (logged-in? db)
+     {:fx [[:dispatch dispatch-vec]]}
+     :else
+     {:fx [[:dispatch [::re-route/navigate :home]]]})))
+
+(defmethod re-route/on-start :not-found [{:keys [db]} _params]
+  (login-dispatch db))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Notifications / Alert Bar
@@ -887,9 +930,6 @@
        {:fx [[:dispatch [:notification/notify true "Seed credentials should be deleted!"]]]}
        {}))))
 
-(defmethod re-route/on-start :not-found [{:keys [db]} _params]
-  (login-dispatch* db))
-
 (defmethod re-route/on-start :home [{:keys [db]} _params]
   (login-dispatch db [:credentials/load-init-credentials]))
 
@@ -1025,7 +1065,7 @@
   (login-dispatch db [:accounts/load-accounts]))
 
 (defmethod re-route/on-start :update-password [{:keys [db]} _params]
-  (login-dispatch* db))
+  (login-dispatch db))
 
 (defmethod re-route/on-stop :update-password [_ _]
   {:fx [[:dispatch [:update-password/clear]]]})
@@ -1196,7 +1236,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defmethod re-route/on-start :data-management [{:keys [db]} _params]
-  (login-dispatch* db))
+  (login-dispatch db))
 
 ;; Actor Delete ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
