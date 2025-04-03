@@ -69,11 +69,11 @@
 
 ;;Basic Auth and json format for xAPI
 (defn req-xapi [request]
-  (assoc request :headers
-         {"Accept" "application/json"
-          "Authorization" (format "Basic %s" (make-basic-auth
-                                              @(subscribe [:browser/get-credential])))
-          "X-Experience-API-Version" "1.0.3"}))
+  (update request :headers
+          merge {"Accept" "application/json"
+                 "Authorization" (format "Basic %s" (make-basic-auth
+                                                     @(subscribe [:browser/get-credential])))
+                 "X-Experience-API-Version" "1.0.3"}))
 
 (def req-xapi-interceptor
   (to-interceptor {:name "xAPI Interceptor"
