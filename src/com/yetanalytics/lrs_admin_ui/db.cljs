@@ -194,6 +194,7 @@
 
 (s/def ::no-val? boolean?)
 (s/def ::no-val-logout-url (s/nilable string?))
+(s/def ::auth-by-cred-id boolean?)
 
 (s/def ::jwt-refresh-interval int?)
 (s/def ::jwt-interaction-window int?)
