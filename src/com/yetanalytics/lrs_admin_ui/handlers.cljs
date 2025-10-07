@@ -89,7 +89,9 @@
          ::db/status {}
          ::db/enable-reactions false
          ::db/reactions []
-         ::db/last-interaction-time (.now js/Date)}
+         ::db/last-interaction-time (.now js/Date)
+         ::db/supported-versions #{"1.0.3" "2.0.0"}
+         ::db/reaction-version "1.0.3"}
     :fx [[:dispatch [:db/verify-login]]
          [:dispatch [:db/get-env]]]}))
 
@@ -125,7 +127,9 @@
                                      admin-language-code
                                      stmt-get-max
                                      custom-language
-                                     auth-by-cred-id]
+                                     auth-by-cred-id
+                                     supported-versions
+                                     reaction-version]
                        ?oidc        :oidc
                        ?oidc-enable :oidc-enable-local-admin
                        :as          env}]]
@@ -157,7 +161,9 @@
                  ::db/no-val? no-val?
                  ::db/no-val-logout-url (when no-val?
                                           (not-empty no-val-logout-url))
-                 ::db/auth-by-cred-id auth-by-cred-id)
+                 ::db/auth-by-cred-id auth-by-cred-id
+                 ::db/supported-versions (into #{} supported-versions)
+                 ::db/reaction-version reaction-version)
       :fx (cond-> [[:dispatch [::re-route/init
                                ui-routes
                                :not-found
@@ -722,7 +728,10 @@
                     (-> params
                         (assoc "credentialID"
                                (get-in db [::db/browser :credential :id]))
-                        build))]
+                        build))
+         xapi-version (if (contains? (::db/supported-versions db) "2.0.0")
+                        "2.0.0"
+                        "1.0.3")]
 
      {:dispatch   [:browser/set-address display-xapi-url]
       :http-xhrio {:method          :get
@@ -730,7 +739,8 @@
                    :response-format (ajax/json-response-format {:keywords? false})
                    :on-success      [:browser/load-stmts-success]
                    :on-failure      [:server-error]
-                   :interceptors   (cond-> [httpfn/req-xapi-interceptor]
+                   :interceptors   (cond-> [httpfn/req-xapi-interceptor
+                                            (httpfn/xapi-version-interceptor xapi-version)]
                                      auth-by-cred-id (conj httpfn/add-jwt-interceptor))}})))
 
 (re-frame/reg-event-db

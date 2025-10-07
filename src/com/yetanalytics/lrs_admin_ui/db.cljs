@@ -200,6 +200,14 @@
 (s/def ::jwt-interaction-window int?)
 (s/def ::last-interaction-time int?)
 
+(s/def ::supported-versions
+  (s/coll-of
+   #{"1.0.3" "2.0.0"}
+   :kind set?
+   :into #{}
+   :min-count 1))
+(s/def ::reaction-version string?)
+
 (s/def ::db (s/keys :req [::session
                           ::credentials
                           ::login
@@ -224,7 +232,9 @@
                           ::reactions
                           ::jwt-refresh-interval
                           ::jwt-interaction-window
-                          ::last-interaction-time]
+                          ::last-interaction-time
+                          ::supported-versions
+                          ::reaction-version]
                     :opt [::reaction-focus
                           ::editing-reaction
                           ::editing-reaction-template-errors
