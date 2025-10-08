@@ -24,9 +24,10 @@
            {:value condition-name}
            condition-name])))
 
-(defn- add-segment [path]
+(defn- add-segment [path reaction-version]
   (let [{:keys [next-keys]} (rpath/analyze-path
-                             path)]
+                             path
+                             :xapi-version reaction-version)]
     (vec (conj path
                (if (= '[idx] next-keys)
                  0
@@ -45,46 +46,47 @@
         condition (r/atom "") ; TODO: Store in an app-db buffer
         path      (r/atom [""])]
     (fn []
-      [:div.dynamic-variables
-       [:span
-        {:on-click #(swap! open? not)
-         :class (str "pane-collapse" (when @open? " expanded"))}
-        @(subscribe [:lang/get :reactions.template.dynamic])
-        [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.template.dynamic])}]]
-       (when @open?
-         [:div.inner
-          [:p [:em @(subscribe [:lang/get :reactions.template.dynamic.instruction1])]]
-          [:p [:em @(subscribe [:lang/get :reactions.template.dynamic.instruction2])]]
-          [:p [:code "{\"$templatePath\": [\"condition_XYZ\", \"result\", \"success\"]}"]]
-          [:p [:em @(subscribe [:lang/get :reactions.template.dynamic.instruction3])]]
-          [:hr]
-          [:p [:b @(subscribe [:lang/get :reactions.template.dynamic.step1])]]
-          [dynamic-var-condition {:value     @condition
-                                  :on-change #(reset! condition %)}]
-          (when (seq @condition)
-            [:<>
-             [:hr]
-             [:p [:b @(subscribe [:lang/get :reactions.template.dynamic.step2])]]
-             [p/path-input
-              @path
-              :add-fn (fn [] (swap! path add-segment))
-              :del-fn (fn [] (swap! path del-segment))
-              :change-fn (fn [new-val] (swap! path change-segment new-val))
-              :validate? false]
-             (when (and (seq @condition) (seq @path))
-               [:<>
-                [:hr]
-                [:p [:b @(subscribe [:lang/get :reactions.template.dynamic.step3])]]
-                [:p @(subscribe [:lang/get :reactions.template.dynamic.step3-text])]
-                (let [path-string (join "\", \"" @path)
-                      var-string  (gstr/format "{\"$templatePath\": [\"%s\", \"%s\"]}" @condition path-string)]
-                  [:<>
-                   [:code var-string]
-                   [copy-text
-                    {:text var-string
-                     :on-copy #(dispatch [:notification/notify false @(subscribe [:lang/get :notification.reactions.copied-template-var])])}
-                    [:a {:class "icon-copy"
-                         :on-click #(fns/ps-event %)}]]])])])])])))
+      (let [reaction-version @(subscribe [:reaction/version])]
+        [:div.dynamic-variables
+         [:span
+          {:on-click #(swap! open? not)
+           :class (str "pane-collapse" (when @open? " expanded"))}
+          @(subscribe [:lang/get :reactions.template.dynamic])
+          [tooltip-info {:value @(subscribe [:lang/get :tooltip.reactions.template.dynamic])}]]
+         (when @open?
+           [:div.inner
+            [:p [:em @(subscribe [:lang/get :reactions.template.dynamic.instruction1])]]
+            [:p [:em @(subscribe [:lang/get :reactions.template.dynamic.instruction2])]]
+            [:p [:code "{\"$templatePath\": [\"condition_XYZ\", \"result\", \"success\"]}"]]
+            [:p [:em @(subscribe [:lang/get :reactions.template.dynamic.instruction3])]]
+            [:hr]
+            [:p [:b @(subscribe [:lang/get :reactions.template.dynamic.step1])]]
+            [dynamic-var-condition {:value     @condition
+                                    :on-change #(reset! condition %)}]
+            (when (seq @condition)
+              [:<>
+               [:hr]
+               [:p [:b @(subscribe [:lang/get :reactions.template.dynamic.step2])]]
+               [p/path-input
+                @path
+                :add-fn (fn [] (swap! path add-segment reaction-version))
+                :del-fn (fn [] (swap! path del-segment))
+                :change-fn (fn [new-val] (swap! path change-segment new-val))
+                :validate? false]
+               (when (and (seq @condition) (seq @path))
+                 [:<>
+                  [:hr]
+                  [:p [:b @(subscribe [:lang/get :reactions.template.dynamic.step3])]]
+                  [:p @(subscribe [:lang/get :reactions.template.dynamic.step3-text])]
+                  (let [path-string (join "\", \"" @path)
+                        var-string  (gstr/format "{\"$templatePath\": [\"%s\", \"%s\"]}" @condition path-string)]
+                    [:<>
+                     [:code var-string]
+                     [copy-text
+                      {:text var-string
+                       :on-copy #(dispatch [:notification/notify false @(subscribe [:lang/get :notification.reactions.copied-template-var])])}
+                      [:a {:class "icon-copy"
+                           :on-click #(fns/ps-event %)}]]])])])])]))))
 
 (defn template-focus
   [template]

@@ -3,7 +3,8 @@
             [clojure.walk :as w]
             [goog.string  :refer [format]]
             [goog.string.format]
-            [xapi-schema.core :as xs]))
+            [xapi-schema.core :as xs]
+            [xapi-schema.spec :as xss]))
 
 (defn path->string
   "Given a vector of keys and/or indices, return a JSONPath string suitable for
@@ -43,9 +44,11 @@
 (defn validate-template-xapi
   "Take raw JSON str of an xAPI Statement and issue a vec of error maps for 
    any schema violations. Returns `nil` if `raw-json` is valid."
-  [raw-json]
+  [raw-json & {:keys [xapi-version]
+               :or   {xapi-version "1.0.3"}}]
   (try
-    (xs/validate-statement-data raw-json)
+    (binding [xss/*xapi-version* xapi-version]
+      (xs/validate-statement-data raw-json))
     nil
     ;; JSON errors handled by editor directly, ignore
     (catch js/SyntaxError _)

@@ -35,8 +35,10 @@
     (fn [path-until
          seg-val
          change-fn]
-      (let [id (str (random-uuid))
-            {:keys [next-keys]} (rpath/analyze-path path-until)
+      (let [reaction-version @(subscribe [:reaction/version])
+            id (str (random-uuid))
+            {:keys [next-keys]} (rpath/analyze-path path-until
+                                                    :xapi-version reaction-version)
             next-key-options (->> next-keys
                                   (map (fn [k] {:label k :value k}))
                                   rfns/order-select-entries)]
@@ -80,7 +82,10 @@
            del-fn (fn [_] (println 'del))
            change-fn (fn [_] (println 'change))
            validate? true}}]
-  (let [{:keys [complete? valid? leaf-type]} (rpath/analyze-path path)
+  (let [reaction-version @(subscribe [:reaction/version])
+        {:keys [complete? valid? leaf-type]} (rpath/analyze-path
+                                              path
+                                              :xapi-version reaction-version)
         valid-path? (and validate?
                          (or (not valid?)
                              (and (not= 'json leaf-type) ; disregard extensions

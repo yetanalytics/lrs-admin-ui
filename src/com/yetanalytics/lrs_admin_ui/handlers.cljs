@@ -22,7 +22,9 @@
             [clojure.walk                                     :as w]
             [com.yetanalytics.lrs-admin-ui.spec.reaction-edit :as rse]
             [com.yetanalytics.lrs-admin-ui.language           :as lang]
-            [com.yetanalytics.lrs-reactions.path              :as rpath]))
+            [com.yetanalytics.lrs-reactions.path              :as rpath]
+            [xapi-schema.core                                 :as xs]
+            [xapi-schema.spec                                 :as xss]))
 
 (def interaction-interceptor
   "Update `::db/last-interaction-time` to the current time whenever a change is
@@ -91,7 +93,7 @@
          ::db/reactions []
          ::db/last-interaction-time (.now js/Date)
          ::db/supported-versions #{"1.0.3" "2.0.0"}
-         ::db/reaction-version "1.0.3"}
+         ::db/reaction-version "2.0.0"}
     :fx [[:dispatch [:db/verify-login]]
          [:dispatch [:db/get-env]]]}))
 
@@ -911,7 +913,9 @@
  (fn [db [_ idx]]
    (let [keypath     [::db/csv-download-properties :property-paths idx]
          path-before (get-in db keypath)
-         next-keys   (:next-keys (rpath/analyze-path path-before))
+         next-keys   (:next-keys (rpath/analyze-path path-before
+                                                     ;; for casual use we'll allow all
+                                                     :xapi-version "2.0.0"))
          path-after  (conj path-before (if (= '[idx] next-keys) 0 ""))]
      (assoc-in db keypath path-after))))
 
@@ -929,7 +933,8 @@
    (let [keypath     [::db/csv-download-properties :property-paths idx]
          path-before (get-in db keypath)
          path-after  (-> path-before butlast vec (conj new-seg-val))
-         {:keys [leaf-type complete?]} (rpath/analyze-path path-after)]
+         {:keys [leaf-type complete?]} (rpath/analyze-path path-after
+                                                           :xapi-version "2.0.0")]
      (cond-> {:db (assoc-in db keypath path-after)}
        (and (not complete?)
             (not= 'json leaf-type)
@@ -1605,9 +1610,11 @@
                           (js->clj (js/JSON.parse upload-data)
                                    :keywordize-keys true)
                           (catch js/Error _ nil))]
-     (let [reaction (-> edn-data
+     (let [reaction-version (::db/reaction-version db)
+           reaction (-> edn-data
                         rfns/upload->edit-form)]
-       (if (valid? ::rse/reaction reaction)
+       (if (binding [xss/*xapi-version* reaction-version]
+             (valid? ::rse/reaction reaction))
          {:db (-> db
                   (assoc ::db/editing-reaction reaction)
                   prep-edit-reaction-template)}
@@ -1640,10 +1647,12 @@
  :reaction/save-edit
  (fn [{{server-host       ::db/server-host
         proxy-path        ::db/proxy-path
-        ?editing-reaction ::db/editing-reaction} :db} _]
+        ?editing-reaction ::db/editing-reaction
+        reaction-version  ::db/reaction-version} :db} _]
    (when-let [{?reaction-id :id
                :as reaction} ?editing-reaction]
-     (if (valid? :validation/reaction reaction)
+     (if (binding [xss/*xapi-version* reaction-version]
+           (valid? :validation/reaction reaction))
        {:http-xhrio {:method          (if ?reaction-id :put :post)
                      :uri             (httpfn/serv-uri
                                        server-host
@@ -1760,14 +1769,21 @@
     (boolean? val) "boolean"
     (nil? val) "null"))
 
+(defn- get-reaction-version
+  "Get the reaction xAPI version from the db."
+  [db]
+  (get db ::db/reaction-version))
+
 (defn- ensure-val-type
   "If the path calls for a different type, initialize value."
   [{:keys [path
            val
-           ref] :as c}]
+           ref] :as c}
+   reaction-version]
   (if ref
     c
-    (let [{:keys [leaf-type]} (rpath/analyze-path path)]
+    (let [{:keys [leaf-type]} (rpath/analyze-path path
+                                                  :xapi-version reaction-version)]
       (if leaf-type
         (let [vtype (val-type val)]
           (assoc c :val (if (= (str leaf-type) vtype)
@@ -1782,7 +1798,8 @@
                          path-path)
          path-before (get-in db full-path)
          {:keys [next-keys]} (rpath/analyze-path
-                              path-before)
+                              path-before
+                              :xapi-version (get-reaction-version db))
          parent-path (butlast full-path)]
      (-> db
          (update-in full-path
@@ -1790,7 +1807,8 @@
                     (if (= '[idx] next-keys) 0 ""))
          (update-in
           parent-path
-          ensure-val-type)))))
+          ensure-val-type
+          (get-reaction-version db))))))
 
 (re-frame/reg-event-db
  :reaction/del-path-segment
@@ -1804,24 +1822,28 @@
          (assoc-in full-path path-after)
          (update-in
           parent-path
-          ensure-val-type)))))
+          ensure-val-type
+          (get-reaction-version db))))))
 
 (re-frame/reg-event-fx
  :reaction/change-path-segment
  (fn [{:keys [db]} [_ path-path new-seg-val open-next?]]
-   (let [full-path           (into [::db/editing-reaction]
+   (let [reaction-version    (get-reaction-version db)
+         full-path           (into [::db/editing-reaction]
                                    path-path)
          path-before         (get-in db full-path)
          path-after          (conj (vec (butlast path-before))
                                    new-seg-val)
          {:keys [leaf-type
-                 complete?]} (rpath/analyze-path path-after)
+                 complete?]} (rpath/analyze-path path-after
+                                                 :xapi-version reaction-version)
          parent-path         (butlast full-path)]
      (cond-> {:db (-> db
                       (assoc-in full-path path-after)
                       (update-in
                        parent-path
-                       ensure-val-type))}
+                       ensure-val-type
+                       reaction-version))}
        (and (not complete?)
             (not= 'json leaf-type) ; not extension
             open-next?)
@@ -1867,7 +1889,8 @@
                              :conditions
                              (->> (map :name)))
          {:keys [path] :as clause} (get-in db full-path)
-         {:keys [leaf-type]} (rpath/analyze-path path)]
+         {:keys [leaf-type]} (rpath/analyze-path path
+                                                 :xapi-version (get-reaction-version db))]
      (case set-to
        "val"
        (assoc-in db
@@ -1996,7 +2019,10 @@
 (re-frame/reg-event-fx
  :reaction/set-template-json
  (fn [{:keys [db]} [_ json]]
-   (let [xapi-errors (rfns/validate-template-xapi json)]
+   (let [reaction-version (::db/reaction-version db)
+         xapi-errors (rfns/validate-template-xapi
+                      json
+                      :xapi-version reaction-version)]
      (cond-> {:db (assoc db ::db/editing-reaction-template-json json)}
        (seq xapi-errors)
        (assoc :fx [[:dispatch [:reaction/set-template-errors xapi-errors]]])))))
