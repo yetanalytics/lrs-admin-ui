@@ -23,10 +23,7 @@
             [com.yetanalytics.lrs-admin-ui.spec.reaction-edit :as rse]
             [com.yetanalytics.lrs-admin-ui.language           :as lang]
             [com.yetanalytics.lrs-reactions.path              :as rpath]
-            [xapi-schema.spec                                 :as xss]
-            [reitit.frontend                                  :as rf]
-            [reitit.frontend.controllers                      :as rfc]
-            [com.yetanalytics.re-route.spec                   :as rrspec]))
+            [xapi-schema.spec                                 :as xss]))
 
 (def interaction-interceptor
   "Update `::db/last-interaction-time` to the current time whenever a change is
@@ -2033,34 +2030,6 @@
  :reaction/clear-template-json
  (fn [db _]
    (dissoc db ::db/editing-reaction-template-json)))
-
-;; re-route hack to validate with appropriate xAPI version schema
-(defn spec-interceptor [handler-name]
-  (re-frame/after
-   (fn [db]
-     (binding [xss/*xapi-version* (::db/reaction-version db)]
-       (rrspec/validate-db handler-name rrspec/db-spec db)))))
-
-(defn- apply-controllers
-  [old-route-match new-route-match]
-  (let [old-controllers (:controllers old-route-match)
-        new-controllers (rfc/apply-controllers old-controllers new-route-match)]
-    (assoc new-route-match :controllers new-controllers)))
-
-(re-frame/reg-event-fx
- :com.yetanalytics.re-route.navigation/on-navigate
- [(spec-interceptor :com.yetanalytics.re-route.navigation/on-navigate)]
- (fn [{:keys [db]} [_ path]]
-   (let [{default-route-match :default
-          old-route-match     :current}
-         (:com.yetanalytics.re-route/routes db)
-         router            (:com.yetanalytics.re-route/router db)
-         new-route-match   (rf/match-by-path router path)
-         new-route-match*  (or new-route-match default-route-match)
-         new-route-match** (apply-controllers old-route-match new-route-match*)]
-     {:db (assoc-in db
-                    [:com.yetanalytics.re-route/routes :current]
-                    new-route-match**)})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Dialog
