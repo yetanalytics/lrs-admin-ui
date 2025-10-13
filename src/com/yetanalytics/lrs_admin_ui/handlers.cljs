@@ -163,8 +163,9 @@
                  ::db/no-val-logout-url (when no-val?
                                           (not-empty no-val-logout-url))
                  ::db/auth-by-cred-id auth-by-cred-id
-                 ::db/supported-versions (into #{} supported-versions)
-                 ::db/reaction-version reaction-version)
+                 ::db/supported-versions (or (into #{} supported-versions)
+                                             db/supported-versions-set)
+                 ::db/reaction-version (or reaction-version "1.0.3"))
       :fx (cond-> [[:dispatch [::re-route/init
                                ui-routes
                                :not-found
