@@ -6,7 +6,8 @@
             [com.yetanalytics.lrs-admin-ui.functions.reaction :as rfns]
             [com.yetanalytics.lrs-admin-ui.spec.csv-download]
             [com.yetanalytics.lrs-admin-ui.spec.reaction-edit]
-            [clojure.spec.alpha :as s :include-macros true]))
+            [clojure.spec.alpha :as s :include-macros true]
+            [xapi-schema.spec :as xs]))
 
 (reg-sub
  :db/get-db
@@ -494,12 +495,14 @@
 (reg-sub
  :reaction/edit-spec-errors
  :<- [:reaction/editing]
- (fn [editing _]
+ :<- [:reaction/version]
+ (fn [[editing reaction-version] _]
    (when editing
-     (some-> (s/explain-data
-              :validation/reaction
-              editing)
-             :cljs.spec.alpha/problems))))
+     (binding [xs/*xapi-version* reaction-version]
+       (some-> (s/explain-data
+                :validation/reaction
+                editing)
+               :cljs.spec.alpha/problems)))))
 
 (reg-sub
  :reaction/edit-spec-errors-map
@@ -524,6 +527,11 @@
  (fn [[spec-errors template-errors] _]
    (boolean (or (some? spec-errors)
                 (seq template-errors)))))
+
+(reg-sub
+ :reaction/version
+ (fn [db _]
+   (::db/reaction-version db "1.0.3")))
 
 ;; Dialog
 

@@ -72,9 +72,15 @@
   (update request :headers
           merge {"Accept" "application/json"
                  "Authorization" (format "Basic %s" (make-basic-auth
-                                                     @(subscribe [:browser/get-credential])))
-                 "X-Experience-API-Version" "1.0.3"}))
+                                                     @(subscribe [:browser/get-credential])))}))
 
 (def req-xapi-interceptor
   (to-interceptor {:name "xAPI Interceptor"
                    :request req-xapi}))
+
+(defn xapi-version-interceptor
+  [version]
+  (to-interceptor {:name "xAPI Version Interceptor"
+                   :request (fn [request]
+                              (update request :headers
+                                      merge {"X-Experience-API-Version" version}))}))

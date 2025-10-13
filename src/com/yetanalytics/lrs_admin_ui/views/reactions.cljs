@@ -208,7 +208,10 @@
 
 (defn- select-val-type
   [val-path path val]
-  (let [{:keys [leaf-type]} (rpath/analyze-path path)]
+  (let [reaction-version @(subscribe [:reaction/version])
+        {:keys [leaf-type]} (rpath/analyze-path
+                             path
+                             :xapi-version reaction-version)]
     (if (and leaf-type (not= 'json leaf-type))
       (str (name leaf-type) ": ")
       (into [:select
@@ -229,56 +232,58 @@
 (defn- val-input
   [val-path path val]
   ;; path type wins over val type
-  (let [{:keys [leaf-type]} (rpath/analyze-path path)
+  (let [reaction-version @(subscribe [:reaction/version])
+        {:keys [leaf-type]} (rpath/analyze-path path
+                                                :xapi-version reaction-version)
         val-type (or
                   (and
                    leaf-type
                    (#{"string" "number" "boolean" "null"} (name leaf-type)))
                   (rfns/val-type val))]
     (case val-type
-       "null"
-       [:input
-        {:disabled true
-         :class "round"
-         :value "null"}]
-       "boolean"
-       [:select
-        {:value (str val)
-         :class "round"
-         :on-change
-         (fn [e]
-           (dispatch [:reaction/set-val
-                      val-path
-                      (case (fns/ps-event-val e)
-                        "true" true
-                        "false" false)]))}
-        [:option
-         {:value "true"}
-         "true"]
-        [:option
-         {:value "false"}
-         "false"]]
-       "number"
-       [:input
-        {:type "number"
-         :value val
-         :class "round"
-         :on-change
-         (fn [e]
-           (dispatch [:reaction/set-val
-                      val-path
-                      (js/parseFloat
-                       (fns/ps-event-val e))]))}]
-       "string"
-       [:input
-        {:type "text"
-         :class "round"
-         :value val
-         :on-change
-         (fn [e]
-           (dispatch [:reaction/set-val
-                      val-path
-                      (fns/ps-event-val e)]))}])))
+      "null"
+      [:input
+       {:disabled true
+        :class "round"
+        :value "null"}]
+      "boolean"
+      [:select
+       {:value (str val)
+        :class "round"
+        :on-change
+        (fn [e]
+          (dispatch [:reaction/set-val
+                     val-path
+                     (case (fns/ps-event-val e)
+                       "true" true
+                       "false" false)]))}
+       [:option
+        {:value "true"}
+        "true"]
+       [:option
+        {:value "false"}
+        "false"]]
+      "number"
+      [:input
+       {:type "number"
+        :value val
+        :class "round"
+        :on-change
+        (fn [e]
+          (dispatch [:reaction/set-val
+                     val-path
+                     (js/parseFloat
+                      (fns/ps-event-val e))]))}]
+      "string"
+      [:input
+       {:type "text"
+        :class "round"
+        :value val
+        :on-change
+        (fn [e]
+          (dispatch [:reaction/set-val
+                     val-path
+                     (fns/ps-event-val e)]))}])))
 
 (defn- val-focus
   [val]

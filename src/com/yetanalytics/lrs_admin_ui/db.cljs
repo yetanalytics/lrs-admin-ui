@@ -200,6 +200,17 @@
 (s/def ::jwt-interaction-window int?)
 (s/def ::last-interaction-time int?)
 
+(def supported-versions-set
+  #{"1.0.3" "2.0.0"})
+
+(s/def ::supported-versions
+  (s/coll-of
+   supported-versions-set
+   :kind set?
+   :into #{}
+   :min-count 1))
+(s/def ::reaction-version string?)
+
 (s/def ::db (s/keys :req [::session
                           ::credentials
                           ::login
@@ -224,7 +235,9 @@
                           ::reactions
                           ::jwt-refresh-interval
                           ::jwt-interaction-window
-                          ::last-interaction-time]
+                          ::last-interaction-time
+                          ::supported-versions
+                          ::reaction-version]
                     :opt [::reaction-focus
                           ::editing-reaction
                           ::editing-reaction-template-errors
@@ -243,8 +256,10 @@
 (defn check-and-throw
   "Throw an exception if the app db does not match the spec."
   [a-spec db]
-  (when-not (s/valid? a-spec db)
-    (throw (ex-info (str "Spec check failed in: " (s/explain-str a-spec db)) {}))))
+  (let [reaction-version (::reaction-version db)]
+    (binding [xs/*xapi-version* reaction-version]
+      (when-not (s/valid? a-spec db)
+        (throw (ex-info (str "Spec check failed in: " (s/explain-str a-spec db)) {}))))))
 
 (def check-spec-interceptor
   (re-frame/after

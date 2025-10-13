@@ -12,8 +12,8 @@
                                                  [io.github.cljsjs/oidc-client-ts
                                                   reagent/reagent
                                                   re-frame/re-frame]}
-        com.yetanalytics/re-route               {:mvn/version "0.1.0"}
-        com.yetanalytics/xapi-schema            {:mvn/version "1.2.3"}
+        com.yetanalytics/re-route               {:mvn/version "0.1.1"}
+        com.yetanalytics/xapi-schema            {:mvn/version "1.4.1"}
         com.fasterxml.jackson.core/jackson-core {:mvn/version "2.11.4"}
         com.fasterxml.jackson.dataformat/jackson-dataformat-smile
         {:mvn/version "2.11.4"}
@@ -27,7 +27,7 @@
                                                  [org.clojure/clojurescript
                                                   reagent/reagent
                                                   cljsjs/codemirror]}
-        com.yetanalytics/lrs-reactions          {:mvn/version "0.0.1"
+        com.yetanalytics/lrs-reactions          {:mvn/version "0.0.3"
                                                  :exclusions
                                                  [org.clojure/clojure]}}
  :paths ["src" "resources"]
