@@ -91,7 +91,7 @@
          ::db/enable-reactions false
          ::db/reactions []
          ::db/last-interaction-time (.now js/Date)
-         ::db/supported-versions #{"1.0.3" "2.0.0"}
+         ::db/supported-versions db/supported-versions-set
          ::db/reaction-version "2.0.0"}
     :fx [[:dispatch [:db/verify-login]]
          [:dispatch [:db/get-env]]]}))

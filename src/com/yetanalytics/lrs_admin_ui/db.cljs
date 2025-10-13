@@ -200,9 +200,12 @@
 (s/def ::jwt-interaction-window int?)
 (s/def ::last-interaction-time int?)
 
+(def supported-versions-set
+  #{"1.0.3" "2.0.0"})
+
 (s/def ::supported-versions
   (s/coll-of
-   #{"1.0.3" "2.0.0"}
+   supported-versions-set
    :kind set?
    :into #{}
    :min-count 1))
