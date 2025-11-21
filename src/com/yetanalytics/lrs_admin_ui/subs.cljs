@@ -225,6 +225,18 @@
  (fn [property-paths _]
    (s/valid? :validation/property-paths property-paths)))
 
+;; Upload JSON file
+
+(reg-sub
+ :statements-file-upload/xapi-version
+ (fn [db _]
+   (get-in db [::db/statements-file-upload-xapi-version])))
+
+(reg-sub
+ :statements-file-upload/filename
+ (fn [db _]
+   (get-in db [::db/statements-file-upload-filename])))
+
 ;; OIDC State
 (reg-sub
  :oidc/login-available?

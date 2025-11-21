@@ -678,6 +678,58 @@
    (download/download-edn edn-data edn-data-name)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Uploads
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(def fholder (atom nil))
+(re-frame/reg-event-fx
+ :statements-file-upload/upload
+ (fn [{{server-host ::db/server-host
+        proxy-path  ::db/proxy-path
+        credentials ::db/credentials
+        xapi-version ::db/statements-file-upload-xapi-version
+        :as         db} :db} [_ file-text]]
+
+   {:http-xhrio
+    (httpfn/req-xapi
+     {:method          :post
+      :headers         {"Authorization" (format "Basic %s"
+                                                (httpfn/make-basic-auth credentials))
+                        "Content-Type" "application/json"}
+      :uri             (httpfn/serv-uri
+                        server-host
+                        "/xapi/statements"
+                        proxy-path)
+      :response-format (ajax/json-response-format {:keywords? true})
+      :body                file-text
+      :interceptors [(httpfn/xapi-version-interceptor (or xapi-version "1.0.3")) ]
+      
+      :on-success      [:statements-file-upload/success-handler]
+      :on-failure      [:statements-file-upload/error-handler]})}))
+
+(re-frame/reg-event-fx
+ :statements-file-upload/success-handler
+ (fn [{:keys [db]} [_ {:keys []}]]
+   {:fx [[:dispatch [:notification/notify true "Upload Successful!"]]]}))
+
+(re-frame/reg-event-fx
+ :statements-file-upload/error-handler
+ (fn [{:keys [db]} [_ {:keys [response status] :as m}]]
+   {:fx [[:dispatch [:notification/notify true  (get-in response [:error :message])]]]}))
+
+(re-frame/reg-event-fx
+ :statements-file-upload/set-xapi-version
+ (fn [{:keys [db]} [_ version]]
+   {:db (assoc db ::db/statements-file-upload-xapi-version
+               version)}))
+
+(re-frame/reg-event-fx
+ :statements-file-upload/file-change
+ (fn [{:keys [db]} [_ filename]]
+   {:db (assoc db ::db/statements-file-upload-filename
+               filename)}))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Data Browser
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

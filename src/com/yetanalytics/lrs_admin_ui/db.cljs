@@ -177,6 +177,9 @@
 (s/def ::csv-download-properties
   (s/keys :req-un [::csvd/property-paths]))
 
+(s/def ::statements-file-upload-xapi-version
+  (s/nilable string?))
+
 (s/def ::dialog-ref any?)
 
 (s/def :dialog-choice/label string?)
@@ -243,6 +246,7 @@
                           ::editing-reaction-template-errors
                           ::editing-reaction-template-json
                           ::csv-download-properties
+                          ::statements-file-upload-xapi-version
                           ::dialog-ref
                           ::dialog-data
                           ::no-val?
