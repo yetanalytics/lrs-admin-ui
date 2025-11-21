@@ -688,7 +688,7 @@
         proxy-path  ::db/proxy-path
         credentials ::db/credentials
         xapi-version ::db/statements-file-upload-xapi-version
-        :as         db} :db} [_ file-text]]
+        :as         _db} :db} [_ file-text]]
 
    {:http-xhrio
     (httpfn/req-xapi
@@ -709,25 +709,25 @@
 
 (re-frame/reg-event-fx
  :statements-file-upload/success-handler
- (fn [{:keys [db]} [_ {:keys []}]]
+ (fn [_cofx [_ {:keys []}]]
    {:fx [[:dispatch [:notification/notify true "Upload Successful!"]]]}))
 
 (re-frame/reg-event-fx
  :statements-file-upload/error-handler
- (fn [{:keys [db]} [_ {:keys [response status] :as m}]]
+ (fn [_cofx [_ {:keys [response status] :as m}]]
    {:fx [[:dispatch [:notification/notify true  (get-in response [:error :message])]]]}))
 
-(re-frame/reg-event-fx
+(re-frame/reg-event-db
  :statements-file-upload/set-xapi-version
- (fn [{:keys [db]} [_ version]]
-   {:db (assoc db ::db/statements-file-upload-xapi-version
-               version)}))
+ (fn [db [_ version]]
+   (assoc db ::db/statements-file-upload-xapi-version
+          version)))
 
-(re-frame/reg-event-fx
+(re-frame/reg-event-db
  :statements-file-upload/file-change
- (fn [{:keys [db]} [_ filename]]
-   {:db (assoc db ::db/statements-file-upload-filename
-               filename)}))
+ (fn [db [_ filename]]
+   (assoc db ::db/statements-file-upload-filename
+          filename)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Data Browser
