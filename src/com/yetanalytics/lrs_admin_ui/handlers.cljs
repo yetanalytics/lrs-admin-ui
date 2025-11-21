@@ -714,8 +714,8 @@
 
 (re-frame/reg-event-fx
  :statements-file-upload/error-handler
- (fn [_cofx [_ {:keys [response status] :as m}]]
-   {:fx [[:dispatch [:notification/notify true  (get-in response [:error :message])]]]}))
+ (fn [_cofx [_ result]]
+   {:fx [[:dispatch [:notification/notify true  (get-in result [:response :error :message])]]]}))
 
 (re-frame/reg-event-db
  :statements-file-upload/set-xapi-version
