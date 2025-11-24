@@ -80,6 +80,7 @@
    :statements.file-upload.title {:en-US "Upload Statements File"}
    :statements.file-upload.button {:en-US "Upload"}
    :statements.file-upload.choose-file-button {:en-US "Choose file"}
+   :statements.file-upload.XAPI-version {:en-US "XAPI Version"}
 
    ;;Monitor
    :monitor.title {:en-US "LRS Monitor"}

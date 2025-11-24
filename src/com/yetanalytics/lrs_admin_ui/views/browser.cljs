@@ -252,7 +252,7 @@
                                     fname (.-name f)]
                                 (dispatch [:statements-file-upload/file-change fname]))}]
     (when @(subscribe [:statements-file-upload/filename])
-      [:span @(subscribe [:statements-file-upload/filename])])]
+      [:span "  " @(subscribe [:statements-file-upload/filename])])]
 
 
    (when @(subscribe [:statements-file-upload/filename])
@@ -268,11 +268,11 @@
                                          (dispatch [:statements-file-upload/upload (str text)]))))
                               (dispatch [:notification/notify true @(subscribe [:lang/get :browser.choose-key-notif])])))}
        @(subscribe [:lang/get :statements.file-upload.button])]
-      [:div
-       [:span "XAPI Version: " [:select
-                                {::on-change #(dispatch [:statements-file-upload/set-xapi-version (fns/ps-event-val %)])}
-                                [:option "1.0.3"]
-                                [:option "2.0.0"]]]]])])
+      [:span " " @(subscribe [:lang/get :statements.file-upload.XAPI-version]) ": "
+       [:select
+        {::on-change #(dispatch [:statements-file-upload/set-xapi-version (fns/ps-event-val %)])}
+        [:option "1.0.3"]
+        [:option "2.0.0"]]]])])
 
 (defn browser []
   [:div {:class "left-content-wrapper"}
