@@ -237,36 +237,38 @@
                 :on-click #(dispatch [:csv/auth-and-download address])
                 :value @(subscribe [:lang/get :datamgmt.download.button])}])]))
 
-
-
 (defn- json-upload []
   [:div
    [:h4 {:class "content-title"}
     @(subscribe [:lang/get :statements.file-upload.title])]
-   [:div
-    [:label.btn-brand-bold {:for "file"} @(subscribe [:lang/get :statements.file-upload.choose-file-button])]
-    [:input#file {:style     {:opacity 0 :position :absolute}
-                  :type      :file
-                  :name      "file"
-                  :on-change #(let [f     (aget (.-files (.-target  %)) 0)
-                                    fname (.-name f)]
-                                (dispatch [:statements-file-upload/file-change fname]))}]
-    (when @(subscribe [:statements-file-upload/filename])
-      [:span "  " @(subscribe [:statements-file-upload/filename])])]
+   (if-not @(subscribe [:statements-file-upload/file])
+     [:div
+      [:label.btn-brand-bold {:for "file"} @(subscribe [:lang/get :statements.file-upload.choose-file-button])]
+      [:input#file {:style     {:opacity 0 :position :absolute}
+                    :type      :file
+                    :name      "file"
+                    :on-change #(let [f     (aget (.-files (.-target  %)) 0)]
+                                  (dispatch [:statements-file-upload/file-change f]))}]]
 
+     [:div
+      [:div [:span @(subscribe [:statements-file-upload/filename])]]
+      [:div [:button {:on-click (fn [])} "change file"]]])
 
-   (when @(subscribe [:statements-file-upload/filename])
+   (when @(subscribe [:statements-file-upload/file])
      [:div
       [:br]
       [:button {:type     "button"
                 :class    "btn-brand-bold"
-                :on-click (fn upload-click [_e]
-                            (if @(subscribe [:browser/get-credential])
-                              (let [f (aget (.-files (.getElementById js/document "file")) 0)]
-                                (.then (.text f)
-                                       (fn [text]
-                                         (dispatch [:statements-file-upload/upload (str text)]))))
-                              (dispatch [:notification/notify true @(subscribe [:lang/get :browser.choose-key-notif])])))}
+                :on-click (fn [_e]
+                            (dispatch [:statements-file-upload/upload-click]))
+
+                #_(fn upload-click [_e]
+                  (if @(subscribe [:browser/get-credential])
+                    (let [f (aget (.-files (.getElementById js/document "file")) 0)]
+                      (.then (.text f)
+                             (fn [text]
+                               (dispatch [:statements-file-upload/upload (str text)]))))
+                    (dispatch [:notification/notify true @(subscribe [:lang/get :browser.choose-key-notif])])))}
        @(subscribe [:lang/get :statements.file-upload.button])]
       [:span " " @(subscribe [:lang/get :statements.file-upload.XAPI-version]) ": "
        [:select

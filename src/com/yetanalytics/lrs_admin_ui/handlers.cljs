@@ -681,7 +681,22 @@
 ;; Uploads
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def fholder (atom nil))
+(re-frame/reg-event-fx
+ :statements-file-upload/upload-click
+ (fn [{{
+        [credential] ::db/credentials
+        f           ::db/statements-file-upload-file        
+        :as         _db} :db :as _cofx} [_event-name]]
+   (if credential
+     (do
+       (.then (.text f)
+              (fn [text]
+                (re-frame/dispatch [:statements-file-upload/upload (str text)])))
+        {})
+     {:fx [[:dispatch  [:notification/notify true
+                        "no cred selected"
+                        #_@(subscribe [:lang/get :browser.choose-key-notif])] ]]})))
+
 (re-frame/reg-event-fx
  :statements-file-upload/upload
  (fn [{{server-host ::db/server-host
@@ -689,7 +704,6 @@
         credentials ::db/credentials
         xapi-version ::db/statements-file-upload-xapi-version
         :as         _db} :db} [_ file-text]]
-
    {:http-xhrio
     (httpfn/req-xapi
      {:method          :post
@@ -725,9 +739,9 @@
 
 (re-frame/reg-event-db
  :statements-file-upload/file-change
- (fn [db [_ filename]]
-   (assoc db ::db/statements-file-upload-filename
-          filename)))
+ (fn [db [_ file]]
+   (assoc db ::db/statements-file-upload-file
+          file)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Data Browser
