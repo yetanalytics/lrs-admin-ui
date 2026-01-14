@@ -771,8 +771,6 @@
                    :duration duration
                    :timestamp (.now js/Date)})})))
 
-(def holder (atom nil))
-
 (re-frame/reg-event-fx
  :statements-file-upload/error-handler
  (fn [{{file ::db/statements-file-upload-file
