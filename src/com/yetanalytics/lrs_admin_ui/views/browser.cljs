@@ -237,44 +237,67 @@
                 :on-click #(dispatch [:csv/auth-and-download address])
                 :value @(subscribe [:lang/get :datamgmt.download.button])}])]))
 
+(defn file-summary []
+  [:div {:class "browser"}
+   [:span "File: "]
+   [:span @(subscribe [:statements-file-upload/filename]) ": "]
+   [:span @(subscribe [:statements-file-upload/statement-count]) " statements"]])
+
 (defn- json-upload []
   [:div
    [:h4 {:class "content-title"}
     @(subscribe [:lang/get :statements.file-upload.title])]
-   (if-not @(subscribe [:statements-file-upload/file])
-     [:div
-      [:label.btn-brand-bold {:for "file"} @(subscribe [:lang/get :statements.file-upload.choose-file-button])]
-      [:input#file {:style     {:opacity 0 :position :absolute}
-                    :type      :file
-                    :name      "file"
-                    :on-change #(let [f     (aget (.-files (.-target  %)) 0)]
-                                  (dispatch [:statements-file-upload/file-change f]))}]]
+   (if-not (:credential @(subscribe [:db/get-browser]))
+
+     [:div {:class "browser"}
+      @(subscribe [:lang/get :statements.file-upload.key-note])]
 
      [:div
-      [:div [:span @(subscribe [:statements-file-upload/filename])]]
-      [:div [:button {:on-click (fn [])} "change file"]]])
+      [:div
+       (when @(subscribe [:statements-file-upload/file])
+         [file-summary])
+       [:br]
+       [:label.btn-brand-bold {:for "file"}
+        (if-not @(subscribe [:statements-file-upload/file])
+          @(subscribe [:lang/get :statements.file-upload.choose-file-button])
+          "Change file")]
+       [:input#file {:style     {:opacity 0 :position :absolute}
+                     :type      :file
+                     :name      "file"
+                     :on-change #(let [file     (aget (.-files (.-target  %)) 0)]
+                                   (.then (.text file)
+                                          (fn [text]
+                                            (dispatch [:statements-file-upload/file-change file text]))))}]]
 
-   (when @(subscribe [:statements-file-upload/file])
-     [:div
-      [:br]
-      [:button {:type     "button"
-                :class    "btn-brand-bold"
-                :on-click (fn [_e]
-                            (dispatch [:statements-file-upload/upload-click]))
 
-                #_(fn upload-click [_e]
-                  (if @(subscribe [:browser/get-credential])
-                    (let [f (aget (.-files (.getElementById js/document "file")) 0)]
-                      (.then (.text f)
-                             (fn [text]
-                               (dispatch [:statements-file-upload/upload (str text)]))))
-                    (dispatch [:notification/notify true @(subscribe [:lang/get :browser.choose-key-notif])])))}
-       @(subscribe [:lang/get :statements.file-upload.button])]
-      [:span " " @(subscribe [:lang/get :statements.file-upload.XAPI-version]) ": "
-       [:select
-        {::on-change #(dispatch [:statements-file-upload/set-xapi-version (fns/ps-event-val %)])}
-        [:option "1.0.3"]
-        [:option "2.0.0"]]]])])
+      (when @(subscribe [:statements-file-upload/file])
+        [:div
+         [:br]
+         [:button {:type     "button"
+                   :class    "btn-brand-bold"
+                   :on-click (fn [_e]
+                               (dispatch [:statements-file-upload/upload-click]))}
+          @(subscribe [:lang/get :statements.file-upload.button])]
+         [:span " " @(subscribe [:lang/get :statements.file-upload.XAPI-version]) ": "
+          [:select
+           {::on-change #(dispatch [:statements-file-upload/set-xapi-version (fns/ps-event-val %)])}
+           [:option "1.0.3"]
+           [:option "2.0.0"]]]])
+      (let [events @(subscribe [:statements-file-upload/event-log])]
+        (when (seq events)
+          (let [cols [{:name "Event"
+                       :selector #(str
+                                   ({"good" "✅" "bad" "❌"} (get % "code"))
+                                   " "
+                                   (get % "event"))}
+                      {:name "Duration"
+                       :selector #(str (get % "duration"))}
+                      {:name "Timestamp"
+                       :selector #(time/ms->local (get % "timestamp"))}]
+                data   events
+                other-opts {:columns            cols
+                            :data               data}]
+            [data-table other-opts])))])])
 
 (defn browser []
   [:div {:class "left-content-wrapper"}

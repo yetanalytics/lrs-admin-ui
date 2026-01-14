@@ -230,29 +230,28 @@
 (reg-sub
  :statements-file-upload/xapi-version
  (fn [db _]
-   (get-in db [::db/statements-file-upload-xapi-version])))
+   (or (get db ::db/statements-file-upload-xapi-version)
+       "1.0.3")))
 
 (reg-sub
  :statements-file-upload/file
  (fn [db _]
-   (get-in db [::db/statements-file-upload-file])))
+   (get db ::db/statements-file-upload-file)))
 
 (reg-sub
  :statements-file-upload/filename
  (fn [db _]
-   (if-let [file (::db/statements-file-upload-file db)]
-     (.-name file))))
+   (get db ::db/statements-file-upload-file-name)))
 
 (reg-sub
  :statements-file-upload/statement-count
  (fn [db _]
-   (if-let [file (::db/statements-file-upload-file db)]
-     (.then (.text file)
-            (fn [text]
-              (let [parsed (.parse js/JSON text)
-                    c (if (.isArray js/Array parsed)
-                        (count parsed)
-                        1)]))))))
+   (get db ::db/statements-file-upload-statements-count)))
+
+(reg-sub
+ :statements-file-upload/event-log
+ (fn [db _]
+   (::db/statements-file-upload-event-log db)))
 
 ;; OIDC State
 (reg-sub

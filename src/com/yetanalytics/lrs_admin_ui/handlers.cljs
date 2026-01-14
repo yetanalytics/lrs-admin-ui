@@ -92,7 +92,8 @@
          ::db/reactions []
          ::db/last-interaction-time (.now js/Date)
          ::db/supported-versions db/supported-versions-set
-         ::db/reaction-version "2.0.0"}
+         ::db/reaction-version "2.0.0"
+         ::db/statements-file-upload-event-log []}
     :fx [[:dispatch [:db/verify-login]]
          [:dispatch [:db/get-env]]]}))
 
@@ -681,55 +682,114 @@
 ;; Uploads
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
+(re-frame/reg-event-fx
+ :statements-file-upload/file-change
+ (fn [{:keys [db]} [_ file text]]
+   (let [parsed  (try  (.parse js/JSON text)
+                       (catch :default _e :unparseable))]
+     (case parsed
+       :unparseable
+       {:fx [[:dispatch [:notification/notify true "File not valid JSON"]]]
+        :db (-> db
+                (update 
+                 ::db/statements-file-upload-event-log conj
+                 {:code :bad
+                  :event (str "File " (.-name file) " not valid JSON, not loaded")
+                  :timestamp (.now js/Date)})
+                (assoc ::db/statements-file-upload-file
+                       nil
+                       ::db/statements-file-upload-file-text
+                       nil
+                       ::db/statements-file-upload-file-name
+                       nil
+                       ::db/statements-file-upload-statements-count
+                       0))}
+       {:db (assoc db
+                   ::db/statements-file-upload-file
+                   file
+                   ::db/statements-file-upload-file-text
+                   text
+                   ::db/statements-file-upload-file-name
+                   (.-name file)
+                   ::db/statements-file-upload-statements-count
+                   (if (.isArray js/Array parsed)
+                     (.-length parsed)
+                     1))}))))
+
 (re-frame/reg-event-fx
  :statements-file-upload/upload-click
- (fn [{{
-        [credential] ::db/credentials
-        f           ::db/statements-file-upload-file        
-        :as         _db} :db :as _cofx} [_event-name]]
+ (fn [{{[credential] ::db/credentials
+        :as         db} :db :as _cofx} [_event-name]]
    (if credential
-     (do
-       (.then (.text f)
-              (fn [text]
-                (re-frame/dispatch [:statements-file-upload/upload (str text)])))
-        {})
+     {:fx [[:dispatch  [:statements-file-upload/upload (db ::db/statements-file-upload-file-text)] ]]}
      {:fx [[:dispatch  [:notification/notify true
-                        "no cred selected"
-                        #_@(subscribe [:lang/get :browser.choose-key-notif])] ]]})))
+                        "Please select a credential"]]]})))
 
 (re-frame/reg-event-fx
  :statements-file-upload/upload
- (fn [{{server-host ::db/server-host
+ (fn [{{{credential :credential} ::db/browser
+        server-host ::db/server-host
         proxy-path  ::db/proxy-path
-        credentials ::db/credentials
         xapi-version ::db/statements-file-upload-xapi-version
         :as         _db} :db} [_ file-text]]
-   {:http-xhrio
-    (httpfn/req-xapi
-     {:method          :post
-      :headers         {"Authorization" (format "Basic %s"
-                                                (httpfn/make-basic-auth credentials))
-                        "Content-Type" "application/json"}
-      :uri             (httpfn/serv-uri
-                        server-host
-                        "/xapi/statements"
-                        proxy-path)
-      :response-format (ajax/json-response-format {:keywords? true})
-      :body                file-text
-      :interceptors [(httpfn/xapi-version-interceptor (or xapi-version "1.0.3")) ]
-      
-      :on-success      [:statements-file-upload/success-handler]
-      :on-failure      [:statements-file-upload/error-handler]})}))
+   (let [xapi-version (or xapi-version "1.0.3")
+         start-ts (.now js/Date)]
+     
+     {:http-xhrio
+      (httpfn/req-xapi
+       {:method          :post
+        :headers         {"Authorization" (format "Basic %s"
+                                                  (httpfn/make-basic-auth credential))
+                          "Content-Type" "application/json"}
+        :uri             (httpfn/serv-uri
+                          server-host
+                          "/xapi/statements"
+                          proxy-path)
+        :response-format (ajax/json-response-format {:keywords? true})
+        :body                file-text
+        :interceptors [(httpfn/xapi-version-interceptor xapi-version) ]
+        
+        :on-success      [:statements-file-upload/success-handler xapi-version start-ts]
+        :on-failure      [:statements-file-upload/error-handler]})})))
+
 
 (re-frame/reg-event-fx
  :statements-file-upload/success-handler
- (fn [_cofx [_ {:keys []}]]
-   {:fx [[:dispatch [:notification/notify true "Upload Successful!"]]]}))
+ (fn [{{file         ::db/statements-file-upload-file
+        c            ::db/statements-file-upload-statements-count
+        :as db} :db}
+      [_ xapi-version start-ts _result]]
+
+   (let [filename (.-name file)
+         duration (- (.now js/Date)
+                     start-ts)]
+     {:fx [[:dispatch [:notification/notify true "Upload Successful!"]]]
+      :db (update db ::db/statements-file-upload-event-log conj
+                  {:code :good
+                   :event (str "Successfully uploaded " c " statements from " filename " under XAPI version " xapi-version)
+                   :duration duration
+                   :timestamp (.now js/Date)})})))
+
+(def holder (atom nil))
 
 (re-frame/reg-event-fx
  :statements-file-upload/error-handler
- (fn [_cofx [_ result]]
-   {:fx [[:dispatch [:notification/notify true  (get-in result [:response :error :message])]]]}))
+ (fn [{{file ::db/statements-file-upload-file
+        :as db} :db}
+      [_ result]]
+   (let [filename (.-name file)
+         precursor (str "Failed to upload " filename ": ")
+         msg         (cond (#{0 -1} (:status result))
+                           "Couldn't reach server"
+                           :else
+                           (get-in result [:response :error :message]))]
+
+     {:fx [[:dispatch [:notification/notify true msg]]]
+      :db (update db ::db/statements-file-upload-event-log conj
+                  {:code :bad
+                   :event (str precursor msg)
+                   :timestamp (.now js/Date)})})))
 
 (re-frame/reg-event-db
  :statements-file-upload/set-xapi-version
@@ -737,11 +797,7 @@
    (assoc db ::db/statements-file-upload-xapi-version
           version)))
 
-(re-frame/reg-event-db
- :statements-file-upload/file-change
- (fn [db [_ file]]
-   (assoc db ::db/statements-file-upload-file
-          file)))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Data Browser
