@@ -226,7 +226,6 @@
    (s/valid? :validation/property-paths property-paths)))
 
 ;; Upload JSON file
-
 (reg-sub
  :statements-file-upload/xapi-version
  (fn [db _]

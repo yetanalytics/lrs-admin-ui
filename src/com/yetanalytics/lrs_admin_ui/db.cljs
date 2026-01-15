@@ -183,8 +183,6 @@
 (s/def ::statements-file-upload-event-log
   (s/nilable vector?))
 
-
-
 (s/def ::dialog-ref any?)
 
 (s/def :dialog-choice/label string?)

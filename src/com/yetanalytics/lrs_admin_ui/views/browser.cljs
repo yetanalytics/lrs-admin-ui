@@ -248,10 +248,8 @@
    [:h4 {:class "content-title"}
     @(subscribe [:lang/get :statements.file-upload.title])]
    (if-not (:credential @(subscribe [:db/get-browser]))
-
      [:div {:class "browser"}
       @(subscribe [:lang/get :statements.file-upload.key-note])]
-
      [:div
       [:div
        (when @(subscribe [:statements-file-upload/file])
@@ -268,7 +266,6 @@
                                    (.then (.text file)
                                           (fn [text]
                                             (dispatch [:statements-file-upload/file-change file text]))))}]]
-
 
       (when @(subscribe [:statements-file-upload/file])
         [:div

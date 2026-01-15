@@ -682,7 +682,6 @@
 ;; Uploads
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
 (re-frame/reg-event-fx
  :statements-file-upload/file-change
  (fn [{:keys [db]} [_ file text]]
@@ -735,7 +734,6 @@
         :as         _db} :db} [_ file-text]]
    (let [xapi-version (or xapi-version "1.0.3")
          start-ts (.now js/Date)]
-     
      {:http-xhrio
       (httpfn/req-xapi
        {:method          :post
@@ -749,10 +747,8 @@
         :response-format (ajax/json-response-format {:keywords? true})
         :body                file-text
         :interceptors [(httpfn/xapi-version-interceptor xapi-version) ]
-        
         :on-success      [:statements-file-upload/success-handler xapi-version start-ts]
         :on-failure      [:statements-file-upload/error-handler]})})))
-
 
 (re-frame/reg-event-fx
  :statements-file-upload/success-handler
