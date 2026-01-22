@@ -296,6 +296,17 @@
                             :data               data}]
             [data-table other-opts])))])])
 
+(defn manual-upload []
+  [:div
+   [:h4 {:class "content-title"}
+    "manual upload"
+    #_@(subscribe [:lang/get :statements.file-upload.title])]
+
+   [:textarea#raw-statement]
+   [:button {:on-click  #(dispatch [:statements-file-upload/raw-statement-upload
+                                    (.-value (.getElementById js/document "raw-statement"))])}
+    "Upload"]])
+
 (defn browser []
   [:div {:class "left-content-wrapper"}
    [:h2 {:class "content-title"}
@@ -304,4 +315,8 @@
    [:div {:class "h-divider"}]
    [csv-download]
    [:div {:class "h-divider"}]
-   [json-upload]])
+   [json-upload]
+   [:div {:class "h-divider"}]
+   [manual-upload]
+   
+   ])
