@@ -731,6 +731,9 @@
         server-host ::db/server-host
         proxy-path  ::db/proxy-path
         xapi-version ::db/statements-file-upload-xapi-version
+        file         ::db/statements-file-upload-file
+        c            ::db/statements-file-upload-statements-count
+
         :as         _db} :db} [_ file-text]]
    (let [xapi-version (or xapi-version "1.0.3")
          start-ts (.now js/Date)]
@@ -747,7 +750,41 @@
         :response-format (ajax/json-response-format {:keywords? true})
         :body                file-text
         :interceptors [(httpfn/xapi-version-interceptor xapi-version) ]
-        :on-success      [:statements-file-upload/success-handler xapi-version start-ts]
+        :on-success      #_[:statements-file-upload/success-handler xapi-version start-ts]
+        [:statements-file-upload/universal-success-handler {:filename (.-name file)
+                                                            :count c
+                                                            :start-ts (.now js/Date)
+                                                            :xapi-version xapi-version}
+]
+        
+        :on-failure      [:statements-file-upload/error-handler]})})))
+
+(re-frame/reg-event-fx
+ :statements-file-upload/statements-upload
+ (fn [{{{credential :credential} ::db/browser
+        server-host ::db/server-host
+        proxy-path  ::db/proxy-path
+        xapi-version ::db/statements-file-upload-xapi-version
+        :as         _db} :db} [_ file? stmts]]
+   (let [xapi-version (or xapi-version "1.0.3")
+         start-ts (.now js/Date)]
+     {:http-xhrio
+      (httpfn/req-xapi
+       {:method          :post
+        :headers         {"Authorization" (format "Basic %s"
+                                                  (httpfn/make-basic-auth credential))
+                          "Content-Type" "application/json"}
+        :uri             (httpfn/serv-uri
+                          server-host
+                          "/xapi/statements"
+                          proxy-path)
+        :response-format (ajax/json-response-format {:keywords? true})
+        :body            stmts
+        :interceptors    [(httpfn/xapi-version-interceptor xapi-version) ]
+        :on-success      [:statements-file-upload/universal-success-handler  {:filename nil
+                                                                              :count 0 ;fix!
+                                                                              :start-ts start-ts
+                                                                              :xapi-version xapi-version}]
         :on-failure      [:statements-file-upload/error-handler]})})))
 
 (re-frame/reg-event-fx
@@ -755,11 +792,31 @@
  (fn [{{file         ::db/statements-file-upload-file
         c            ::db/statements-file-upload-statements-count
         :as db} :db}
-      [_ xapi-version start-ts _result]]
+      [_ file? xapi-version start-ts _result]]
 
    (let [filename (.-name file)
          duration (- (.now js/Date)
                      start-ts)]
+     {:fx [[:dispatch [:notification/notify true "Upload Successful!"]]]
+      :db (update db ::db/statements-file-upload-event-log conj
+                  {:code :good
+                   :event (str "Successfully uploaded " c " statements from " filename " under XAPI version " xapi-version)
+                   :duration duration
+                   :timestamp (.now js/Date)})})))
+
+(re-frame/reg-event-fx
+ :statements-file-upload/universal-success-handler
+ (fn [{db :db :as _ctx}
+      [_ {filename     :filename
+          c            :count
+          start-ts     :start-ts
+          xapi-version :xapi-version}
+       _result]]
+
+   (let [duration (- (.now js/Date)
+                     start-ts)
+         msg    (str "Successfully uploaded " c " statements" (when filename (str " from " filename))
+                     " under XAPI version " xapi-version)]
      {:fx [[:dispatch [:notification/notify true "Upload Successful!"]]]
       :db (update db ::db/statements-file-upload-event-log conj
                   {:code :good
