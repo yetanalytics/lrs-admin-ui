@@ -22,5 +22,8 @@
     "victory-core": "^36.6.8",
     "victory-scatter": "^36.6.8",
     "victory-tooltip": "^36.6.8"
+  },
+  "overrides": {
+    "lodash": "4.17.23"
   }
 }
