@@ -275,7 +275,7 @@
                    :on-click (fn [_e]
                                (dispatch [:statements-file-upload/upload-click]))}
           @(subscribe [:lang/get :statements.file-upload.button])]
-         [:span " " @(subscribe [:lang/get :statements.file-upload.XAPI-version]) ": "
+         [:span " " @(subscribe [:lang/get :statements.file-upload.xapi-version]) ": "
           [:select
            {::on-change #(dispatch [:statements-file-upload/set-xapi-version (fns/ps-event-val %)])}
            [:option "1.0.3"]

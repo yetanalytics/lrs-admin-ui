@@ -239,8 +239,10 @@
 
 (reg-sub
  :statements-file-upload/filename
- (fn [db _]
-   (get db ::db/statements-file-upload-file-name)))
+ (fn [qv]
+   [(subscribe [:statements-file-upload/file])])
+ (fn [[file] qv]
+   (.-name file)))
 
 (reg-sub
  :statements-file-upload/statement-count
