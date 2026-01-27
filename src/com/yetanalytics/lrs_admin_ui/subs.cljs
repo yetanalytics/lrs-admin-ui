@@ -239,9 +239,9 @@
 
 (reg-sub
  :statements-file-upload/filename
- (fn [qv]
+ (fn [_qv]
    [(subscribe [:statements-file-upload/file])])
- (fn [[file] qv]
+ (fn [[file] _qv]
    (.-name file)))
 
 (reg-sub
