@@ -48,3 +48,7 @@
 (defn timeline-until-default
   []
   (.toISOString (js/Date.)))
+
+(defn ms->local [ms]
+  (let [date (js/Date. ms)]
+    (format "%s, %s" (.toLocaleDateString date) (.toLocaleTimeString date))))

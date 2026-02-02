@@ -177,6 +177,28 @@
 (s/def ::csv-download-properties
   (s/keys :req-un [::csvd/property-paths]))
 
+(s/def ::statements-file-upload-xapi-version
+  (s/nilable string?))
+
+(s/def ::statements-file-upload-statements-count
+  (s/nilable integer?))
+
+(s/def ::statements-file-upload-file-upload-file
+  (s/nilable #(instance? js/File %)))
+
+(s/def :event-log/code {:good :bad})
+(s/def :event-log/event string?)
+(s/def :event-log/duration int?)
+(s/def :event-log/timestamp int?)
+
+(s/def ::statements-file-upload-event-log
+  (s/nilable
+   (s/coll-of
+    (s/keys :req-un [:event-log/code
+                     :event-log/event
+                     :event-log/timestamp]
+            :opt-un [:event-log/duration]))))
+
 (s/def ::dialog-ref any?)
 
 (s/def :dialog-choice/label string?)
@@ -243,6 +265,10 @@
                           ::editing-reaction-template-errors
                           ::editing-reaction-template-json
                           ::csv-download-properties
+                          ::statements-file-upload-xapi-version
+                          ::statements-file-upload-file-upload-file
+                          ::statements-file-upload-statements-count
+                          ::statements-file-upload-event-log
                           ::dialog-ref
                           ::dialog-data
                           ::no-val?

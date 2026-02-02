@@ -75,6 +75,12 @@
    :csv.property-paths.add {:en-US "Add CSV Column "}
    :csv.property-paths.instructions {:en-US "To export your data, select the xAPI statement property paths as CSV columns below."}
    :csv.filters {:en-US "Filters:"}
+   ;;JSON File Upload
+   :statements.file-upload.title {:en-US "Upload Statements"}
+   :statements.file-upload.button {:en-US "Upload"}
+   :statements.file-upload.choose-file-button {:en-US "Choose file"}
+   :statements.file-upload.xapi-version {:en-US "XAPI Version"}
+   :statements.file-upload.key-note {:en-US "Please Choose an API Key Above to Upload Statements File"}
    ;;Monitor
    :monitor.title {:en-US "LRS Monitor"}
    :monitor.no-data {:en-US "No Statement Data"}
