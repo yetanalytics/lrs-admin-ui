@@ -717,47 +717,32 @@
                      1))}))))
 
 (re-frame/reg-event-fx
- :statements-file-upload/upload-click
+ :statements-file-upload/json-file-upload-click
  (fn [{{[credential] ::db/credentials
+        file ::db/statements-file-upload-file
+        c ::db/statements-file-upload-statements-count
+        text ::db/statements-file-upload-file-text
         :as         db} :db :as _cofx} [_event-name]]
+   
    (if credential
-     {:fx [[:dispatch  [:statements-file-upload/upload (db ::db/statements-file-upload-file-text)] ]]}
-     {:fx [[:dispatch  [:notification/notify true
-                        "Please select a credential"]]]})))
+     (let [filename (.-name file)]
+       {:fx [[:dispatch  [:statements-file-upload/statements-upload text filename c] ]]})
+     {:fx [[:dispatch  [:notification/notify true "Please select a credential"]]]})))
 
 (re-frame/reg-event-fx
- :statements-file-upload/upload
- (fn [{{{credential :credential} ::db/browser
-        server-host ::db/server-host
-        proxy-path  ::db/proxy-path
-        xapi-version ::db/statements-file-upload-xapi-version
-        file         ::db/statements-file-upload-file
-        c            ::db/statements-file-upload-statements-count
-
-        :as         _db} :db} [_ file-text]]
-   (let [xapi-version (or xapi-version "1.0.3")
-         start-ts (.now js/Date)]
-     {:http-xhrio
-      (httpfn/req-xapi
-       {:method          :post
-        :headers         {"Authorization" (format "Basic %s"
-                                                  (httpfn/make-basic-auth credential))
-                          "Content-Type" "application/json"}
-        :uri             (httpfn/serv-uri
-                          server-host
-                          "/xapi/statements"
-                          proxy-path)
-        :response-format (ajax/json-response-format {:keywords? true})
-        :body                file-text
-        :interceptors [(httpfn/xapi-version-interceptor xapi-version) ]
-        :on-success      #_[:statements-file-upload/success-handler xapi-version start-ts]
-        [:statements-file-upload/universal-success-handler {:filename (.-name file)
-                                                            :count c
-                                                            :start-ts (.now js/Date)
-                                                            :xapi-version xapi-version}
-]
-        
-        :on-failure      [:statements-file-upload/error-handler]})})))
+ :statements-file-upload/manual-upload-click
+ (fn [{{[credential] ::db/credentials
+        :as         db} :db :as _cofx} [_event-name text]]
+   (if credential
+     (let [parsed  (try  (.parse js/JSON text)
+                         (catch :default _e nil))
+           c (if (.isArray js/Array parsed)
+               (.-length parsed)
+               1)]
+       (if parsed
+         {:fx [[:dispatch  [:statements-file-upload/statements-upload nil text c]]]}
+         {:fx [[:dispatch [:notification/notify true "Text not valid JSON"]]]}))
+     {:fx [[:dispatch  [:notification/notify true "Please select a credential"]]]})))
 
 (re-frame/reg-event-fx
  :statements-file-upload/statements-upload
@@ -765,7 +750,7 @@
         server-host ::db/server-host
         proxy-path  ::db/proxy-path
         xapi-version ::db/statements-file-upload-xapi-version
-        :as         _db} :db} [_ file? stmts]]
+        :as         _db} :db} [_ filename stmts stmt-count]]
    (let [xapi-version (or xapi-version "1.0.3")
          start-ts (.now js/Date)]
      {:http-xhrio
@@ -781,28 +766,11 @@
         :response-format (ajax/json-response-format {:keywords? true})
         :body            stmts
         :interceptors    [(httpfn/xapi-version-interceptor xapi-version) ]
-        :on-success      [:statements-file-upload/universal-success-handler  {:filename nil
-                                                                              :count 0 ;fix!
+        :on-success      [:statements-file-upload/universal-success-handler  {:filename filename
+                                                                              :count stmt-count
                                                                               :start-ts start-ts
                                                                               :xapi-version xapi-version}]
         :on-failure      [:statements-file-upload/error-handler]})})))
-
-(re-frame/reg-event-fx
- :statements-file-upload/success-handler
- (fn [{{file         ::db/statements-file-upload-file
-        c            ::db/statements-file-upload-statements-count
-        :as db} :db}
-      [_ file? xapi-version start-ts _result]]
-
-   (let [filename (.-name file)
-         duration (- (.now js/Date)
-                     start-ts)]
-     {:fx [[:dispatch [:notification/notify true "Upload Successful!"]]]
-      :db (update db ::db/statements-file-upload-event-log conj
-                  {:code :good
-                   :event (str "Successfully uploaded " c " statements from " filename " under XAPI version " xapi-version)
-                   :duration duration
-                   :timestamp (.now js/Date)})})))
 
 (re-frame/reg-event-fx
  :statements-file-upload/universal-success-handler

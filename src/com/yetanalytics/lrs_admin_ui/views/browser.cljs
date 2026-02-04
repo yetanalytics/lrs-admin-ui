@@ -273,7 +273,7 @@
          [:button {:type     "button"
                    :class    "btn-brand-bold"
                    :on-click (fn [_e]
-                               (dispatch [:statements-file-upload/upload-click]))}
+                               (dispatch [:statements-file-upload/json-file-upload-click]))}
           @(subscribe [:lang/get :statements.file-upload.button])]
          [:span " " @(subscribe [:lang/get :statements.file-upload.xapi-version]) ": "
           [:select
@@ -299,13 +299,17 @@
 (defn manual-upload []
   [:div
    [:h4 {:class "content-title"}
-    "manual upload"
-    #_@(subscribe [:lang/get :statements.file-upload.title])]
-
-   [:textarea#raw-statement]
-   [:button {:on-click  #(dispatch [:statements-file-upload/raw-statement-upload
-                                    (.-value (.getElementById js/document "raw-statement"))])}
-    "Upload"]])
+    @(subscribe [:lang/get :statements.manual-upload.title])]
+   (if-not
+       (:credential @(subscribe [:db/get-browser]))
+     [:div {:class "browser"}
+      @(subscribe [:lang/get :statements.manual-upload.key-note])]
+   [:div
+    [:div [:textarea#raw-statement]]
+    [:br]
+    [:button {:on-click  #(dispatch [:statements-file-upload/manual-upload-click
+                                     (.-value (.getElementById js/document "raw-statement"))])}
+     "Upload"]])])
 
 (defn browser []
   [:div {:class "left-content-wrapper"}

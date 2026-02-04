@@ -81,6 +81,8 @@
    :statements.file-upload.choose-file-button {:en-US "Choose file"}
    :statements.file-upload.xapi-version {:en-US "XAPI Version"}
    :statements.file-upload.key-note {:en-US "Please Choose an API Key Above to Upload Statements File"}
+   :statements.manual-upload.title {:en-US "Manual Upload"}
+   :statements.manual-upload.key-note {:en-US "Please Choose an API Key Above to Upload Statements Directly"}
    ;;Monitor
    :monitor.title {:en-US "LRS Monitor"}
    :monitor.no-data {:en-US "No Statement Data"}
