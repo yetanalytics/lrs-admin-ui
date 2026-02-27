@@ -10,7 +10,9 @@
    [com.yetanalytics.lrs-admin-ui.functions.time :as time]
    [com.yetanalytics.lrs-admin-ui.views.util.json :refer [json-viewer]]
    [com.yetanalytics.lrs-admin-ui.views.util.table :refer [data-table]]
-   [com.yetanalytics.lrs-admin-ui.views.util.langmap :refer [langmap]]))
+   [com.yetanalytics.lrs-admin-ui.views.util.langmap :refer [langmap]]
+   [com.yetanalytics.lrs-admin-ui.views.form.editor :refer [editor]]
+   [com.yetanalytics.lrs-admin-ui.views.browser.json-editor :as mje]))
 
 (defn actor-display
   "Actor IFI progressive resolution to a display string."
@@ -300,16 +302,17 @@
   [:div
    [:h4 {:class "content-title"}
     @(subscribe [:lang/get :statements.manual-upload.title])]
-   (if-not
-       (:credential @(subscribe [:db/get-browser]))
+   (if-not (:credential @(subscribe [:db/get-browser]))
      [:div {:class "browser"}
       @(subscribe [:lang/get :statements.manual-upload.key-note])]
-   [:div
-    [:div [:textarea#raw-statement]]
-    [:br]
-    [:button {:on-click  #(dispatch [:statements-file-upload/manual-upload-click
-                                     (.-value (.getElementById js/document "raw-statement"))])}
-     "Upload"]])])
+     [:div
+      [mje/manual-json-editor {
+                               :buffer (subscribe [:statements-file-upload/manual-json-buffer])
+                               :set-json #(dispatch [:statements-file-upload/set-editor-contents %])
+                               }]
+      [:br]
+      [:button {:on-click  #(dispatch [:statements-file-upload/manual-upload-click])}
+       "Upload"]])])
 
 (defn browser []
   [:div {:class "left-content-wrapper"}

@@ -254,6 +254,20 @@
  (fn [db _]
    (::db/statements-file-upload-event-log db)))
 
+(reg-sub
+ :statements-file-upload/editor-contents
+ (fn [db _]
+   (::db/statements-file-upload-editor-contents db)))
+
+(reg-sub
+ :statements-file-upload/manual-json-buffer
+ (fn [db _]
+   {#_:value
+    :saved (or (::db/statements-file-upload-manual-json db) "")
+    :json (or (::db/statements-file-upload-editor-contents db) "")
+    #_:status
+    #_:errors}))
+
 ;; OIDC State
 (reg-sub
  :oidc/login-available?

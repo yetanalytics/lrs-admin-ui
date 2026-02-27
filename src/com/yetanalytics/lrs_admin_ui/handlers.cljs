@@ -732,15 +732,16 @@
 (re-frame/reg-event-fx
  :statements-file-upload/manual-upload-click
  (fn [{{[credential] ::db/credentials
-        :as         db} :db :as _cofx} [_event-name text]]
+        text         ::db/statements-file-upload-editor-contents
+        :as         db} :db :as _cofx} [_event-name]]
    (if credential
-     (let [parsed  (try  (.parse js/JSON text)
-                         (catch :default _e nil))
+     (let [parsed  (try (.parse js/JSON text)
+                        (catch :default _e nil))
            c (if (.isArray js/Array parsed)
                (.-length parsed)
                1)]
        (if parsed
-         {:fx [[:dispatch  [:statements-file-upload/statements-upload nil text c]]]}
+         {:fx [[:dispatch  [:statements-file-upload/statements-upload text nil c]]]}
          {:fx [[:dispatch [:notification/notify true "Text not valid JSON"]]]}))
      {:fx [[:dispatch  [:notification/notify true "Please select a credential"]]]})))
 
@@ -750,7 +751,7 @@
         server-host ::db/server-host
         proxy-path  ::db/proxy-path
         xapi-version ::db/statements-file-upload-xapi-version
-        :as         _db} :db} [_ filename stmts stmt-count]]
+        :as         _db} :db} [_ stmts filename stmt-count]]
    (let [xapi-version (or xapi-version "1.0.3")
          start-ts (.now js/Date)]
      {:http-xhrio
@@ -816,6 +817,34 @@
    (assoc db ::db/statements-file-upload-xapi-version
           version)))
 
+(re-frame/reg-event-fx
+ :statements-file-upload/set-editor-contents
+ (fn [{db :db
+       :as _cofx} [_ text]]
+   (let [not-valid-json? (try (do (js/JSON.parse text)
+                                  nil)
+                              (catch js/Error e
+                                [{:message "Invalid JSON Syntax"
+                                  :details (str e)}]))]
+     {:db (cond-> (assoc db ::db/statements-file-upload-editor-contents text)
+            not-valid-json? (update :errors conj not-valid-json?))
+      :dispatch-later [{:ms 3000
+                        :dispatch [:validate-manual-xapi]
+                        :event-id :manual-xapi-validate}]})))
+
+(re-frame/reg-event-fx
+ :validate-manual-xapi
+ (fn [{{text ::db/statements-file-upload-editor-contents
+        :as db} :db} _args]
+   (println "validating xapi...")
+   (let [error? (rfns/validate-template-xapi text)]
+     (println "error?" error?)
+     {:dispatch [:swap!-manual-errors #(assoc % :xapi error?)]})))
+
+(re-frame/reg-event-fx
+ :swap!-manual-errors
+ (fn [{db :db :as _cofx} [_ f & args]]
+   {:db (apply update db :manual-errors f args)}))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
