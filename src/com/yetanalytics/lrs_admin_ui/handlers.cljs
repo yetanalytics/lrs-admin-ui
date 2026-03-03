@@ -93,7 +93,9 @@
          ::db/last-interaction-time (.now js/Date)
          ::db/supported-versions db/supported-versions-set
          ::db/reaction-version "2.0.0"
-         ::db/statements-file-upload-event-log []}
+         ::db/statements-file-upload-event-log []
+         ::db/statements-file-upload-upload-type :file}
+
     :fx [[:dispatch [:db/verify-login]]
          [:dispatch [:db/get-env]]]}))
 
@@ -781,15 +783,17 @@
           start-ts     :start-ts
           xapi-version :xapi-version}
        _result]]
-
    (let [duration (- (.now js/Date)
                      start-ts)
-         msg    (str "Successfully uploaded " c " statements" (when filename (str " from " filename))
+         msg    (str "Successfully uploaded " c " statements from "
+                     (if filename
+                       filename
+                       "raw text")
                      " under XAPI version " xapi-version)]
      {:fx [[:dispatch [:notification/notify true "Upload Successful!"]]]
       :db (update db ::db/statements-file-upload-event-log conj
                   {:code :good
-                   :event (str "Successfully uploaded " c " statements from " filename " under XAPI version " xapi-version)
+                   :event msg
                    :duration duration
                    :timestamp (.now js/Date)})})))
 
@@ -821,31 +825,39 @@
  :statements-file-upload/set-editor-contents
  (fn [{db :db
        :as _cofx} [_ text]]
-   (let [not-valid-json? (try (do (js/JSON.parse text)
-                                  nil)
-                              (catch js/Error e
-                                [{:message "Invalid JSON Syntax"
-                                  :details (str e)}]))]
-     {:db (cond-> (assoc db ::db/statements-file-upload-editor-contents text)
-            not-valid-json? (update :errors conj not-valid-json?))
+   (let [json-errors (try (do (js/JSON.parse text)
+                              nil)
+                          (catch js/Error e
+                            [{:message "Invalid JSON Syntax"
+                              :details (str e)}]))]
+     {:db (cond-> (assoc db
+                         ::db/statements-file-upload-editor-contents text
+                         ::db/statements-file-upload-analyzed? false)
+            json-errors       (assoc-in [::db/statements-file-upload-manual-errors :json] json-errors)
+            (not json-errors) (update ::db/statements-file-upload-manual-errors dissoc :json))
       :dispatch-later [{:ms 3000
-                        :dispatch [:validate-manual-xapi]
+                        :dispatch [:statements-file-upload/validate-manual-xapi]
                         :event-id :manual-xapi-validate}]})))
 
 (re-frame/reg-event-fx
- :validate-manual-xapi
- (fn [{{text ::db/statements-file-upload-editor-contents
-        :as db} :db} _args]
-   (println "validating xapi...")
-   (let [error? (rfns/validate-template-xapi text)]
-     (println "error?" error?)
-     {:dispatch [:swap!-manual-errors #(assoc % :xapi error?)]})))
+ :print-errors
+ (fn [{db :db} _ev]
+   (println (::db/statements-file-upload-manual-errors db))))
 
 (re-frame/reg-event-fx
- :swap!-manual-errors
- (fn [{db :db :as _cofx} [_ f & args]]
-   {:db (apply update db :manual-errors f args)}))
+ :statements-file-upload/validate-manual-xapi
+ (fn [{{text ::db/statements-file-upload-editor-contents
+        :as db} :db} _args]
+   (let [error (rfns/validate-template-xapi text)]
+     {:db (cond-> db
+            true (assoc ::db/statements-file-upload-analyzed? true)
+            error (assoc-in [::db/statements-file-upload-manual-errors :xapi] error)
+            (not error) (update ::db/statements-file-upload-manual-errors dissoc :xapi))})))
 
+(re-frame/reg-event-db
+ :statements-file-upload/toggle-upload-type
+ (fn [db [_ upload-type]]
+   (assoc db ::db/statements-file-upload-upload-type upload-type)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Data Browser

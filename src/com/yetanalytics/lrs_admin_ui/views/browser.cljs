@@ -11,8 +11,7 @@
    [com.yetanalytics.lrs-admin-ui.views.util.json :refer [json-viewer]]
    [com.yetanalytics.lrs-admin-ui.views.util.table :refer [data-table]]
    [com.yetanalytics.lrs-admin-ui.views.util.langmap :refer [langmap]]
-   [com.yetanalytics.lrs-admin-ui.views.form.editor :refer [editor]]
-   [com.yetanalytics.lrs-admin-ui.views.browser.json-editor :as mje]))
+   [com.yetanalytics.lrs-admin-ui.views.form.editor :refer [editor manual-json-editor]]))
 
 (defn actor-display
   "Actor IFI progressive resolution to a display string."
@@ -245,7 +244,30 @@
    [:span @(subscribe [:statements-file-upload/filename]) ": "]
    [:span @(subscribe [:statements-file-upload/statement-count]) " statements"]])
 
-(defn- json-upload []
+(defn manual-upload []
+  [:div
+   [:h4 {:class "content-title"}
+    @(subscribe [:lang/get :statements.manual-upload.title])]
+   (if-not (:credential @(subscribe [:db/get-browser]))
+     [:div {:class "browser"}
+      @(subscribe [:lang/get :statements.manual-upload.key-note])]
+     (let [buffer (subscribe [:statements-file-upload/manual-json-buffer])]
+       [:div
+        [:button {:on-click #(dispatch [:statements-file-upload/toggle-upload-type :file])
+                    :type     "button"
+                    :class    "btn-brand-bold"}
+           "Switch to File Upload"]
+
+        [manual-json-editor {:buffer buffer
+                             :set-json #(dispatch [:statements-file-upload/set-editor-contents %])}]
+        [:br]
+        (when @(subscribe [:statements-file-upload/uploadable])
+          [:button {:on-click #(dispatch [:statements-file-upload/manual-upload-click])
+                    :type     "button"
+                    :class    "btn-brand-bold"}
+           "Upload Text"])]))])
+
+(defn- json-file-upload []
   [:div
    [:h4 {:class "content-title"}
     @(subscribe [:lang/get :statements.file-upload.title])]
@@ -253,6 +275,10 @@
      [:div {:class "browser"}
       @(subscribe [:lang/get :statements.file-upload.key-note])]
      [:div
+      [:button {:on-click #(dispatch [:statements-file-upload/toggle-upload-type :raw])
+                :type     "button"
+                :class    "btn-brand-bold"}
+       "Switch to Raw Text Upload"]
       [:div
        (when @(subscribe [:statements-file-upload/file])
          [file-summary])
@@ -281,8 +307,10 @@
           [:select
            {::on-change #(dispatch [:statements-file-upload/set-xapi-version (fns/ps-event-val %)])}
            [:option "1.0.3"]
-           [:option "2.0.0"]]]])
-      (let [events @(subscribe [:statements-file-upload/event-log])]
+           [:option "2.0.0"]]]])])])
+
+(defn event-log []
+ (let [events @(subscribe [:statements-file-upload/event-log])]
         (when (seq events)
           (let [cols [{:name "Event"
                        :selector #(str
@@ -296,23 +324,7 @@
                 data   events
                 other-opts {:columns            cols
                             :data               data}]
-            [data-table other-opts])))])])
-
-(defn manual-upload []
-  [:div
-   [:h4 {:class "content-title"}
-    @(subscribe [:lang/get :statements.manual-upload.title])]
-   (if-not (:credential @(subscribe [:db/get-browser]))
-     [:div {:class "browser"}
-      @(subscribe [:lang/get :statements.manual-upload.key-note])]
-     [:div
-      [mje/manual-json-editor {
-                               :buffer (subscribe [:statements-file-upload/manual-json-buffer])
-                               :set-json #(dispatch [:statements-file-upload/set-editor-contents %])
-                               }]
-      [:br]
-      [:button {:on-click  #(dispatch [:statements-file-upload/manual-upload-click])}
-       "Upload"]])])
+            [data-table other-opts]))))
 
 (defn browser []
   [:div {:class "left-content-wrapper"}
@@ -322,6 +334,8 @@
    [:div {:class "h-divider"}]
    [csv-download]
    [:div {:class "h-divider"}]
-   [json-upload]
+   (case @(subscribe [:statements-file-upload/upload-type])
+     :file [json-file-upload]
+     :raw  [manual-upload])
    [:div {:class "h-divider"}]
-   [manual-upload]])
+   [event-log]])

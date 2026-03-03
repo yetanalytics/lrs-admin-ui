@@ -255,18 +255,43 @@
    (::db/statements-file-upload-event-log db)))
 
 (reg-sub
+ :statements-file-upload/manual-errors
+ (fn [db _]
+   (vec (apply concat (vals (::db/statements-file-upload-manual-errors db))))))
+
+(reg-sub
  :statements-file-upload/editor-contents
  (fn [db _]
    (::db/statements-file-upload-editor-contents db)))
 
 (reg-sub
  :statements-file-upload/manual-json-buffer
- (fn [db _]
-   {#_:value
-    :saved (or (::db/statements-file-upload-manual-json db) "")
-    :json (or (::db/statements-file-upload-editor-contents db) "")
-    #_:status
-    #_:errors}))
+ :<- [:statements-file-upload/editor-contents]
+ :<- [:statements-file-upload/manual-errors]
+ (fn [[json errors]]
+   {:json (or json "")
+    :errors errors
+    :status (if (seq errors) :error :valid)}))
+
+(reg-sub
+ :statements-file-upload/analyzed?
+ (fn [db]
+   (::db/statements-file-upload-analyzed? db)))
+
+(reg-sub
+ :statements-file-upload/uploadable
+ :<- [:statements-file-upload/manual-errors]
+ :<- [:statements-file-upload/editor-contents]
+ :<- [:statements-file-upload/analyzed?]
+ (fn [[errors text analyzed?]]
+   (and (empty? errors)
+        (not (clojure.string/blank? text))
+        analyzed?)))
+
+(reg-sub
+ :statements-file-upload/upload-type
+ (fn [db]
+   (::db/statements-file-upload-upload-type db)))
 
 ;; OIDC State
 (reg-sub
