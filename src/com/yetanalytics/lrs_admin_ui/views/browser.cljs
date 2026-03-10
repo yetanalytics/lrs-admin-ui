@@ -250,7 +250,7 @@
      [file-summary])
    [:br]
    [:label.btn-brand-bold {:for "file"}
-    @(subscribe [:lang/get :statements.file-upload.choose-file-button])]
+    @(subscribe [:lang/get :statements-upload.choose-file-button])]
    [:input#file {:style     {:opacity 0 :position :absolute}
                  :type      :file
                  :name      "file"
@@ -262,10 +262,10 @@
 (defn- manual-upload []
   [:div
    [:h4 {:class "content-title"}
-    @(subscribe [:lang/get :statements.manual-upload.title])]
+    @(subscribe [:lang/get :statements-upload.title])]
    (if-not (:credential @(subscribe [:db/get-browser]))
      [:div {:class "browser"}
-      @(subscribe [:lang/get :statements.manual-upload.key-note])]
+      @(subscribe [:lang/get :statements-upload.key-note])]
      (let [buffer (subscribe [:statements-upload/manual-json-buffer])]
        [:div
         [json-file-picker]
@@ -277,19 +277,19 @@
           [:button {:on-click #(dispatch [:statements-upload/manual-upload-click])
                     :type     "button"
                     :class    "btn-brand-bold"}
-           @(subscribe [:lang/get :statements.file-upload.upload-text-button])])]))])
+           @(subscribe [:lang/get :statements-upload.button])])]))])
 
 (defn event-log []
  (let [events @(subscribe [:statements-upload/event-log])]
         (when (seq events)
-          (let [cols [{:name @(subscribe [:lang/get :statements.upload.event-log.header.event])
+          (let [cols [{:name @(subscribe [:lang/get :statements-upload.event-log.header.event])
                        :selector #(str
                                    ({"good" "✅" "bad" "❌"} (get % "code"))
                                    " "
                                    (get % "event"))}
-                      {:name @(subscribe [:lang/get :statements.upload.event-log.header.duration])
+                      {:name @(subscribe [:lang/get :statements-upload.event-log.header.duration])
                        :selector #(str (get % "duration"))}
-                      {:name @(subscribe [:lang/get :statements.upload.event-log.header.timestamp])
+                      {:name @(subscribe [:lang/get :statements-upload.event-log.header.timestamp])
                        :selector #(time/ms->local (get % "timestamp"))}]
                 data   events
                 other-opts {:columns            cols
