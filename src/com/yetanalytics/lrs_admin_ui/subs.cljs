@@ -227,68 +227,68 @@
 
 ;; Upload JSON file
 (reg-sub
- :statements-file-upload/xapi-version
+ :statements-upload/xapi-version
  (fn [db _]
-   (or (get db ::db/statements-file-upload-xapi-version)
+   (or (get db ::db/statements-upload-xapi-version)
        "1.0.3")))
 
 
 (reg-sub
- :statements-file-upload/file
+ :statements-upload/file
  (fn [db _]
-   (::db/statements-file-upload-file db)))
+   (::db/statements-upload-file db)))
 
 (reg-sub
- :statements-file-upload/filename
+ :statements-upload/filename
  (fn [_qv]
-   [(subscribe [:statements-file-upload/file])])
+   [(subscribe [:statements-upload/file])])
  (fn [[file] _qv]
    (when file
      (.-name file))))
 
 (reg-sub
- :statements-file-upload/statement-count
+ :statements-upload/statement-count
  (fn [db _]
-   (get db ::db/statements-file-upload-statements-count)))
+   (get db ::db/statements-upload-statements-count)))
 
 (reg-sub
- :statements-file-upload/manual-errors
+ :statements-upload/manual-errors
  (fn [db _]
-   (vec (apply concat (vals (::db/statements-file-upload-manual-errors db))))))
+   (vec (apply concat (vals (::db/statements-upload-manual-errors db))))))
 
 (reg-sub
- :statements-file-upload/editor-contents
+ :statements-upload/editor-contents
  (fn [db _]
-   (::db/statements-file-upload-editor-contents db)))
+   (::db/statements-upload-editor-contents db)))
 
 (reg-sub
- :statements-file-upload/manual-json-buffer
- :<- [:statements-file-upload/editor-contents]
- :<- [:statements-file-upload/manual-errors]
+ :statements-upload/manual-json-buffer
+ :<- [:statements-upload/editor-contents]
+ :<- [:statements-upload/manual-errors]
  (fn [[json errors]]
    {:json (or json "")
     :errors errors
     :status (if (seq errors) :error :valid)}))
 
 (reg-sub
- :statements-file-upload/analyzed?
+ :statements-upload/analyzed?
  (fn [db]
-   (::db/statements-file-upload-analyzed? db)))
+   (::db/statements-upload-analyzed? db)))
 
 (reg-sub
- :statements-file-upload/uploadable
- :<- [:statements-file-upload/manual-errors]
- :<- [:statements-file-upload/editor-contents]
- :<- [:statements-file-upload/analyzed?]
+ :statements-upload/uploadable
+ :<- [:statements-upload/manual-errors]
+ :<- [:statements-upload/editor-contents]
+ :<- [:statements-upload/analyzed?]
  (fn [[errors text analyzed?]]
    (and (empty? errors)
         (not (clojure.string/blank? text))
         analyzed?)))
 
 (reg-sub
- :statements-file-upload/event-log
+ :statements-upload/event-log
  (fn [db _]
-   (::db/statements-file-upload-event-log db)))
+   (::db/statements-upload-event-log db)))
 
 ;; OIDC State
 (reg-sub

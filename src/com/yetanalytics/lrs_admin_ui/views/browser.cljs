@@ -241,12 +241,12 @@
 (defn file-summary []
   [:div {:class "browser"}
    [:span "File: "]
-   [:span @(subscribe [:statements-file-upload/filename]) ": "]
-   [:span @(subscribe [:statements-file-upload/statement-count]) " statements"]])
+   [:span @(subscribe [:statements-upload/filename]) ": "]
+   [:span @(subscribe [:statements-upload/statement-count]) " statements"]])
 
 (defn- json-file-picker []
   [:div
-   (when @(subscribe [:statements-file-upload/file])
+   (when @(subscribe [:statements-upload/file])
      [file-summary])
    [:br]
    [:label.btn-brand-bold {:for "file"}
@@ -257,7 +257,7 @@
                  :on-change #(let [file (aget (.-files (.-target  %)) 0)]
                                (.then (.text file)
                                       (fn [text]
-                                        (dispatch [:statements-file-upload/file-change file text]))))}]])
+                                        (dispatch [:statements-upload/file-change file text]))))}]])
 
 (defn- manual-upload []
   [:div
@@ -266,21 +266,21 @@
    (if-not (:credential @(subscribe [:db/get-browser]))
      [:div {:class "browser"}
       @(subscribe [:lang/get :statements.manual-upload.key-note])]
-     (let [buffer (subscribe [:statements-file-upload/manual-json-buffer])]
+     (let [buffer (subscribe [:statements-upload/manual-json-buffer])]
        [:div
         [json-file-picker]
         [:br]
         [manual-json-editor {:buffer buffer
-                             :set-json #(dispatch [:statements-file-upload/set-editor-contents %])}]
+                             :set-json #(dispatch [:statements-upload/set-editor-contents %])}]
         [:br]
-        (when @(subscribe [:statements-file-upload/uploadable])
-          [:button {:on-click #(dispatch [:statements-file-upload/manual-upload-click])
+        (when @(subscribe [:statements-upload/uploadable])
+          [:button {:on-click #(dispatch [:statements-upload/manual-upload-click])
                     :type     "button"
                     :class    "btn-brand-bold"}
            @(subscribe [:lang/get :statements.file-upload.upload-text-button])])]))])
 
 (defn event-log []
- (let [events @(subscribe [:statements-file-upload/event-log])]
+ (let [events @(subscribe [:statements-upload/event-log])]
         (when (seq events)
           (let [cols [{:name @(subscribe [:lang/get :statements.upload.event-log.header.event])
                        :selector #(str
