@@ -191,14 +191,11 @@
   (s/coll-of (s/keys :req-un [:statements-upload-error/message])))
 
 (s/def ::statements-upload-manual-errors
-  (s/keys :req-un [:statements-upload/xapi
-                   :statements-upload/json]))
+  (s/keys :req-un [:statements-upload-error/xapi
+                   :statements-upload-error/json]))
 
 (s/def ::statements-upload-file
 (s/nilable #(instance? js/File %)))
-
-(s/def ::statements-upload-file-name
-  (s/nilable string?))
 
 (s/def ::statements-upload-editor-contents string?)
 
@@ -289,7 +286,7 @@
                           ::statements-upload-manual-errors
                           ::statements-upload-editor-contents
                           ::statements-upload-analyzed?
-                          ::statements-upload-file-name
+                          ::statements-upload-file
                           ::dialog-ref
                           ::dialog-data
                           ::no-val?

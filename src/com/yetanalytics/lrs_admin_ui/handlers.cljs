@@ -701,8 +701,6 @@
        :else {:fx [[:dispatch [:statements-upload/set-editor-contents text]]]
               :db (-> db (assoc ::db/statements-upload-file
                                 file
-                                ::db/statements-upload-filename
-                                (.-name file)
                                 ::db/statements-upload-statements-count
                                 (if json-errors
                                   0
@@ -714,7 +712,7 @@
  :statements-upload/manual-upload-click
  (fn [{{[credential] ::db/credentials
         text         ::db/statements-upload-editor-contents
-        :as         db} :db :as _cofx} [_event-name]]
+        :as         _db} :db :as _cofx} [_event-name]]
    (if credential
      (let [parsed  (try (.parse js/JSON text)
                         (catch :default _e nil))
@@ -778,11 +776,8 @@
 
 (re-frame/reg-event-fx
  :statements-upload/error-handler
- (fn [{{file ::db/statements-upload-file
-        :as db} :db}
-      [_ result]]
-   (let [
-         precursor (str "Failed to upload statements: ")
+ (fn [{db :db :as _cofx} [_ result]]
+   (let [precursor "Failed to upload statements: "
          msg         (cond (#{0 -1} (:status result))
                            "Couldn't reach server"
                            :else
@@ -804,8 +799,8 @@
  :statements-upload/set-editor-contents
  (fn [{db :db
        :as _cofx} [_ text]]
-   (let [json-errors (try (do (js/JSON.parse text)
-                              nil)
+   (let [json-errors (try (js/JSON.parse text)
+                          nil
                           (catch js/Error e
                             [{:message "Invalid JSON Syntax"
                               :details (str e)}]))]

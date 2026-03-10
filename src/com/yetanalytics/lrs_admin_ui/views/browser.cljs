@@ -11,7 +11,7 @@
    [com.yetanalytics.lrs-admin-ui.views.util.json :refer [json-viewer]]
    [com.yetanalytics.lrs-admin-ui.views.util.table :refer [data-table]]
    [com.yetanalytics.lrs-admin-ui.views.util.langmap :refer [langmap]]
-   [com.yetanalytics.lrs-admin-ui.views.form.editor :refer [editor manual-json-editor]]))
+   [com.yetanalytics.lrs-admin-ui.views.form.editor :refer [manual-json-editor]]))
 
 (defn actor-display
   "Actor IFI progressive resolution to a display string."

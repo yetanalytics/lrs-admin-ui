@@ -1,6 +1,7 @@
 (ns com.yetanalytics.lrs-admin-ui.views.form.editor
   (:require [re-codemirror.core :as cm]
             [clojure.data :as data]
+            [clojure.string]
             [reagent.core :as r]
             [com.yetanalytics.lrs-admin-ui.views.form.validation :as v]
             ["codemirror/mode/javascript/javascript"]
@@ -173,7 +174,7 @@
    "
   [{:keys [buffer
            set-json]}]
-  (let [{:keys [json status errors]} @buffer]
+  (let [{:keys [json]} @buffer]
     [:div
      (when (not (clojure.string/blank? json))
        [raw-text-upload-validation-display

@@ -7,6 +7,7 @@
             [com.yetanalytics.lrs-admin-ui.spec.csv-download]
             [com.yetanalytics.lrs-admin-ui.spec.reaction-edit]
             [clojure.spec.alpha :as s :include-macros true]
+            [clojure.string]
             [xapi-schema.spec :as xs]))
 
 (reg-sub
