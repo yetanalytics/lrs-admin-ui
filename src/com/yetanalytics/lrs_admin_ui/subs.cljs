@@ -232,27 +232,24 @@
    (or (get db ::db/statements-file-upload-xapi-version)
        "1.0.3")))
 
+
 (reg-sub
  :statements-file-upload/file
  (fn [db _]
-   (get db ::db/statements-file-upload-file)))
+   (::db/statements-file-upload-file db)))
 
 (reg-sub
  :statements-file-upload/filename
  (fn [_qv]
    [(subscribe [:statements-file-upload/file])])
  (fn [[file] _qv]
-   (.-name file)))
+   (when file
+     (.-name file))))
 
 (reg-sub
  :statements-file-upload/statement-count
  (fn [db _]
    (get db ::db/statements-file-upload-statements-count)))
-
-(reg-sub
- :statements-file-upload/event-log
- (fn [db _]
-   (::db/statements-file-upload-event-log db)))
 
 (reg-sub
  :statements-file-upload/manual-errors
@@ -289,9 +286,9 @@
         analyzed?)))
 
 (reg-sub
- :statements-file-upload/upload-type
- (fn [db]
-   (::db/statements-file-upload-upload-type db)))
+ :statements-file-upload/event-log
+ (fn [db _]
+   (::db/statements-file-upload-event-log db)))
 
 ;; OIDC State
 (reg-sub

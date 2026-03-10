@@ -244,7 +244,22 @@
    [:span @(subscribe [:statements-file-upload/filename]) ": "]
    [:span @(subscribe [:statements-file-upload/statement-count]) " statements"]])
 
-(defn manual-upload []
+(defn- json-file-picker []
+  [:div
+   (when @(subscribe [:statements-file-upload/file])
+     [file-summary])
+   [:br]
+   [:label.btn-brand-bold {:for "file"}
+    @(subscribe [:lang/get :statements.file-upload.choose-file-button])]
+   [:input#file {:style     {:opacity 0 :position :absolute}
+                 :type      :file
+                 :name      "file"
+                 :on-change #(let [file (aget (.-files (.-target  %)) 0)]
+                               (.then (.text file)
+                                      (fn [text]
+                                        (dispatch [:statements-file-upload/file-change file text]))))}]])
+
+(defn- manual-upload []
   [:div
    [:h4 {:class "content-title"}
     @(subscribe [:lang/get :statements.manual-upload.title])]
@@ -253,11 +268,8 @@
       @(subscribe [:lang/get :statements.manual-upload.key-note])]
      (let [buffer (subscribe [:statements-file-upload/manual-json-buffer])]
        [:div
-        [:button {:on-click #(dispatch [:statements-file-upload/toggle-upload-type :file])
-                    :type     "button"
-                    :class    "btn-brand-bold"}
-           "Switch to File Upload"]
-
+        [json-file-picker]
+        [:br]
         [manual-json-editor {:buffer buffer
                              :set-json #(dispatch [:statements-file-upload/set-editor-contents %])}]
         [:br]
@@ -265,61 +277,19 @@
           [:button {:on-click #(dispatch [:statements-file-upload/manual-upload-click])
                     :type     "button"
                     :class    "btn-brand-bold"}
-           "Upload Text"])]))])
-
-(defn- json-file-upload []
-  [:div
-   [:h4 {:class "content-title"}
-    @(subscribe [:lang/get :statements.file-upload.title])]
-   (if-not (:credential @(subscribe [:db/get-browser]))
-     [:div {:class "browser"}
-      @(subscribe [:lang/get :statements.file-upload.key-note])]
-     [:div
-      [:button {:on-click #(dispatch [:statements-file-upload/toggle-upload-type :raw])
-                :type     "button"
-                :class    "btn-brand-bold"}
-       "Switch to Raw Text Upload"]
-      [:div
-       (when @(subscribe [:statements-file-upload/file])
-         [file-summary])
-       [:br]
-       [:label.btn-brand-bold {:for "file"}
-        (if-not @(subscribe [:statements-file-upload/file])
-          @(subscribe [:lang/get :statements.file-upload.choose-file-button])
-          "Change file")]
-       [:input#file {:style     {:opacity 0 :position :absolute}
-                     :type      :file
-                     :name      "file"
-                     :on-change #(let [file     (aget (.-files (.-target  %)) 0)]
-                                   (.then (.text file)
-                                          (fn [text]
-                                            (dispatch [:statements-file-upload/file-change file text]))))}]]
-
-      (when @(subscribe [:statements-file-upload/file])
-        [:div
-         [:br]
-         [:button {:type     "button"
-                   :class    "btn-brand-bold"
-                   :on-click (fn [_e]
-                               (dispatch [:statements-file-upload/json-file-upload-click]))}
-          @(subscribe [:lang/get :statements.file-upload.button])]
-         [:span " " @(subscribe [:lang/get :statements.file-upload.xapi-version]) ": "
-          [:select
-           {::on-change #(dispatch [:statements-file-upload/set-xapi-version (fns/ps-event-val %)])}
-           [:option "1.0.3"]
-           [:option "2.0.0"]]]])])])
+           @(subscribe [:lang/get :statements.file-upload.upload-text-button])])]))])
 
 (defn event-log []
  (let [events @(subscribe [:statements-file-upload/event-log])]
         (when (seq events)
-          (let [cols [{:name "Event"
+          (let [cols [{:name @(subscribe [:lang/get :statements.upload.event-log.header.event])
                        :selector #(str
                                    ({"good" "✅" "bad" "❌"} (get % "code"))
                                    " "
                                    (get % "event"))}
-                      {:name "Duration"
+                      {:name @(subscribe [:lang/get :statements.upload.event-log.header.duration])
                        :selector #(str (get % "duration"))}
-                      {:name "Timestamp"
+                      {:name @(subscribe [:lang/get :statements.upload.event-log.header.timestamp])
                        :selector #(time/ms->local (get % "timestamp"))}]
                 data   events
                 other-opts {:columns            cols
@@ -334,8 +304,6 @@
    [:div {:class "h-divider"}]
    [csv-download]
    [:div {:class "h-divider"}]
-   (case @(subscribe [:statements-file-upload/upload-type])
-     :file [json-file-upload]
-     :raw  [manual-upload])
+   [manual-upload]
    [:div {:class "h-divider"}]
    [event-log]])

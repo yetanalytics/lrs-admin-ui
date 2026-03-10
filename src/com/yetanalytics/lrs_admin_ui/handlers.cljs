@@ -93,8 +93,12 @@
          ::db/last-interaction-time (.now js/Date)
          ::db/supported-versions db/supported-versions-set
          ::db/reaction-version "2.0.0"
+
          ::db/statements-file-upload-event-log []
-         ::db/statements-file-upload-upload-type :file}
+         ::db/statements-file-upload-editor-contents ""
+         ::db/statements-file-upload-analyzed? false
+         ::db/statements-file-upload-manual-errors {:xapi [] :json []}
+         ::db/statements-file-upload-statements-count 0}
 
     :fx [[:dispatch [:db/verify-login]]
          [:dispatch [:db/get-env]]]}))
@@ -687,49 +691,24 @@
 (re-frame/reg-event-fx
  :statements-file-upload/file-change
  (fn [{:keys [db]} [_ file text]]
-   (let [parsed  (try  (.parse js/JSON text)
-                       (catch :default _e :unparseable))]
-     (case parsed
-       :unparseable
-       {:fx [[:dispatch [:notification/notify true "File not valid JSON"]]]
-        :db (-> db
-                (update 
-                 ::db/statements-file-upload-event-log conj
-                 {:code :bad
-                  :event (str "File " (.-name file) " not valid JSON, not loaded")
-                  :timestamp (.now js/Date)})
-                (assoc ::db/statements-file-upload-file
-                       nil
-                       ::db/statements-file-upload-file-text
-                       nil
-                       ::db/statements-file-upload-file-name
-                       nil
-                       ::db/statements-file-upload-statements-count
-                       0))}
-       {:db (assoc db
-                   ::db/statements-file-upload-file
-                   file
-                   ::db/statements-file-upload-file-text
-                   text
-                   ::db/statements-file-upload-file-name
-                   (.-name file)
-                   ::db/statements-file-upload-statements-count
-                   (if (.isArray js/Array parsed)
-                     (.-length parsed)
-                     1))}))))
-
-(re-frame/reg-event-fx
- :statements-file-upload/json-file-upload-click
- (fn [{{[credential] ::db/credentials
-        file ::db/statements-file-upload-file
-        c ::db/statements-file-upload-statements-count
-        text ::db/statements-file-upload-file-text
-        :as         db} :db :as _cofx} [_event-name]]
-   
-   (if credential
-     (let [filename (.-name file)]
-       {:fx [[:dispatch  [:statements-file-upload/statements-upload text filename c] ]]})
-     {:fx [[:dispatch  [:notification/notify true "Please select a credential"]]]})))
+   (let [[parsed json-errors] (try [(.parse js/JSON text) nil]
+                                   (catch js/Error e
+                                     [nil [{:message "Invalid JSON Syntax"
+                                            :details (str e)}]]))]
+     (cond
+       json-errors {:fx [[:dispatch [:notification/notify true "File not valid JSON"]]
+                         [:dispatch [:statements-file-upload/set-editor-contents ""]]]}
+       :else {:fx [[:dispatch [:statements-file-upload/set-editor-contents text]]]
+              :db (-> db (assoc ::db/statements-file-upload-file
+                                file
+                                ::db/statements-file-upload-filename
+                                (.-name file)
+                                ::db/statements-file-upload-statements-count
+                                (if json-errors
+                                  0
+                                  (if (.isArray js/Array parsed)
+                                    (.-length parsed)
+                                    1))))}))))
 
 (re-frame/reg-event-fx
  :statements-file-upload/manual-upload-click
@@ -768,15 +747,15 @@
                           proxy-path)
         :response-format (ajax/json-response-format {:keywords? true})
         :body            stmts
-        :interceptors    [(httpfn/xapi-version-interceptor xapi-version) ]
-        :on-success      [:statements-file-upload/universal-success-handler  {:filename filename
-                                                                              :count stmt-count
-                                                                              :start-ts start-ts
-                                                                              :xapi-version xapi-version}]
+        :interceptors    [(httpfn/xapi-version-interceptor xapi-version)]
+        :on-success      [:statements-file-upload/upload-success-handler  {:filename filename
+                                                                           :count stmt-count
+                                                                           :start-ts start-ts
+                                                                           :xapi-version xapi-version}]
         :on-failure      [:statements-file-upload/error-handler]})})))
 
 (re-frame/reg-event-fx
- :statements-file-upload/universal-success-handler
+ :statements-file-upload/upload-success-handler
  (fn [{db :db :as _ctx}
       [_ {filename     :filename
           c            :count
@@ -802,8 +781,8 @@
  (fn [{{file ::db/statements-file-upload-file
         :as db} :db}
       [_ result]]
-   (let [filename (.-name file)
-         precursor (str "Failed to upload " filename ": ")
+   (let [
+         precursor (str "Failed to upload statements: ")
          msg         (cond (#{0 -1} (:status result))
                            "Couldn't reach server"
                            :else
@@ -834,15 +813,10 @@
                          ::db/statements-file-upload-editor-contents text
                          ::db/statements-file-upload-analyzed? false)
             json-errors       (assoc-in [::db/statements-file-upload-manual-errors :json] json-errors)
-            (not json-errors) (update ::db/statements-file-upload-manual-errors dissoc :json))
+            (not json-errors) (assoc-in [::db/statements-file-upload-manual-errors :json] []))
       :dispatch-later [{:ms 3000
                         :dispatch [:statements-file-upload/validate-manual-xapi]
                         :event-id :manual-xapi-validate}]})))
-
-(re-frame/reg-event-fx
- :print-errors
- (fn [{db :db} _ev]
-   (println (::db/statements-file-upload-manual-errors db))))
 
 (re-frame/reg-event-fx
  :statements-file-upload/validate-manual-xapi
@@ -852,12 +826,7 @@
      {:db (cond-> db
             true (assoc ::db/statements-file-upload-analyzed? true)
             error (assoc-in [::db/statements-file-upload-manual-errors :xapi] error)
-            (not error) (update ::db/statements-file-upload-manual-errors dissoc :xapi))})))
-
-(re-frame/reg-event-db
- :statements-file-upload/toggle-upload-type
- (fn [db [_ upload-type]]
-   (assoc db ::db/statements-file-upload-upload-type upload-type)))
+            (not error) (assoc-in [::db/statements-file-upload-manual-errors :xapi] []))})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Data Browser

@@ -42,7 +42,7 @@
 ;; can use regular helper fns, rather than additional re-frame subscriptions,
 ;; to help materialize the view.
 
-(defn format-error-message
+(defn- format-error-message
   "Return a formatted error message string."
   [errors status]
   (format "Invalid (%s %s%s)"
@@ -50,12 +50,12 @@
           (if (= :warning status) "Warning" "Error")
           (if (> (count errors) 1) "s" "")))
 
-(defn format-error-details-message
+(defn- format-error-details-message
   [status]
   (format "Click on %s to expand details."
           (if (= :warning status) "a warning" "an error")))
 
-(defn error-details-display
+(defn- error-details-display
   "Return a syntax error display in the form of a text area."
   [{:keys [details] :as _error}]
   [:p {:class "validation-details"}

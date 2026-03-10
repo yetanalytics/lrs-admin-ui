@@ -183,10 +183,6 @@
 (s/def ::statements-file-upload-statements-count
   (s/nilable integer?))
 
-(s/def ::statements-file-upload-file-upload-file
-  (s/nilable #(instance? js/File %)))
-
-
 (s/def :statements-file-upload-error/message string?)
 
 (s/def :statements-file-upload-error/xapi
@@ -198,13 +194,17 @@
   (s/keys :req-un [:statements-file-upload/xapi
                    :statements-file-upload/json]))
 
+(s/def ::statements-file-upload-file
+(s/nilable #(instance? js/File %)))
+
+(s/def ::statements-file-upload-file-name
+  (s/nilable string?))
+
 (s/def ::statements-file-upload-editor-contents string?)
 
 (s/def ::statements-file-upload-analyzed? boolean?)
 
-(s/def ::statements-file-upload-upload-type #{:file :raw})
-
-(s/def :event-log/code {:good :bad})
+(s/def :event-log/code #{:good :bad})
 (s/def :event-log/event string?)
 (s/def :event-log/duration int?)
 (s/def :event-log/timestamp int?)
@@ -284,14 +284,12 @@
                           ::editing-reaction-template-json
                           ::csv-download-properties
                           ::statements-file-upload-xapi-version
-                          ::statements-file-upload-file-upload-file
                           ::statements-file-upload-statements-count
                           ::statements-file-upload-event-log
                           ::statements-file-upload-manual-errors
                           ::statements-file-upload-editor-contents
                           ::statements-file-upload-analyzed?
-                          ::statements-file-upload-upload-type
-
+                          ::statements-file-upload-file-name
                           ::dialog-ref
                           ::dialog-data
                           ::no-val?
