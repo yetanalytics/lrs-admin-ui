@@ -80,10 +80,8 @@
    :statements-upload.button {:en-US "Upload"}
    :statements-upload.choose-file-button {:en-US "Choose file"}
    :statements-upload.xapi-version {:en-US "XAPI Version"}
-   :statements-upload.key-note {:en-US "Please Choose an API Key Above to Upload Statements File"}
-   :statements-upload.upload-text-button {:en-US "Upload"}
-   :statements-upload.title {:en-US "Manual Upload"}
    :statements-upload.key-note {:en-US "Please Choose an API Key Above to Upload Statements Directly"}
+   :statements-upload.upload-text-button {:en-US "Upload"}
    :statements-upload.event-log.header.event {:en-us "Event"}
    :statements-upload.event-log.header.duration {:en-us "Duration"}
    :statements-upload.event-log.header.timestamp {:en-us "Timestamp"}
