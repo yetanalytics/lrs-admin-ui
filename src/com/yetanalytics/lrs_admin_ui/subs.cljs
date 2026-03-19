@@ -266,10 +266,13 @@
  :statements-upload/manual-json-buffer
  :<- [:statements-upload/editor-contents]
  :<- [:statements-upload/manual-errors]
- (fn [[json errors]]
+ :<- [:statements-upload/analyzed?]
+ (fn [[json errors analyzed?]]
    {:json (or json "")
     :errors errors
-    :status (if (seq errors) :error :valid)}))
+    :status (cond (not analyzed?) :loading
+                  (seq errors) :error
+                  :else :valid)}))
 
 (reg-sub
  :statements-upload/analyzed?

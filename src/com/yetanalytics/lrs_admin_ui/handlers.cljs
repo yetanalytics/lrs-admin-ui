@@ -809,7 +809,7 @@
                          ::db/statements-upload-analyzed? false)
             json-errors       (assoc-in [::db/statements-upload-manual-errors :json] json-errors)
             (not json-errors) (assoc-in [::db/statements-upload-manual-errors :json] []))
-      :dispatch-later [{:ms 3000
+      :dispatch-later [{:ms 1500
                         :dispatch [:statements-upload/validate-manual-xapi]
                         :event-id :manual-xapi-validate}]})))
 

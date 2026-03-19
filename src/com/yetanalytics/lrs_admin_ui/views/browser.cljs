@@ -270,6 +270,8 @@
        [:div
         [json-file-picker]
         [:br]
+        [:h5 {:class "content-title"}
+         "Manual Statement Entry"]
         [manual-json-editor {:buffer buffer
                              :set-json #(dispatch [:statements-upload/set-editor-contents %])}]
         [:br]
@@ -288,7 +290,7 @@
                                    " "
                                    (get % "event"))}
                       {:name @(subscribe [:lang/get :statements-upload.event-log.header.duration])
-                       :selector #(str (get % "duration"))}
+                       :selector #(str (get % "duration") " ms")}
                       {:name @(subscribe [:lang/get :statements-upload.event-log.header.timestamp])
                        :selector #(time/ms->local (get % "timestamp"))}]
                 data   events

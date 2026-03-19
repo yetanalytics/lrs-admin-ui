@@ -143,25 +143,27 @@
     (fn []
       (let [{:keys [status errors]} @buffer]
         [:div {:class "validation-display-wrapper"}
-         (if (= :valid status)
-           [v/validation-static-display
-            status
-            "Valid"]
-           ;; Error or Warning
-           (let [message (format-error-message errors status)
-                 dis-msg (format-error-details-message status)
-                 display [v/validation-item-display
-                          status
-                          dis-msg
-                          display-ref
-                          :message
-                          error-details-display
-                          errors]]
-             [v/validation-display
-              status
-              message
-              display-ref
-              display]))]))))
+         (case status
+           :valid      [v/validation-static-display
+                        status
+                        "Valid"]
+           :loading [v/validation-static-display
+                        status
+                        "Validating..."]
+           :error (let [message (format-error-message errors status)
+                        dis-msg (format-error-details-message status)
+                        display [v/validation-item-display
+                                 status
+                                 dis-msg
+                                 display-ref
+                                 :message
+                                 error-details-display
+                                 errors]]
+                    [v/validation-display
+                     status
+                     message
+                     display-ref
+                     display]))]))))
 
 (defn manual-json-editor
   "Create a JSON CodeMirror editor similar to buffered-json-editor
@@ -175,7 +177,7 @@
   [{:keys [buffer
            set-json]}]
   (let [{:keys [json]} @buffer]
-    [:div
+    [:div.json-editor
      (when (not (clojure.string/blank? json))
        [raw-text-upload-validation-display
         buffer])
