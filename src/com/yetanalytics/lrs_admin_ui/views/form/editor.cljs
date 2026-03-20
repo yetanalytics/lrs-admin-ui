@@ -178,9 +178,8 @@
            set-json]}]
   (let [{:keys [json]} @buffer]
     [:div.json-editor
-     (when (not (clojure.string/blank? json))
-       [raw-text-upload-validation-display
-        buffer])
+     [raw-text-upload-validation-display
+      buffer]
      [editor {:value json}
       :on-change
       set-json]]))
