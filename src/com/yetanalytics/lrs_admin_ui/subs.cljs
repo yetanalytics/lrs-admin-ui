@@ -270,7 +270,8 @@
  (fn [[json errors analyzed?]]
    {:json (or json "")
     :errors errors
-    :status (cond (not analyzed?) :loading
+    :status (cond (clojure.string/blank? json) :none
+                  (not analyzed?) :loading
                   (seq errors) :error
                   :else :valid)}))
 

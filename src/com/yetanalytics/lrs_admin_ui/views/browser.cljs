@@ -11,7 +11,8 @@
    [com.yetanalytics.lrs-admin-ui.views.util.json :refer [json-viewer]]
    [com.yetanalytics.lrs-admin-ui.views.util.table :refer [data-table]]
    [com.yetanalytics.lrs-admin-ui.views.util.langmap :refer [langmap]]
-   [com.yetanalytics.lrs-admin-ui.views.form.editor :refer [manual-json-editor]]))
+   [com.yetanalytics.lrs-admin-ui.views.form.editor :refer [editor
+                                                            raw-text-upload-validation-display]]))
 
 (defn actor-display
   "Actor IFI progressive resolution to a display string."
@@ -266,20 +267,22 @@
    (if-not (:credential @(subscribe [:db/get-browser]))
      [:div {:class "browser"}
       @(subscribe [:lang/get :statements-upload.key-note])]
-     (let [buffer (subscribe [:statements-upload/manual-json-buffer])]
-       [:div
-        [json-file-picker]
-        [:br]
-        [:h5 {:class "content-title"}
-         "Manual Statement Entry"]
-        [manual-json-editor {:buffer buffer
-                             :set-json #(dispatch [:statements-upload/set-editor-contents %])}]
-        [:br]
-        (when @(subscribe [:statements-upload/uploadable])
-          [:button {:on-click #(dispatch [:statements-upload/manual-upload-click])
-                    :type     "button"
-                    :class    "btn-brand-bold"}
-           @(subscribe [:lang/get :statements-upload.button])])]))])
+     [:div
+      [json-file-picker]
+      [:br]
+      [:h5 {:class "content-title"}
+       "Manual Statement Entry"]
+      [:div.json-editor
+       [raw-text-upload-validation-display (subscribe [:statements-upload/manual-json-buffer])]
+       [editor {:value @(subscribe [:statements-upload/editor-contents])}
+        :on-change #(dispatch [:statements-upload/set-editor-contents %])]]
+
+      [:br]
+      (when @(subscribe [:statements-upload/uploadable])
+        [:button {:on-click #(dispatch [:statements-upload/manual-upload-click])
+                  :type     "button"
+                  :class    "btn-brand-bold"}
+         @(subscribe [:lang/get :statements-upload.button])])])])
 
 (defn event-log []
  (let [events @(subscribe [:statements-upload/event-log])]

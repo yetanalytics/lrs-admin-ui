@@ -144,42 +144,26 @@
       (let [{:keys [status errors]} @buffer]
         [:div {:class "validation-display-wrapper"}
          (case status
-           :valid      [v/validation-static-display
-                        status
-                        "Valid"]
-           :loading [v/validation-static-display
-                        status
-                        "Validating..."]
-           :error (let [message (format-error-message errors status)
-                        dis-msg (format-error-details-message status)
-                        display [v/validation-item-display
-                                 status
-                                 dis-msg
-                                 display-ref
-                                 :message
-                                 error-details-display
-                                 errors]]
-                    [v/validation-display
-                     status
-                     message
-                     display-ref
-                     display]))]))))
-
-(defn manual-json-editor
-  "Create a JSON CodeMirror editor similar to buffered-json-editor
-   | Key | Description
-   | --- | ---
-   | `buffer`   | A reactive object carrying the content of the buffer - a map of `:value`, `:saved`, `:json`, `:status`, and `:errors`
-   | `set-json` | A function that saves the unparsed json value
-   | `save`     | A function that dispatches an fx to save the parsed JS value to the buffer.
-   | `error`    | A function that dispatches an fx to save an error to the buffer.
-   "
-  [{:keys [buffer
-           set-json]}]
-  (let [{:keys [json]} @buffer]
-    [:div.json-editor
-     [raw-text-upload-validation-display
-      buffer]
-     [editor {:value json}
-      :on-change
-      set-json]]))
+           :none [v/validation-static-display
+                  :valid
+                  ""]
+           :valid [v/validation-static-display
+                   :valid
+                   "Valid"]
+           :loading  [v/validation-static-display
+                      :loading
+                      "Validating..."]
+           :error  (let [message (format-error-message errors status)
+                         dis-msg (format-error-details-message status)
+                         display [v/validation-item-display
+                                  status
+                                  dis-msg
+                                  display-ref
+                                  :message
+                                  error-details-display
+                                  errors]]
+                     [v/validation-display
+                      status
+                      message
+                      display-ref
+                      display]))]))))

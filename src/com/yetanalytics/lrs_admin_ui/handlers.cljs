@@ -799,19 +799,31 @@
  :statements-upload/set-editor-contents
  (fn [{db :db
        :as _cofx} [_ text]]
+   {:db (assoc db
+               ::db/statements-upload-editor-contents text
+               ::db/statements-upload-analyzed? false)
+    :dispatch-later [{:ms 1500
+                      :dispatch [:statements-upload/validate-manual-json]
+                      :event-id :manual-json-validate}]}))
+
+(re-frame/reg-event-fx
+ :statements-upload/validate-manual-json
+ (fn [{{text ::db/statements-upload-editor-contents
+        :as db} :db} _args]
+
    (let [json-errors (try (js/JSON.parse text)
                           nil
                           (catch js/Error e
                             [{:message "Invalid JSON Syntax"
                               :details (str e)}]))]
-     {:db (cond-> (assoc db
-                         ::db/statements-upload-editor-contents text
-                         ::db/statements-upload-analyzed? false)
-            json-errors       (assoc-in [::db/statements-upload-manual-errors :json] json-errors)
-            (not json-errors) (assoc-in [::db/statements-upload-manual-errors :json] []))
-      :dispatch-later [{:ms 1500
-                        :dispatch [:statements-upload/validate-manual-xapi]
-                        :event-id :manual-xapi-validate}]})))
+     (if json-errors
+       {:db (-> db
+                (assoc-in [::db/statements-upload-manual-errors :json] json-errors)
+                (assoc ::db/statements-upload-analyzed? true))}
+       {:db (-> db
+                (assoc-in [::db/statements-upload-manual-errors :json] [])
+                (assoc-in [::db/statements-upload-manual-errors :xapi] []))
+        :dispatch [:statements-upload/validate-manual-xapi]}))))
 
 (re-frame/reg-event-fx
  :statements-upload/validate-manual-xapi
