@@ -177,21 +177,38 @@
 (s/def ::csv-download-properties
   (s/keys :req-un [::csvd/property-paths]))
 
-(s/def ::statements-file-upload-xapi-version
+(s/def ::statements-upload-xapi-version
   (s/nilable string?))
 
-(s/def ::statements-file-upload-statements-count
+(s/def ::statements-upload-statements-count
   (s/nilable integer?))
 
-(s/def ::statements-file-upload-file-upload-file
-  (s/nilable #(instance? js/File %)))
+(s/def :statements-upload-error/message string?)
 
-(s/def :event-log/code {:good :bad})
+(s/def :statements-upload-error/xapi
+  (s/coll-of (s/keys :req-un [:statements-upload-error/message])))
+(s/def :statements-upload-error/json
+  (s/coll-of (s/keys :req-un [:statements-upload-error/message])))
+
+(s/def ::statements-upload-manual-errors
+  (s/keys :req-un [:statements-upload-error/xapi
+                   :statements-upload-error/json]))
+
+(s/def ::statements-upload-file
+(s/nilable #(instance? js/File %)))
+
+(s/def ::statements-upload-editor-contents string?)
+(s/def ::statements-upload-editor-contents-forced string?)
+(s/def ::statements-upload-editor-contents-forced-key int?)
+
+(s/def ::statements-upload-analyzed? boolean?)
+
+(s/def :event-log/code #{:good :bad})
 (s/def :event-log/event string?)
 (s/def :event-log/duration int?)
 (s/def :event-log/timestamp int?)
 
-(s/def ::statements-file-upload-event-log
+(s/def ::statements-upload-event-log
   (s/nilable
    (s/coll-of
     (s/keys :req-un [:event-log/code
@@ -265,10 +282,13 @@
                           ::editing-reaction-template-errors
                           ::editing-reaction-template-json
                           ::csv-download-properties
-                          ::statements-file-upload-xapi-version
-                          ::statements-file-upload-file-upload-file
-                          ::statements-file-upload-statements-count
-                          ::statements-file-upload-event-log
+                          ::statements-upload-xapi-version
+                          ::statements-upload-statements-count
+                          ::statements-upload-event-log
+                          ::statements-upload-manual-errors
+                          ::statements-upload-editor-contents
+                          ::statements-upload-analyzed?
+                          ::statements-upload-file
                           ::dialog-ref
                           ::dialog-data
                           ::no-val?

@@ -30,6 +30,10 @@ div.form-input-container {
   @extend .form-text-input;
 }
 
+.json-editor {
+    border: 1px solid black;
+}
+
 // Toggle
 
 /* The switch - the box around the slider */

@@ -7,6 +7,7 @@
             [com.yetanalytics.lrs-admin-ui.spec.csv-download]
             [com.yetanalytics.lrs-admin-ui.spec.reaction-edit]
             [clojure.spec.alpha :as s :include-macros true]
+            [clojure.string]
             [xapi-schema.spec :as xs]))
 
 (reg-sub
@@ -227,32 +228,82 @@
 
 ;; Upload JSON file
 (reg-sub
- :statements-file-upload/xapi-version
+ :statements-upload/xapi-version
  (fn [db _]
-   (or (get db ::db/statements-file-upload-xapi-version)
+   (or (get db ::db/statements-upload-xapi-version)
        "1.0.3")))
 
-(reg-sub
- :statements-file-upload/file
- (fn [db _]
-   (get db ::db/statements-file-upload-file)))
 
 (reg-sub
- :statements-file-upload/filename
+ :statements-upload/file
+ (fn [db _]
+   (::db/statements-upload-file db)))
+
+(reg-sub
+ :statements-upload/filename
  (fn [_qv]
-   [(subscribe [:statements-file-upload/file])])
+   [(subscribe [:statements-upload/file])])
  (fn [[file] _qv]
-   (.-name file)))
+   (when file
+     (.-name file))))
 
 (reg-sub
- :statements-file-upload/statement-count
+ :statements-upload/statement-count
  (fn [db _]
-   (get db ::db/statements-file-upload-statements-count)))
+   (get db ::db/statements-upload-statements-count)))
 
 (reg-sub
- :statements-file-upload/event-log
+ :statements-upload/manual-errors
  (fn [db _]
-   (::db/statements-file-upload-event-log db)))
+   (vec (apply concat (vals (::db/statements-upload-manual-errors db))))))
+
+(reg-sub
+ :statements-upload/editor-contents-forced
+ (fn [db _]
+   (or (::db/statements-upload-editor-contents-forced db) "")))
+
+(reg-sub
+ :statements-upload/editor-contents-forced-key
+ (fn [db _]
+   (or (::db/statements-upload-force-key db) 0)))
+
+(reg-sub
+ :statements-upload/editor-contents
+ (fn [db _]
+   (or (::db/statements-upload-editor-contents db) "")))
+
+(reg-sub
+ :statements-upload/manual-json-buffer
+ :<- [:statements-upload/editor-contents]
+ :<- [:statements-upload/manual-errors]
+ :<- [:statements-upload/analyzed?]
+ (fn [[json errors analyzed?]]
+   {:json (or json "")
+    :errors errors
+    :status (cond (clojure.string/blank? json) :none
+                  (not analyzed?) :loading
+                  (seq errors) :error
+                  :else :valid)}))
+
+(reg-sub
+ :statements-upload/analyzed?
+ (fn [db]
+   (::db/statements-upload-analyzed? db)))
+
+(reg-sub
+ :statements-upload/uploadable
+ :<- [:statements-upload/manual-errors]
+ :<- [:statements-upload/editor-contents]
+ :<- [:statements-upload/analyzed?]
+ (fn [[errors text analyzed?]]
+   (and (empty? errors)
+        (not (clojure.string/blank? text))
+        analyzed?)))
+
+(reg-sub
+ :statements-upload/event-log
+ (fn [db _]
+   (::db/statements-upload-event-log db)))
 
 ;; OIDC State
 (reg-sub

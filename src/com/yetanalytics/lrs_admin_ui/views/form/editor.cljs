@@ -1,6 +1,7 @@
 (ns com.yetanalytics.lrs-admin-ui.views.form.editor
   (:require [re-codemirror.core :as cm]
             [clojure.data :as data]
+            [clojure.string]
             [reagent.core :as r]
             [com.yetanalytics.lrs-admin-ui.views.form.validation :as v]
             ["codemirror/mode/javascript/javascript"]
@@ -131,3 +132,51 @@
              (catch js/Error e
                (error [{:message "Invalid JSON Syntax"
                         :details (str e)}]))))]]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;  manual upload
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defn raw-text-upload-validation-display [buffer]
+  (let [ ;; whether or not the error display is open and which details index
+        display-ref (r/atom {:open      false
+                             :expand-id nil})]
+    (fn []
+      (let [{:keys [status errors]} @buffer]
+        [:div {:class "validation-display-wrapper"}
+         (case status
+           :none [v/validation-static-display
+                  :valid
+                  ""]
+           :valid [v/validation-static-display
+                   :valid
+                   "Valid"]
+           :loading  [v/validation-static-display
+                      :loading
+                      "Validating..."]
+           :error  (let [message (format-error-message errors status)
+                         dis-msg (format-error-details-message status)
+                         display [v/validation-item-display
+                                  status
+                                  dis-msg
+                                  display-ref
+                                  :message
+                                  error-details-display
+                                  errors]]
+                     [v/validation-display
+                      status
+                      message
+                      display-ref
+                      display]))]))))
+
+ (defn manual-upload-editor []
+    (let [text          (r/atom "")
+          last-reset-key (r/atom nil)]
+      (fn [{:keys [reset-key reset-value on-change]}]
+        (when (not= @last-reset-key reset-key)
+          (reset! last-reset-key reset-key)
+          (reset! text reset-value))
+        [editor {:value @text}
+         :on-change #(do
+                       (reset! text %)
+                       (when on-change
+                         (on-change %)))])))
