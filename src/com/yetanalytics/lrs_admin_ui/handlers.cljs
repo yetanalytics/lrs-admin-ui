@@ -96,6 +96,8 @@
 
          ::db/statements-upload-event-log []
          ::db/statements-upload-editor-contents ""
+         ::db/statements-upload-editor-contents-forced ""
+         ::db/statements-upload-editor-contents-forced-key 0
          ::db/statements-upload-analyzed? false
          ::db/statements-upload-manual-errors {:xapi [] :json []}
          ::db/statements-upload-statements-count 0}
@@ -697,8 +699,8 @@
                                             :details (str e)}]]))]
      (cond
        json-errors {:fx [[:dispatch [:notification/notify true "File not valid JSON"]]
-                         [:dispatch [:statements-upload/set-editor-contents ""]]]}
-       :else {:fx [[:dispatch [:statements-upload/set-editor-contents text]]]
+                         [:dispatch [:statements-upload/force-editor-contents! ""]]]}
+       :else {:fx [[:dispatch [:statements-upload/force-editor-contents! text]]]
               :db (-> db (assoc ::db/statements-upload-file
                                 file
                                 ::db/statements-upload-statements-count
@@ -796,15 +798,25 @@
           version)))
 
 (re-frame/reg-event-fx
- :statements-upload/set-editor-contents
+ :statements-upload/editor-contents-changed
  (fn [{db :db
        :as _cofx} [_ text]]
    {:db (assoc db
-               ::db/statements-upload-editor-contents text
-               ::db/statements-upload-analyzed? false)
+               ::db/statements-upload-analyzed? false
+               ::db/statements-upload-editor-contents text)
     :dispatch-later [{:ms 1500
                       :dispatch [:statements-upload/validate-manual-json]
                       :event-id :manual-json-validate}]}))
+
+(re-frame/reg-event-fx
+ :statements-upload/force-editor-contents!
+ (fn [{db :db
+       :as _cofx} [_ text]]
+   (let [reset-key (inc (or (::db/statements-upload-force-key db) 0))]
+     {:db (assoc db
+                 ::db/statements-upload-force-key reset-key
+                 ::db/statements-upload-editor-contents-forced text
+                 ::db/statements-upload-analyzed? false)})))
 
 (re-frame/reg-event-fx
  :statements-upload/validate-manual-json

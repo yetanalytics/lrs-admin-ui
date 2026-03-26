@@ -167,3 +167,16 @@
                       message
                       display-ref
                       display]))]))))
+
+ (defn manual-upload-editor []
+    (let [text          (r/atom "")
+          last-reset-key (r/atom nil)]
+      (fn [{:keys [reset-key reset-value on-change]}]
+        (when (not= @last-reset-key reset-key)
+          (reset! last-reset-key reset-key)
+          (reset! text reset-value))
+        [editor {:value @text}
+         :on-change #(do
+                       (reset! text %)
+                       (when on-change
+                         (on-change %)))])))

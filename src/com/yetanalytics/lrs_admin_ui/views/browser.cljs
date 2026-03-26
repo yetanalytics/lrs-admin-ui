@@ -12,7 +12,8 @@
    [com.yetanalytics.lrs-admin-ui.views.util.table :refer [data-table]]
    [com.yetanalytics.lrs-admin-ui.views.util.langmap :refer [langmap]]
    [com.yetanalytics.lrs-admin-ui.views.form.editor :refer [editor
-                                                            raw-text-upload-validation-display]]))
+                                                            raw-text-upload-validation-display
+                                                            manual-upload-editor]]))
 
 (defn actor-display
   "Actor IFI progressive resolution to a display string."
@@ -274,9 +275,9 @@
        "Manual Statement Entry"]
       [:div.json-editor
        [raw-text-upload-validation-display (subscribe [:statements-upload/manual-json-buffer])]
-       [editor {:value @(subscribe [:statements-upload/editor-contents])}
-        :on-change #(dispatch [:statements-upload/set-editor-contents %])]]
-
+       [manual-upload-editor {:reset-key  @(subscribe [:statements-upload/editor-contents-forced-key])
+                              :reset-value @(subscribe [:statements-upload/editor-contents-forced])
+                              :on-change #(dispatch [:statements-upload/editor-contents-changed %])}]]
       [:br]
       (when @(subscribe [:statements-upload/uploadable])
         [:button {:on-click #(dispatch [:statements-upload/manual-upload-click])

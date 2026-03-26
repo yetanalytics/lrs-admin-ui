@@ -258,9 +258,19 @@
    (vec (apply concat (vals (::db/statements-upload-manual-errors db))))))
 
 (reg-sub
+ :statements-upload/editor-contents-forced
+ (fn [db _]
+   (or (::db/statements-upload-editor-contents-forced db) "")))
+
+(reg-sub
+ :statements-upload/editor-contents-forced-key
+ (fn [db _]
+   (or (::db/statements-upload-force-key db) 0)))
+
+(reg-sub
  :statements-upload/editor-contents
  (fn [db _]
-   (::db/statements-upload-editor-contents db)))
+   (or (::db/statements-upload-editor-contents db) "")))
 
 (reg-sub
  :statements-upload/manual-json-buffer

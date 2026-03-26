@@ -198,6 +198,8 @@
 (s/nilable #(instance? js/File %)))
 
 (s/def ::statements-upload-editor-contents string?)
+(s/def ::statements-upload-editor-contents-forced string?)
+(s/def ::statements-upload-editor-contents-forced-key int?)
 
 (s/def ::statements-upload-analyzed? boolean?)
 
