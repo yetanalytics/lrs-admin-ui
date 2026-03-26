@@ -11,8 +11,7 @@
    [com.yetanalytics.lrs-admin-ui.views.util.json :refer [json-viewer]]
    [com.yetanalytics.lrs-admin-ui.views.util.table :refer [data-table]]
    [com.yetanalytics.lrs-admin-ui.views.util.langmap :refer [langmap]]
-   [com.yetanalytics.lrs-admin-ui.views.form.editor :refer [editor
-                                                            raw-text-upload-validation-display
+   [com.yetanalytics.lrs-admin-ui.views.form.editor :refer [raw-text-upload-validation-display
                                                             manual-upload-editor]]))
 
 (defn actor-display
